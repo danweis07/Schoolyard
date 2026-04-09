@@ -1,0 +1,73 @@
+{
+  "$schema": "./packages/config/schema.json",
+  "school": {
+    "name": "Your School Name",
+    "shortName": "Your School",
+    "mascot": "Mascot",
+    "tagline": "Your school tagline here",
+    "address": "123 Main St, City, ST 00000",
+    "phone": "(555) 555-5555",
+    "email": "info@yourschool.org",
+    "district": "Your District Name",
+    "districtUrl": "https://yourdistrict.edu",
+    "grades": "K-5",
+    "founded": "1900",
+    "enrollment": 0,
+    "titleOne": false,
+    "timezone": "America/Los_Angeles"
+  },
+  "pta": {
+    "name": "Your School PTA",
+    "ein": "XX-XXXXXXX",
+    "membershipUrl": "",
+    "membershipFee": 0
+  },
+  "branding": {
+    "primaryColor": "#1a4f8a",
+    "accentColor": "#f5a623",
+    "logo": "/images/logo.svg",
+    "heroImage": "/images/hero.svg",
+    "mascotImage": "/images/mascot.svg"
+  },
+  "social": {
+    "instagram": "",
+    "facebook": "",
+    "twitter": "",
+    "youtube": ""
+  },
+  "languages": {
+    "default": "en",
+    "supported": ["en"]
+  },
+  "modules": {
+    "pta": false,
+    "events": true,
+    "volunteer": false,
+    "fundraising": false,
+    "news": true,
+    "lunch": false,
+    "transportation": false,
+    "community": false,
+    "classroom": false,
+    "district": false,
+    "resources": false,
+    "transparency": false
+  },
+  "fundraising": {
+    "provider": "paypal",
+    "donateUrl": "",
+    "annualGoal": 0,
+    "currentRaised": 0,
+    "goalLabel": "Annual Fund",
+    "stripePublishableKey": ""
+  },
+  "app": {
+    "enabled": false,
+    "pushNotifications": false,
+    "offlineMode": true
+  },
+  "deployment": {
+    "siteUrl": "",
+    "analyticsId": ""
+  }
+}

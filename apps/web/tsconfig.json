@@ -1,0 +1,21 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@schoolyard/config": ["../../packages/config/src/index.ts"],
+      "@schoolyard/config/loader": ["../../packages/config/src/loader.ts"],
+      "@schoolyard/tokens": ["../../packages/tokens/src/index.ts"],
+      "@schoolyard/i18n": ["../../packages/i18n/src/index.ts"],
+      "@schoolyard/content-api": ["../../packages/content-api/src/index.ts"]
+    },
+    "jsx": "preserve",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": [".astro/types.d.ts", "**/*", "../../packages/**/*.ts", "../../packages/**/*.json"],
+  "exclude": ["dist", "node_modules"]
+}

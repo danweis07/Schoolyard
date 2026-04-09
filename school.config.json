@@ -1,0 +1,73 @@
+{
+  "$schema": "./packages/config/schema.json",
+  "school": {
+    "name": "Longfellow Elementary",
+    "shortName": "Longfellow",
+    "mascot": "Eagles",
+    "tagline": "Together We Can Make a Difference",
+    "address": "755 Morse St, San Francisco, CA 94112",
+    "phone": "(415) 469-4730",
+    "email": "info@longfellowsfpta.org",
+    "district": "San Francisco Unified School District",
+    "districtUrl": "https://www.sfusd.edu",
+    "grades": "K-5",
+    "founded": "1884",
+    "enrollment": 320,
+    "titleOne": false,
+    "timezone": "America/Los_Angeles"
+  },
+  "pta": {
+    "name": "Longfellow Elementary PTA",
+    "ein": "XX-XXXXXXX",
+    "membershipUrl": "https://longfellowsfpta.org/join",
+    "membershipFee": 20
+  },
+  "branding": {
+    "primaryColor": "#1a4f8a",
+    "accentColor": "#f5a623",
+    "logo": "/images/demo/logo.svg",
+    "heroImage": "/images/demo/hero.svg",
+    "mascotImage": "/images/demo/mascot.svg"
+  },
+  "social": {
+    "instagram": "",
+    "facebook": "",
+    "twitter": "",
+    "youtube": ""
+  },
+  "languages": {
+    "default": "en",
+    "supported": ["en", "es", "zh-hans", "ru", "tl"]
+  },
+  "modules": {
+    "pta": true,
+    "events": true,
+    "volunteer": true,
+    "fundraising": true,
+    "news": true,
+    "lunch": false,
+    "transportation": false,
+    "community": false,
+    "classroom": false,
+    "district": false,
+    "resources": false,
+    "transparency": false
+  },
+  "fundraising": {
+    "provider": "paypal",
+    "donateUrl": "https://paypal.me/longfellowsfpta",
+    "annualGoal": 45000,
+    "currentRaised": 28750,
+    "goalLabel": "Annual Fund 2025-2026",
+    "stripePublishableKey": ""
+  },
+  "app": {
+    "enabled": true,
+    "pushNotifications": true,
+    "offlineMode": true
+  },
+  "deployment": {
+    "siteUrl": "https://longfellowsfpta.org",
+    "analyticsId": ""
+  }
+}

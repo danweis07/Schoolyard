@@ -1,0 +1,46 @@
+{
+  "name": "schoolyard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open source digital infrastructure for every school community",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schoolyard-org/schoolyard.git"
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --filter=web",
+    "dev:mobile": "turbo run dev --filter=mobile",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,cjs,json,md,astro}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,cjs,json,md,astro}\"",
+    "tokens:build": "pnpm --filter @schoolyard/tokens build",
+    "validate-config": "tsx scripts/validate-config.ts",
+    "setup": "node scripts/setup.js",
+    "clean": "turbo run clean && rimraf node_modules"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^20.16.13",
+    "eslint": "^9.13.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.2",
+    "turbo": "^2.2.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.10.0"
+  }
+}

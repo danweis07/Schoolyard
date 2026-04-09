@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.turbo/
+.astro/
+.expo/
+.expo-shared/
+.next/
+out/
+
+# Generated files: packages/tokens/dist/ is intentionally committed so the
+# package works on first install without running the build step.
+# Re-generate via `pnpm tokens:build`.
+!packages/tokens/dist/
+!packages/tokens/dist/**
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+
+# Misc
+.cache/
+tmp/

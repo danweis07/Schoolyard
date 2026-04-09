@@ -1,0 +1,58 @@
+import type { SchoolConfig } from './schema.js'
+
+/**
+ * Minimal "blank slate" config used as a fallback in tests and for the
+ * setup wizard's starting point.
+ */
+export const defaultConfig: SchoolConfig = {
+  school: {
+    name: 'Your School',
+    shortName: 'Your School',
+    mascot: '',
+    tagline: '',
+    address: '',
+    phone: '',
+    email: '',
+    district: '',
+    districtUrl: '',
+    grades: '',
+    founded: '',
+    enrollment: 0,
+    titleOne: false,
+    timezone: 'America/Los_Angeles',
+  },
+  pta: { name: '', ein: '', membershipUrl: '', membershipFee: 0 },
+  branding: {
+    primaryColor: '#1a4f8a',
+    accentColor: '#f5a623',
+    logo: '/images/logo.svg',
+    heroImage: '/images/hero.svg',
+    mascotImage: '',
+  },
+  social: { instagram: '', facebook: '', twitter: '', youtube: '' },
+  languages: { default: 'en', supported: ['en'] },
+  modules: {
+    pta: false,
+    events: true,
+    volunteer: false,
+    fundraising: false,
+    news: true,
+    lunch: false,
+    transportation: false,
+    community: false,
+    classroom: false,
+    district: false,
+    resources: false,
+    transparency: false,
+  },
+  fundraising: {
+    provider: 'paypal',
+    donateUrl: '',
+    annualGoal: 0,
+    currentRaised: 0,
+    goalLabel: 'Annual Fund',
+    stripePublishableKey: '',
+  },
+  app: { enabled: false, pushNotifications: false, offlineMode: true },
+  deployment: { siteUrl: '', analyticsId: '' },
+}

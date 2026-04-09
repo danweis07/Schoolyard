@@ -1,0 +1,48 @@
+# This file is a copy of /cms/config.yml served at /admin/config.yml
+# so Decap CMS can find it. Update both when adding collections.
+#
+# To enable: turn on Netlify Identity + Git Gateway in your Netlify dashboard
+# (see DEPLOYMENT.md), then visit https://your-site.netlify.app/admin/
+
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: 'apps/web/public/images/uploads'
+public_folder: '/images/uploads'
+
+publish_mode: editorial_workflow
+
+collections:
+  - name: 'events'
+    label: 'Events'
+    folder: 'apps/web/src/content/events'
+    create: true
+    slug: '{{slug}}'
+    fields:
+      - { label: 'Title', name: 'title', widget: 'string' }
+      - { label: 'Date', name: 'date', widget: 'datetime' }
+      - { label: 'Time', name: 'time', widget: 'string', required: false }
+      - { label: 'Location', name: 'location', widget: 'string', required: false }
+      - { label: 'Description', name: 'description', widget: 'text' }
+      - label: 'Category'
+        name: 'category'
+        widget: 'select'
+        default: 'other'
+        options: ['fundraiser', 'social', 'academic', 'volunteer', 'other']
+      - { label: 'Featured', name: 'featured', widget: 'boolean', default: false }
+      - { label: 'Body', name: 'body', widget: 'markdown' }
+
+  - name: 'news'
+    label: 'News'
+    folder: 'apps/web/src/content/news'
+    create: true
+    slug: '{{slug}}'
+    fields:
+      - { label: 'Title', name: 'title', widget: 'string' }
+      - { label: 'Publish date', name: 'publishDate', widget: 'datetime' }
+      - { label: 'Author', name: 'author', widget: 'string', required: false }
+      - { label: 'Summary', name: 'summary', widget: 'text' }
+      - { label: 'Tags', name: 'tags', widget: 'list', default: [] }
+      - { label: 'Featured', name: 'featured', widget: 'boolean', default: false }
+      - { label: 'Body', name: 'body', widget: 'markdown' }
