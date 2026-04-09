@@ -1,0 +1,46 @@
+{
+  "common": {
+    "welcome": "Mabuhay",
+    "loading": "Nag-lo-load…",
+    "search": "Hanapin",
+    "menu": "Menu",
+    "close": "Isara",
+    "readMore": "Magbasa pa",
+    "learnMore": "Matuto pa",
+    "viewAll": "Tingnan lahat",
+    "skipToContent": "Lumaktaw sa pangunahing nilalaman",
+    "language": "Wika",
+    "selectLanguage": "Pumili ng wika"
+  },
+  "nav": {
+    "home": "Bahay",
+    "events": "Mga Kaganapan",
+    "news": "Balita",
+    "pta": "PTA",
+    "volunteer": "Boluntaryo",
+    "donate": "Mag-donate",
+    "about": "Tungkol Sa",
+    "contact": "Kontakin Kami"
+  },
+  "footer": {
+    "address": "Address",
+    "phone": "Telepono",
+    "email": "Email"
+  },
+  "events": {
+    "title": "Mga Kaganapan sa Paaralan",
+    "upcoming": "Mga Paparating na Kaganapan",
+    "noEvents": "Walang paparating na kaganapan.",
+    "rsvp": "Magpa-RSVP",
+    "location": "Lokasyon"
+  },
+  "news": {
+    "title": "Balita ng Paaralan",
+    "latest": "Pinakabagong Balita",
+    "by": "ni"
+  },
+  "fundraising": {
+    "donate": "Mag-donate ngayon",
+    "thankYou": "Salamat sa iyong suporta!"
+  }
+}

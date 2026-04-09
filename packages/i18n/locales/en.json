@@ -1,0 +1,146 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "welcomeName": "Welcome, {name}!",
+    "loading": "Loading…",
+    "search": "Search",
+    "menu": "Menu",
+    "close": "Close",
+    "open": "Open",
+    "readMore": "Read more",
+    "learnMore": "Learn more",
+    "viewAll": "View all",
+    "skipToContent": "Skip to main content",
+    "language": "Language",
+    "selectLanguage": "Select language",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday"
+  },
+  "nav": {
+    "home": "Home",
+    "events": "Events",
+    "news": "News",
+    "pta": "PTA",
+    "volunteer": "Volunteer",
+    "donate": "Donate",
+    "fundraising": "Fundraising",
+    "about": "About",
+    "contact": "Contact",
+    "community": "Community",
+    "lunch": "Lunch",
+    "transportation": "Transportation",
+    "classroom": "Classroom",
+    "district": "District",
+    "resources": "Resources",
+    "transparency": "Transparency"
+  },
+  "footer": {
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "rights": "© {year} {school}. All rights reserved.",
+    "builtWith": "Built with",
+    "openSourceFor": "open source for every school"
+  },
+  "events": {
+    "title": "School Events",
+    "description": "Upcoming events for our school community",
+    "upcoming": "Upcoming Events",
+    "past": "Past Events",
+    "featured": "Featured Event",
+    "noEvents": "No upcoming events. Check back soon!",
+    "addToCalendar": "Add to calendar",
+    "register": "Register",
+    "rsvp": "RSVP",
+    "location": "Location",
+    "when": "When",
+    "category": "Category",
+    "categories": {
+      "fundraiser": "Fundraiser",
+      "social": "Social",
+      "academic": "Academic",
+      "volunteer": "Volunteer",
+      "other": "Other"
+    },
+    "cancelled": "Cancelled"
+  },
+  "news": {
+    "title": "School News",
+    "description": "Latest updates from our school",
+    "latest": "Latest News",
+    "featured": "Featured Story",
+    "by": "by",
+    "publishedOn": "Published on",
+    "tags": "Tags",
+    "readingTime": "{minutes} min read",
+    "noPosts": "No news posts yet."
+  },
+  "pta": {
+    "title": "Parent Teacher Association",
+    "overview": "Our PTA brings together parents, teachers, and community members to support our school.",
+    "board": "Board Members",
+    "boardDescription": "Meet the volunteers running our PTA this year.",
+    "membership": "Become a Member",
+    "membershipFee": "Membership: ${fee}",
+    "joinNow": "Join now",
+    "meetings": "Meetings",
+    "meetingsDescription": "PTA meetings are open to all parents and guardians.",
+    "term": "Term: {start} – {end}"
+  },
+  "volunteer": {
+    "title": "Volunteer With Us",
+    "description": "Every parent's time matters. Find a role that fits your schedule.",
+    "openRoles": "Open Roles",
+    "filled": "Filled",
+    "commitment": "Commitment",
+    "contact": "Contact",
+    "signUp": "Sign up",
+    "noRoles": "No open volunteer roles right now."
+  },
+  "fundraising": {
+    "title": "Support Our School",
+    "description": "Your donation directly funds programs for our students.",
+    "donate": "Donate Now",
+    "annualGoal": "Annual Goal",
+    "raised": "Raised",
+    "ofGoal": "of {goal} goal",
+    "percentRaised": "{percent}% of goal",
+    "thankYou": "Thank you for your support!",
+    "campaigns": "Campaigns"
+  },
+  "home": {
+    "heroCta": "Learn more",
+    "announcementsTitle": "Announcements",
+    "upcomingEventsTitle": "Upcoming Events",
+    "latestNewsTitle": "Latest News",
+    "donateBannerTitle": "Support our school",
+    "donateBannerCta": "Make a donation"
+  },
+  "about": {
+    "title": "About Our School",
+    "founded": "Founded {year}",
+    "grades": "Grades {grades}",
+    "enrollment": "{count} students"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "description": "Get in touch with our school community.",
+    "form": {
+      "name": "Your name",
+      "email": "Email",
+      "subject": "Subject",
+      "message": "Message",
+      "send": "Send message",
+      "thanks": "Thanks — we'll be in touch."
+    }
+  },
+  "errors": {
+    "notFound": "Page not found",
+    "notFoundDescription": "The page you're looking for doesn't exist.",
+    "goHome": "Go home"
+  }
+}

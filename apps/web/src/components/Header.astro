@@ -1,0 +1,84 @@
+---
+import { siteConfig } from '@/lib/site'
+import { getNavModules } from '@/lib/modules'
+import { useTranslate, localizedPath } from '@/i18n/index'
+import LanguageSwitcher from '@/components/LanguageSwitcher.astro'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = useTranslate(locale)
+const modules = getNavModules(siteConfig)
+
+const navLinks = [
+  { href: localizedPath('/', locale), label: t('nav.home') },
+  ...modules.map((m) => ({
+    href: localizedPath(m.route, locale),
+    label: t(m.navLabelKey),
+  })),
+  { href: localizedPath('/contact', locale), label: t('nav.contact') },
+]
+---
+
+<header class="border-b border-border bg-surface">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
+    <a
+      href={localizedPath('/', locale)}
+      class="flex items-center gap-3 no-underline"
+      aria-label={siteConfig.school.name}
+    >
+      <img
+        src={siteConfig.branding.logo}
+        alt={`${siteConfig.school.name} logo`}
+        class="h-12 w-auto"
+        width="48"
+        height="48"
+      />
+      <span class="hidden text-lg font-bold text-base sm:inline">
+        {siteConfig.school.shortName}
+      </span>
+    </a>
+
+    <nav aria-label="Main navigation" class="hidden md:block">
+      <ul class="flex items-center gap-1">
+        {
+          navLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="rounded-button px-3 py-2 text-sm font-medium text-base hover:bg-muted"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      {siteConfig.languages.supported.length > 1 && <LanguageSwitcher locale={locale} />}
+    </div>
+  </div>
+
+  <!-- Mobile nav -->
+  <nav aria-label="Mobile navigation" class="md:hidden">
+    <ul class="flex flex-wrap gap-1 border-t border-border px-4 py-2">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class="rounded-button px-3 py-1 text-sm font-medium text-base hover:bg-muted"
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>

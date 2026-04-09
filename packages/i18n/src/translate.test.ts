@@ -1,0 +1,89 @@
+import { describe, it, expect } from 'vitest'
+import { t, isPopulated, isRtl, detectLocale, parseLocale } from './index.js'
+
+describe('t()', () => {
+  it('returns English string for English locale', () => {
+    expect(t('common.welcome', 'en')).toBe('Welcome')
+  })
+
+  it('falls back to English when key missing in target locale', () => {
+    expect(t('common.next', 'es')).toBe('Next')
+  })
+
+  it('returns translated string when present in target locale', () => {
+    expect(t('nav.home', 'es')).toBe('Inicio')
+  })
+
+  it('returns the key itself when missing everywhere', () => {
+    expect(t('made.up.key', 'en')).toBe('made.up.key')
+  })
+
+  it('interpolates {param} placeholders', () => {
+    expect(t('common.welcomeName', 'en', { name: 'Maria' })).toBe('Welcome, Maria!')
+  })
+})
+
+describe('isPopulated()', () => {
+  it('reports populated locales', () => {
+    expect(isPopulated('en')).toBe(true)
+    expect(isPopulated('es')).toBe(true)
+    expect(isPopulated('zh-hans')).toBe(true)
+    expect(isPopulated('ru')).toBe(true)
+    expect(isPopulated('tl')).toBe(true)
+  })
+
+  it('reports unpopulated locales as false', () => {
+    expect(isPopulated('ar')).toBe(false)
+    expect(isPopulated('fr')).toBe(false)
+  })
+})
+
+describe('isRtl()', () => {
+  it('marks ar and ur as RTL', () => {
+    expect(isRtl('ar')).toBe(true)
+    expect(isRtl('ur')).toBe(true)
+  })
+
+  it('marks LTR locales correctly', () => {
+    expect(isRtl('en')).toBe(false)
+    expect(isRtl('es')).toBe(false)
+  })
+})
+
+describe('detectLocale()', () => {
+  it('returns first supported when header is empty', () => {
+    expect(detectLocale(null, ['en', 'es'])).toBe('en')
+  })
+
+  it('matches exact locale code', () => {
+    expect(detectLocale('es', ['en', 'es'])).toBe('es')
+  })
+
+  it('matches language-only from regional tag', () => {
+    expect(detectLocale('en-US,en;q=0.9', ['en', 'es'])).toBe('en')
+  })
+
+  it('handles q-weighted preferences', () => {
+    expect(detectLocale('fr;q=0.5,es;q=0.9', ['en', 'es'])).toBe('es')
+  })
+
+  it('maps zh-TW to zh-hant', () => {
+    expect(detectLocale('zh-TW', ['en', 'zh-hans', 'zh-hant'])).toBe('zh-hant')
+  })
+
+  it('falls back when no match', () => {
+    expect(detectLocale('de', ['en', 'es'])).toBe('en')
+  })
+})
+
+describe('parseLocale()', () => {
+  it('returns valid locale codes', () => {
+    expect(parseLocale('en')).toBe('en')
+    expect(parseLocale('zh-hans')).toBe('zh-hans')
+  })
+
+  it('returns undefined for invalid codes', () => {
+    expect(parseLocale('klingon')).toBeUndefined()
+    expect(parseLocale(undefined)).toBeUndefined()
+  })
+})

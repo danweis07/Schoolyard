@@ -1,0 +1,63 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import DonationProgress from '@/modules/fundraising/components/DonationProgress.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { useTranslate, getLocaleFromUrl } from '@/i18n/index'
+
+if (!isModuleEnabled(siteConfig, 'fundraising')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+const { annualGoal, currentRaised, goalLabel, donateUrl } = siteConfig.fundraising
+---
+
+<BaseLayout title={t('fundraising.title')} description={t('fundraising.description')}>
+  <section class="mx-auto max-w-3xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{t('fundraising.title')}</h1>
+    <p class="mt-2 text-lg text-muted">{t('fundraising.description')}</p>
+
+    {
+      annualGoal > 0 && (
+        <div class="mt-8">
+          <DonationProgress
+            raised={currentRaised}
+            goal={annualGoal}
+            label={goalLabel}
+            locale={locale}
+          />
+        </div>
+      )
+    }
+
+    {
+      donateUrl && (
+        <div class="mt-8">
+          <a
+            href={donateUrl}
+            class="inline-block rounded-button bg-accent px-8 py-4 text-lg font-bold text-base no-underline hover:opacity-90"
+            rel="noopener"
+          >
+            {t('fundraising.donate')}
+          </a>
+        </div>
+      )
+    }
+
+    <div class="mt-12 prose max-w-none text-base">
+      <h2>Where your donation goes</h2>
+      <p>
+        Every dollar you give stays at our school. Your contribution funds programs the district
+        doesn't pay for: classroom art supplies, music instruments, science kits, field trip
+        scholarships, and the new outdoor classroom. Our PTA is a registered 501(c)(3) — your gift
+        is tax-deductible.
+      </p>
+      <p>
+        Many employers will match your gift dollar-for-dollar. Email us at the address below if
+        you'd like help with the matching paperwork.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

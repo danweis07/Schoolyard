@@ -1,0 +1,36 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import RoleCard from '@/modules/volunteer/components/RoleCard.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { getCollection } from 'astro:content'
+import { useTranslate, getLocaleFromUrl } from '@/i18n/index'
+
+if (!isModuleEnabled(siteConfig, 'volunteer')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+const roles = (await getCollection('volunteers')).sort((a, b) => a.data.order - b.data.order)
+---
+
+<BaseLayout title={t('volunteer.title')} description={t('volunteer.description')}>
+  <section class="mx-auto max-w-6xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{t('volunteer.title')}</h1>
+    <p class="mt-2 text-lg text-muted">{t('volunteer.description')}</p>
+
+    <h2 class="mt-12 text-2xl font-bold">{t('volunteer.openRoles')}</h2>
+    {
+      roles.length === 0 ? (
+        <p class="mt-4 text-muted">{t('volunteer.noRoles')}</p>
+      ) : (
+        <div class="mt-6 grid gap-6 md:grid-cols-2">
+          {roles.map((role) => (
+            <RoleCard role={role} locale={locale} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

@@ -1,0 +1,33 @@
+---
+import { siteConfig } from '@/lib/site'
+
+interface Props {
+  title: string
+  tagline?: string
+}
+
+const { title, tagline } = Astro.props
+---
+
+<section class="bg-primary text-inverse">
+  <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 md:grid-cols-2 md:py-16">
+    <div>
+      <h1 class="text-4xl font-bold tracking-tight md:text-5xl">{title}</h1>
+      {tagline && <p class="mt-4 text-lg opacity-95 md:text-xl">{tagline}</p>}
+    </div>
+    {
+      siteConfig.branding.heroImage && (
+        <div>
+          <img
+            src={siteConfig.branding.heroImage}
+            alt={`${siteConfig.school.name} campus`}
+            class="aspect-[2/1] w-full rounded-card border-4 border-white/20 object-cover shadow-lg"
+            width="600"
+            height="300"
+            loading="eager"
+          />
+        </div>
+      )
+    }
+  </div>
+</section>

@@ -1,0 +1,40 @@
+---
+import { siteConfig } from '@/lib/site'
+import { LOCALE_NAMES } from '@schoolyard/i18n'
+import { localizedPath, defaultLocale } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const supported = siteConfig.languages.supported
+
+// Strip the current locale prefix from the path so we can re-apply
+// the new one when the user picks a language.
+const path = Astro.url.pathname
+const segments = path.split('/').filter(Boolean)
+const stripped =
+  segments[0] && supported.includes(segments[0] as Locale) && segments[0] !== defaultLocale
+    ? '/' + segments.slice(1).join('/')
+    : path
+---
+
+<div class="relative">
+  <label for="lang-switcher" class="sr-only">Language</label>
+  <select
+    id="lang-switcher"
+    class="cursor-pointer rounded-button border border-border bg-surface px-3 py-2 text-sm font-medium text-base"
+    onchange="window.location.href = this.value"
+    aria-label="Select language"
+  >
+    {
+      supported.map((code) => (
+        <option value={localizedPath(stripped, code)} selected={code === locale}>
+          {LOCALE_NAMES[code]}
+        </option>
+      ))
+    }
+  </select>
+</div>

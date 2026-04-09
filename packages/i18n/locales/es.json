@@ -1,0 +1,56 @@
+{
+  "common": {
+    "welcome": "Bienvenidos",
+    "loading": "Cargando…",
+    "search": "Buscar",
+    "menu": "Menú",
+    "close": "Cerrar",
+    "readMore": "Leer más",
+    "learnMore": "Más información",
+    "viewAll": "Ver todo",
+    "skipToContent": "Saltar al contenido principal",
+    "language": "Idioma",
+    "selectLanguage": "Seleccionar idioma"
+  },
+  "nav": {
+    "home": "Inicio",
+    "events": "Eventos",
+    "news": "Noticias",
+    "pta": "PTA",
+    "volunteer": "Voluntariado",
+    "donate": "Donar",
+    "about": "Acerca de",
+    "contact": "Contacto"
+  },
+  "footer": {
+    "address": "Dirección",
+    "phone": "Teléfono",
+    "email": "Correo electrónico",
+    "rights": "© {year} {school}. Todos los derechos reservados.",
+    "builtWith": "Construido con",
+    "openSourceFor": "código abierto para todas las escuelas"
+  },
+  "events": {
+    "title": "Eventos Escolares",
+    "upcoming": "Próximos eventos",
+    "noEvents": "No hay eventos próximos. ¡Vuelve pronto!",
+    "addToCalendar": "Añadir al calendario",
+    "rsvp": "Confirmar asistencia",
+    "location": "Lugar",
+    "when": "Cuándo"
+  },
+  "news": {
+    "title": "Noticias de la Escuela",
+    "latest": "Últimas noticias",
+    "by": "por",
+    "noPosts": "Aún no hay publicaciones."
+  },
+  "fundraising": {
+    "donate": "Donar ahora",
+    "thankYou": "¡Gracias por su apoyo!"
+  },
+  "home": {
+    "heroCta": "Más información",
+    "donateBannerCta": "Hacer una donación"
+  }
+}

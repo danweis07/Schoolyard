@@ -1,0 +1,58 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+import { useTranslate, getLocaleFromUrl } from '@/i18n/index'
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+---
+
+<BaseLayout title={t('about.title')}>
+  <section class="mx-auto max-w-3xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{siteConfig.school.name}</h1>
+    {siteConfig.school.tagline && <p class="mt-2 text-xl text-muted">{siteConfig.school.tagline}</p>}
+
+    <dl class="mt-12 grid gap-4 sm:grid-cols-2">
+      {
+        siteConfig.school.founded && (
+          <div>
+            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">Founded</dt>
+            <dd class="mt-1 text-lg">{t('about.founded', { year: siteConfig.school.founded })}</dd>
+          </div>
+        )
+      }
+      {
+        siteConfig.school.grades && (
+          <div>
+            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">Grades</dt>
+            <dd class="mt-1 text-lg">{t('about.grades', { grades: siteConfig.school.grades })}</dd>
+          </div>
+        )
+      }
+      {
+        siteConfig.school.enrollment > 0 && (
+          <div>
+            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">Enrollment</dt>
+            <dd class="mt-1 text-lg">
+              {t('about.enrollment', { count: siteConfig.school.enrollment })}
+            </dd>
+          </div>
+        )
+      }
+      {
+        siteConfig.school.district && (
+          <div>
+            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">District</dt>
+            <dd class="mt-1 text-lg">
+              {siteConfig.school.districtUrl ? (
+                <a href={siteConfig.school.districtUrl}>{siteConfig.school.district}</a>
+              ) : (
+                siteConfig.school.district
+              )}
+            </dd>
+          </div>
+        )
+      }
+    </dl>
+  </section>
+</BaseLayout>

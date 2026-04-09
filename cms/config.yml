@@ -1,0 +1,102 @@
+# Decap CMS configuration for Schoolyard
+# Schools enable this by setting up Netlify Identity (see DEPLOYMENT.md)
+# and visiting /admin/ on their deployed site.
+#
+# Collections here mirror the Zod schemas in apps/web/src/content/config.ts.
+# Keep them in sync when adding new content types.
+
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: 'apps/web/public/images/uploads'
+public_folder: '/images/uploads'
+
+publish_mode: editorial_workflow
+
+collections:
+  - name: 'events'
+    label: 'Events'
+    folder: 'apps/web/src/content/events'
+    create: true
+    slug: '{{slug}}'
+    fields:
+      - { label: 'Title', name: 'title', widget: 'string' }
+      - { label: 'Date', name: 'date', widget: 'datetime' }
+      - { label: 'End date', name: 'endDate', widget: 'datetime', required: false }
+      - { label: 'Time', name: 'time', widget: 'string', required: false }
+      - { label: 'Location', name: 'location', widget: 'string', required: false }
+      - { label: 'Description', name: 'description', widget: 'text' }
+      - label: 'Category'
+        name: 'category'
+        widget: 'select'
+        default: 'other'
+        options: ['fundraiser', 'social', 'academic', 'volunteer', 'other']
+      - { label: 'Registration URL', name: 'registrationUrl', widget: 'string', required: false }
+      - { label: 'Featured', name: 'featured', widget: 'boolean', default: false }
+      - { label: 'Cancelled', name: 'cancelled', widget: 'boolean', default: false }
+      - { label: 'Body', name: 'body', widget: 'markdown' }
+
+  - name: 'news'
+    label: 'News'
+    folder: 'apps/web/src/content/news'
+    create: true
+    slug: '{{slug}}'
+    fields:
+      - { label: 'Title', name: 'title', widget: 'string' }
+      - { label: 'Publish date', name: 'publishDate', widget: 'datetime' }
+      - { label: 'Author', name: 'author', widget: 'string', required: false }
+      - { label: 'Summary', name: 'summary', widget: 'text' }
+      - { label: 'Tags', name: 'tags', widget: 'list', default: [] }
+      - { label: 'Featured', name: 'featured', widget: 'boolean', default: false }
+      - { label: 'Image', name: 'image', widget: 'image', required: false }
+      - { label: 'Image alt text', name: 'imageAlt', widget: 'string', required: false }
+      - { label: 'Body', name: 'body', widget: 'markdown' }
+
+  - name: 'board'
+    label: 'PTA Board'
+    folder: 'apps/web/src/content/board'
+    create: true
+    slug: '{{slug}}'
+    fields:
+      - { label: 'Name', name: 'name', widget: 'string' }
+      - { label: 'Role', name: 'role', widget: 'string' }
+      - { label: 'Email', name: 'email', widget: 'string', required: false }
+      - { label: 'Photo', name: 'photo', widget: 'image', required: false }
+      - { label: 'Bio', name: 'bio', widget: 'text', required: false }
+      - { label: 'Term start', name: 'termStart', widget: 'string', required: false }
+      - { label: 'Term end', name: 'termEnd', widget: 'string', required: false }
+      - { label: 'Display order', name: 'order', widget: 'number', default: 99 }
+      - { label: 'Body', name: 'body', widget: 'markdown', required: false }
+
+  - name: 'volunteers'
+    label: 'Volunteer Roles'
+    folder: 'apps/web/src/content/volunteers'
+    create: true
+    slug: '{{slug}}'
+    fields:
+      - { label: 'Title', name: 'title', widget: 'string' }
+      - { label: 'Description', name: 'description', widget: 'text' }
+      - { label: 'Commitment', name: 'commitment', widget: 'string' }
+      - { label: 'Contact email', name: 'contact', widget: 'string', required: false }
+      - { label: 'Filled', name: 'filled', widget: 'boolean', default: false }
+      - { label: 'Display order', name: 'order', widget: 'number', default: 99 }
+      - { label: 'Body', name: 'body', widget: 'markdown', required: false }
+
+  - name: 'resources'
+    label: 'Community Resources'
+    folder: 'apps/web/src/content/resources'
+    create: true
+    slug: '{{slug}}'
+    fields:
+      - { label: 'Name', name: 'name', widget: 'string' }
+      - label: 'Category'
+        name: 'category'
+        widget: 'select'
+        options: ['food', 'health', 'housing', 'legal', 'mental-health', 'other']
+      - { label: 'Description', name: 'description', widget: 'text' }
+      - { label: 'Address', name: 'address', widget: 'string', required: false }
+      - { label: 'Phone', name: 'phone', widget: 'string', required: false }
+      - { label: 'URL', name: 'url', widget: 'string', required: false }
+      - { label: 'Languages', name: 'languages', widget: 'list', default: ['en'] }
+      - { label: 'Body', name: 'body', widget: 'markdown', required: false }

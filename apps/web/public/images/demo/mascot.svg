@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <circle cx="100" cy="100" r="90" fill="#1a4f8a"/>
+  <!-- Stylized eagle silhouette -->
+  <path d="M100 50 L130 80 L150 70 L140 100 L160 110 L130 120 L140 150 L100 130 L60 150 L70 120 L40 110 L60 100 L50 70 L70 80 Z" fill="#f5a623" stroke="#fff" stroke-width="2"/>
+  <text x="100" y="180" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#fff">EAGLES</text>
+</svg>

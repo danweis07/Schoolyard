@@ -1,0 +1,47 @@
+{
+  "common": {
+    "welcome": "欢迎",
+    "loading": "加载中…",
+    "search": "搜索",
+    "menu": "菜单",
+    "close": "关闭",
+    "readMore": "阅读更多",
+    "learnMore": "了解更多",
+    "viewAll": "查看全部",
+    "skipToContent": "跳到主要内容",
+    "language": "语言",
+    "selectLanguage": "选择语言"
+  },
+  "nav": {
+    "home": "首页",
+    "events": "活动",
+    "news": "新闻",
+    "pta": "家长教师协会",
+    "volunteer": "志愿者",
+    "donate": "捐款",
+    "about": "关于",
+    "contact": "联系我们"
+  },
+  "footer": {
+    "address": "地址",
+    "phone": "电话",
+    "email": "电子邮件",
+    "builtWith": "由"
+  },
+  "events": {
+    "title": "学校活动",
+    "upcoming": "即将举行的活动",
+    "noEvents": "目前没有即将举行的活动。",
+    "rsvp": "回复",
+    "location": "地点"
+  },
+  "news": {
+    "title": "学校新闻",
+    "latest": "最新新闻",
+    "by": "作者"
+  },
+  "fundraising": {
+    "donate": "立即捐款",
+    "thankYou": "感谢您的支持！"
+  }
+}
