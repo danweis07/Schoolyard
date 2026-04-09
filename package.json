@@ -28,13 +28,21 @@
     "tokens:build": "pnpm --filter @schoolyard/tokens build",
     "validate-config": "tsx scripts/validate-config.ts",
     "setup": "node scripts/setup.js",
-    "clean": "turbo run clean && rimraf node_modules"
+    "clean": "turbo run clean && rimraf node_modules",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx,js,mjs,cjs,json,md,astro}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@types/node": "^20.16.13",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
     "prettier": "^3.3.3",
     "prettier-plugin-astro": "^0.14.1",
     "rimraf": "^6.0.1",
