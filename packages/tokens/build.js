@@ -86,6 +86,4 @@ const nativeLines = [
 ]
 writeFileSync(join(distDir, 'native.ts'), nativeLines.join('\n'), 'utf8')
 
-console.warn(
-  `✅ Built ${leaves.length} tokens → dist/web.css + dist/native.ts`,
-)
+console.warn(`✅ Built ${leaves.length} tokens → dist/web.css + dist/native.ts`)

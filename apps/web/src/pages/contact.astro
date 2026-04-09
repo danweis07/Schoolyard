@@ -19,7 +19,8 @@ const t = useTranslate(locale)
           {
             siteConfig.school.address && (
               <li>
-                <strong class="text-muted">{t('footer.address')}:</strong> {siteConfig.school.address}
+                <strong class="text-muted">{t('footer.address')}:</strong>{' '}
+                {siteConfig.school.address}
               </li>
             )
           }

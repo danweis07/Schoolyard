@@ -29,7 +29,8 @@ const t = useTranslate(locale)
     <h1 class="text-4xl font-bold">{role.data.title}</h1>
     <p class="mt-4 text-lg">{role.data.description}</p>
     <p class="mt-2 text-sm text-muted">
-      <strong>{t('volunteer.commitment')}:</strong> {role.data.commitment}
+      <strong>{t('volunteer.commitment')}:</strong>
+      {role.data.commitment}
     </p>
 
     <div class="prose mt-8 max-w-none text-base">
@@ -75,7 +76,7 @@ const t = useTranslate(locale)
               name="message"
               rows="3"
               class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
-            ></textarea>
+            />
           </label>
 
           <button
@@ -90,7 +91,8 @@ const t = useTranslate(locale)
 
     <p class="mt-12">
       <a href={localizedPath('/volunteer', locale)} class="text-primary">
-        ← {t('common.back')} {t('volunteer.title').toLowerCase()}
+        ← {t('common.back')}
+        {t('volunteer.title').toLowerCase()}
       </a>
     </p>
   </article>

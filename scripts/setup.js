@@ -35,7 +35,7 @@ async function askBool(question, defaultValue) {
 async function main() {
   console.warn('\n🏫 Welcome to Schoolyard setup!\n')
   console.warn('This wizard will create your school.config.json file.')
-  console.warn("You can edit it by hand later. Press Enter to accept defaults.\n")
+  console.warn('You can edit it by hand later. Press Enter to accept defaults.\n')
 
   if (existsSync(targetPath)) {
     const overwrite = await askBool('school.config.json already exists. Overwrite?', false)

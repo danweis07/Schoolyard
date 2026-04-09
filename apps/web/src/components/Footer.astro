@@ -17,60 +17,80 @@ const year = new Date().getFullYear()
     <div class="grid gap-8 md:grid-cols-3">
       <div>
         <p class="text-lg font-bold text-base">{siteConfig.school.name}</p>
-        {siteConfig.school.tagline && <p class="mt-1 text-sm text-muted">{siteConfig.school.tagline}</p>}
+        {
+          siteConfig.school.tagline && (
+            <p class="mt-1 text-sm text-muted">{siteConfig.school.tagline}</p>
+          )
+        }
       </div>
 
       <div>
-        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">{t('nav.contact')}</h2>
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+          {t('nav.contact')}
+        </h2>
         <ul class="space-y-1 text-sm text-base">
-          {siteConfig.school.address && (
-            <li>
-              <span class="text-muted">{t('footer.address')}: </span>
-              {siteConfig.school.address}
-            </li>
-          )}
-          {siteConfig.school.phone && (
-            <li>
-              <span class="text-muted">{t('footer.phone')}: </span>
-              <a href={`tel:${siteConfig.school.phone}`}>{siteConfig.school.phone}</a>
-            </li>
-          )}
-          {siteConfig.school.email && (
-            <li>
-              <span class="text-muted">{t('footer.email')}: </span>
-              <a href={`mailto:${siteConfig.school.email}`}>{siteConfig.school.email}</a>
-            </li>
-          )}
+          {
+            siteConfig.school.address && (
+              <li>
+                <span class="text-muted">{t('footer.address')}: </span>
+                {siteConfig.school.address}
+              </li>
+            )
+          }
+          {
+            siteConfig.school.phone && (
+              <li>
+                <span class="text-muted">{t('footer.phone')}: </span>
+                <a href={`tel:${siteConfig.school.phone}`}>{siteConfig.school.phone}</a>
+              </li>
+            )
+          }
+          {
+            siteConfig.school.email && (
+              <li>
+                <span class="text-muted">{t('footer.email')}: </span>
+                <a href={`mailto:${siteConfig.school.email}`}>{siteConfig.school.email}</a>
+              </li>
+            )
+          }
         </ul>
       </div>
 
       <div>
-        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">{t('nav.about')}</h2>
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+          {t('nav.about')}
+        </h2>
         <ul class="space-y-1 text-sm text-base">
-          {siteConfig.school.district && (
-            <li>
-              {siteConfig.school.districtUrl ? (
-                <a href={siteConfig.school.districtUrl}>{siteConfig.school.district}</a>
-              ) : (
-                siteConfig.school.district
-              )}
-            </li>
-          )}
-          {siteConfig.school.grades && <li>{t('about.grades', { grades: siteConfig.school.grades })}</li>}
+          {
+            siteConfig.school.district && (
+              <li>
+                {siteConfig.school.districtUrl ? (
+                  <a href={siteConfig.school.districtUrl}>{siteConfig.school.district}</a>
+                ) : (
+                  siteConfig.school.district
+                )}
+              </li>
+            )
+          }
+          {
+            siteConfig.school.grades && (
+              <li>{t('about.grades', { grades: siteConfig.school.grades })}</li>
+            )
+          }
         </ul>
       </div>
     </div>
 
     <hr class="my-8 border-border" />
 
-    <div class="flex flex-col items-start justify-between gap-2 text-sm text-muted md:flex-row md:items-center">
+    <div
+      class="flex flex-col items-start justify-between gap-2 text-sm text-muted md:flex-row md:items-center"
+    >
       <p>{t('footer.rights', { year, school: siteConfig.school.name })}</p>
       <p>
         {t('footer.builtWith')}
         {' '}
-        <a href="https://github.com/schoolyard-org/schoolyard" rel="noopener">
-          Schoolyard
-        </a>
+        <a href="https://github.com/schoolyard-org/schoolyard" rel="noopener"> Schoolyard </a>
         {' — '}
         {t('footer.openSourceFor')}.
       </p>

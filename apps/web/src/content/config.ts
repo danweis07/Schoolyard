@@ -15,9 +15,7 @@ const events = defineCollection({
     time: z.string().optional(),
     location: z.string().optional(),
     description: z.string(),
-    category: z
-      .enum(['fundraiser', 'social', 'academic', 'volunteer', 'other'])
-      .default('other'),
+    category: z.enum(['fundraiser', 'social', 'academic', 'volunteer', 'other']).default('other'),
     registrationUrl: z.string().url().optional(),
     featured: z.boolean().default(false),
     cancelled: z.boolean().default(false),

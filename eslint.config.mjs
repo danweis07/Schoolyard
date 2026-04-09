@@ -44,5 +44,18 @@ export default [
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
+  {
+    // Metro, Tailwind, and Babel configs are loaded by their respective
+    // tools as CommonJS and must use `require()`.
+    files: [
+      '**/metro.config.js',
+      '**/tailwind.config.{js,cjs}',
+      '**/babel.config.js',
+      '**/postcss.config.{js,cjs}',
+    ],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
   prettierConfig,
 ]

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint src",
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/rss": "^4.0.9",
     "@astrojs/sitemap": "^3.2.1",
     "@astrojs/tailwind": "^5.1.2",
     "@schoolyard/config": "workspace:*",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@iconify-json/heroicons": "^1.2.1",
+    "pagefind": "^1.1.1",
     "typescript": "^5.5.4",
     "vitest": "^2.1.4"
   }

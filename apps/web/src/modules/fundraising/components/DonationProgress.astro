@@ -27,7 +27,13 @@ const formatter = new Intl.NumberFormat(locale, {
       {t('fundraising.ofGoal', { goal: formatter.format(goal) })}
     </span>
   </p>
-  <div class="mt-4 h-3 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={percent} aria-valuemin="0" aria-valuemax="100">
+  <div
+    class="mt-4 h-3 overflow-hidden rounded-full bg-muted"
+    role="progressbar"
+    aria-valuenow={percent}
+    aria-valuemin="0"
+    aria-valuemax="100"
+  >
     <div class="h-full bg-accent transition-all" style={`width: ${percent}%`}></div>
   </div>
   <p class="mt-2 text-sm text-muted">{t('fundraising.percentRaised', { percent })}</p>
