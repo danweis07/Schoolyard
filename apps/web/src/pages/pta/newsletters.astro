@@ -1,0 +1,102 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { useTranslate, getLocaleFromUrl } from '@/i18n/index'
+
+if (!isModuleEnabled(siteConfig, 'pta')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+
+const newsletters = [
+  {
+    month: 'September 2026',
+    summary:
+      'Welcome back! Fall Festival details, volunteer sign-ups, enrichment program updates, and the Annual Fund kickoff.',
+    current: true,
+  },
+  {
+    month: 'August 2026',
+    summary:
+      'Back-to-school info, new staff introductions, PTA meeting schedule, and how to get involved this year.',
+    current: false,
+  },
+  {
+    month: 'June 2026',
+    summary:
+      'End of year celebration recap, summer reading list, thank you to volunteers, and board election results.',
+    current: false,
+  },
+  {
+    month: 'May 2026',
+    summary:
+      'Staff appreciation week, Passport Day recap, 5th grade graduation, and summer camp listings.',
+    current: false,
+  },
+  {
+    month: 'April 2026',
+    summary:
+      'Spring Gala recap ($95K raised!), garden program update, after-school spring session sign-ups.',
+    current: false,
+  },
+  {
+    month: 'March 2026',
+    summary:
+      'Spring Gala preview, auction item donations needed, board nominations open, and testing schedule.',
+    current: false,
+  },
+]
+---
+
+<BaseLayout title={t('pta.newsletters')}>
+  <section class="mx-auto max-w-3xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{t('pta.newsletters')}</h1>
+    <p class="mt-4 text-lg text-muted">{t('pta.newslettersDescription')}</p>
+
+    <div class="mt-10 space-y-4">
+      {
+        newsletters.map((nl) => (
+          <article
+            class:list={[
+              'rounded-card border p-card shadow-sm',
+              nl.current ? 'border-primary bg-primary/5' : 'border-border bg-surface',
+            ]}
+          >
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-bold">
+                  {nl.month}
+                  {nl.current && (
+                    <span class="ml-2 inline-block rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-inverse">
+                      {t('pta.newslettersCurrent')}
+                    </span>
+                  )}
+                </h2>
+                <p class="mt-2 text-sm text-muted">{nl.summary}</p>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    <div class="mt-10 rounded-card border border-border bg-surface p-card">
+      <h2 class="text-lg font-bold">{t('pta.newslettersSignup')}</h2>
+      <p class="mt-2 text-sm text-muted">
+        {t('pta.newslettersSignup')}
+      </p>
+      {
+        siteConfig.school.email && (
+          <p class="mt-3">
+            <a href={`mailto:${siteConfig.school.email}?subject=Newsletter%20Signup`} class="font-semibold text-primary">
+              {siteConfig.school.email}
+            </a>
+          </p>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>
