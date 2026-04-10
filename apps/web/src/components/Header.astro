@@ -22,6 +22,25 @@ const navLinks = [
   { href: localizedPath('/search', locale), label: t('common.search') },
   { href: localizedPath('/contact', locale), label: t('nav.contact') },
 ]
+
+/**
+ * Decide which nav link (if any) should get aria-current="page".
+ * A link is "current" when the current path equals its href, or when
+ * it's the longest href that is a prefix of the current path
+ * (so /events/fall-carnival highlights the Events link).
+ * The home link is only current on an exact match — otherwise every
+ * page would be marked as home.
+ */
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/'
+const homeHref = localizedPath('/', locale)
+
+function isCurrent(href: string): boolean {
+  const normalized = href.replace(/\/$/, '') || '/'
+  if (normalized === homeHref.replace(/\/$/, '') || normalized === '/') {
+    return currentPath === normalized
+  }
+  return currentPath === normalized || currentPath.startsWith(normalized + '/')
+}
 ---
 
 <header class="border-b border-border bg-surface">
@@ -43,43 +62,144 @@ const navLinks = [
       </span>
     </a>
 
-    <nav aria-label="Main navigation" class="hidden md:block">
+    <nav aria-label={t('common.primaryNavigation')} class="hidden md:block">
       <ul class="flex items-center gap-1">
         {
-          navLinks.map((link) => (
-            <li>
-              <a
-                href={link.href}
-                class="rounded-button px-3 py-2 text-sm font-medium text-base hover:bg-muted"
-              >
-                {link.label}
-              </a>
-            </li>
-          ))
+          navLinks.map((link) => {
+            const current = isCurrent(link.href)
+            return (
+              <li>
+                <a
+                  href={link.href}
+                  aria-current={current ? 'page' : undefined}
+                  class:list={[
+                    'rounded-button px-3 py-2 text-sm font-medium text-base hover:bg-muted',
+                    current &&
+                      'bg-muted font-semibold underline decoration-accent decoration-2 underline-offset-4',
+                  ]}
+                >
+                  {link.label}
+                </a>
+              </li>
+            )
+          })
         }
       </ul>
     </nav>
 
     <div class="flex items-center gap-2">
       {siteConfig.languages.supported.length > 1 && <LanguageSwitcher locale={locale} />}
+      <button
+        type="button"
+        id="mobile-nav-toggle"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-button border border-border text-base md:hidden"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        aria-label={t('common.menu')}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-6 w-6"
+          aria-hidden="true"
+          data-icon="open"
+        >
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="hidden h-6 w-6"
+          aria-hidden="true"
+          data-icon="close"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
   </div>
 
-  <!-- Mobile nav -->
-  <nav aria-label="Mobile navigation" class="md:hidden">
-    <ul class="flex flex-wrap gap-1 border-t border-border px-4 py-2">
+  <!--
+    Mobile nav — a proper disclosure pattern.
+    - Hidden by default. Toggled via the burger button.
+    - No-JS fallback: if JS is off, the :target selector in global.css
+      reveals it when the user clicks the "#mobile-nav" fragment link,
+      but the burger button is the primary affordance.
+  -->
+  <nav id="mobile-nav" aria-label={t('common.primaryNavigation')} class="hidden md:hidden">
+    <ul class="flex flex-col gap-1 border-t border-border px-4 py-3">
       {
-        navLinks.map((link) => (
-          <li>
-            <a
-              href={link.href}
-              class="rounded-button px-3 py-1 text-sm font-medium text-base hover:bg-muted"
-            >
-              {link.label}
-            </a>
-          </li>
-        ))
+        navLinks.map((link) => {
+          const current = isCurrent(link.href)
+          return (
+            <li>
+              <a
+                href={link.href}
+                aria-current={current ? 'page' : undefined}
+                class:list={[
+                  'block rounded-button px-3 py-2 text-base font-medium text-base hover:bg-muted',
+                  current &&
+                    'bg-muted font-semibold underline decoration-accent decoration-2 underline-offset-4',
+                ]}
+              >
+                {link.label}
+              </a>
+            </li>
+          )
+        })
       }
     </ul>
   </nav>
 </header>
+
+<script is:inline>
+  // Mobile nav disclosure — kept inline so it works before hydration.
+  // Uses click + Escape + outside-click to close, and keeps ARIA state
+  // in sync so screen readers announce open/closed correctly.
+  ;(function () {
+    const btn = document.getElementById('mobile-nav-toggle')
+    const nav = document.getElementById('mobile-nav')
+    if (!btn || !nav) return
+
+    const openIcon = btn.querySelector('[data-icon="open"]')
+    const closeIcon = btn.querySelector('[data-icon="close"]')
+
+    function setOpen(open) {
+      btn.setAttribute('aria-expanded', String(open))
+      nav.classList.toggle('hidden', !open)
+      if (openIcon) openIcon.classList.toggle('hidden', open)
+      if (closeIcon) closeIcon.classList.toggle('hidden', !open)
+    }
+
+    btn.addEventListener('click', () => {
+      const isOpen = btn.getAttribute('aria-expanded') === 'true'
+      setOpen(!isOpen)
+    })
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') {
+        setOpen(false)
+        btn.focus()
+      }
+    })
+
+    // Close when a link inside is activated, so returning from another
+    // page doesn't leave the menu stuck open on back-nav.
+    nav.addEventListener('click', (e) => {
+      if (e.target instanceof HTMLAnchorElement) setOpen(false)
+    })
+  })()
+</script>

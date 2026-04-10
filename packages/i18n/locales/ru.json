@@ -10,7 +10,9 @@
     "viewAll": "Посмотреть все",
     "skipToContent": "Перейти к основному содержанию",
     "language": "Язык",
-    "selectLanguage": "Выбрать язык"
+    "selectLanguage": "Выбрать язык",
+    "primaryNavigation": "Основная навигация",
+    "dismiss": "Закрыть"
   },
   "nav": {
     "home": "Главная",
