@@ -1,0 +1,73 @@
+{
+  "$schema": "../packages/config/schema.json",
+  "school": {
+    "name": "Francis Scott Key Elementary",
+    "shortName": "FSK",
+    "mascot": "Cardinals",
+    "tagline": "Nurturing, Compassionate, Supportive and Challenging",
+    "address": "1530 43rd Ave, San Francisco, CA 94122",
+    "phone": "(415) 759-2811",
+    "email": "pta_board@francisscottkeyschool.org",
+    "district": "San Francisco Unified School District",
+    "districtUrl": "https://www.sfusd.edu",
+    "grades": "K-5",
+    "founded": "1912",
+    "enrollment": 562,
+    "titleOne": false,
+    "timezone": "America/Los_Angeles"
+  },
+  "pta": {
+    "name": "Francis Scott Key Elementary PTA",
+    "ein": "XX-XXXXXXX",
+    "membershipUrl": "https://jointotem.com/ca/san-francisco/francis-scott-key-elementary-pta",
+    "membershipFee": 15
+  },
+  "branding": {
+    "primaryColor": "#b22234",
+    "accentColor": "#3c3b6e",
+    "logo": "/images/demo/logo.svg",
+    "heroImage": "/images/demo/hero.svg",
+    "mascotImage": "/images/demo/mascot.svg"
+  },
+  "social": {
+    "instagram": "https://www.instagram.com/fskpta_sf/",
+    "facebook": "https://www.facebook.com/FSKschool/",
+    "twitter": "",
+    "youtube": ""
+  },
+  "languages": {
+    "default": "en",
+    "supported": ["en", "es", "zh-hans", "zh-hant", "ru", "tl"]
+  },
+  "modules": {
+    "pta": true,
+    "events": true,
+    "volunteer": true,
+    "fundraising": true,
+    "news": true,
+    "lunch": true,
+    "transportation": false,
+    "community": true,
+    "classroom": false,
+    "district": false,
+    "resources": true,
+    "transparency": true
+  },
+  "fundraising": {
+    "provider": "other",
+    "donateUrl": "https://www.givegab.com/nonprofits/francis-scott-key-elementary-school-pta",
+    "annualGoal": 100000,
+    "currentRaised": 62500,
+    "goalLabel": "Annual Fund 2025-2026",
+    "stripePublishableKey": ""
+  },
+  "app": {
+    "enabled": true,
+    "pushNotifications": true,
+    "offlineMode": true
+  },
+  "deployment": {
+    "siteUrl": "https://myfsk.org",
+    "analyticsId": ""
+  }
+}

@@ -91,7 +91,18 @@
     "joinNow": "Join now",
     "meetings": "Meetings",
     "meetingsDescription": "PTA meetings are open to all parents and guardians.",
-    "term": "Term: {start} – {end}"
+    "term": "Term: {start} – {end}",
+    "committees": "Committees",
+    "committeesDescription": "Our PTA committees focus on specific areas to support our school community. Join a committee that matches your interests.",
+    "committeesJoin": "Interested? Email us to join.",
+    "newsletters": "Newsletters",
+    "newslettersDescription": "Stay up to date with our monthly PTA newsletters.",
+    "newslettersCurrent": "Current Newsletter",
+    "newslettersArchive": "Newsletter Archive",
+    "newslettersSignup": "Subscribe to get newsletters by email.",
+    "enrichment": "Enrichment Programs",
+    "enrichmentDescription": "PTA-funded programs that give every student access to arts, science, and more — beyond what the district provides.",
+    "enrichmentFundedBy": "Funded by your Annual Fund and Gala donations."
   },
   "volunteer": {
     "title": "Volunteer With Us",
