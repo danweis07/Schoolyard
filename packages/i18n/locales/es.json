@@ -10,7 +10,9 @@
     "viewAll": "Ver todo",
     "skipToContent": "Saltar al contenido principal",
     "language": "Idioma",
-    "selectLanguage": "Seleccionar idioma"
+    "selectLanguage": "Seleccionar idioma",
+    "primaryNavigation": "Navegación principal",
+    "dismiss": "Descartar"
   },
   "nav": {
     "home": "Inicio",

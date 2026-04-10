@@ -10,7 +10,9 @@
     "viewAll": "Tingnan lahat",
     "skipToContent": "Lumaktaw sa pangunahing nilalaman",
     "language": "Wika",
-    "selectLanguage": "Pumili ng wika"
+    "selectLanguage": "Pumili ng wika",
+    "primaryNavigation": "Pangunahing nabigasyon",
+    "dismiss": "Isara"
   },
   "nav": {
     "home": "Bahay",

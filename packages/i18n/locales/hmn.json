@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "Zoo siab txais tos",
+    "loading": "Tabtom nrhiav",
+    "search": "Tshawb nrhiav",
+    "menu": "Ntawv qhia zaub mov",
+    "close": "Kaw",
+    "readMore": "Nyeem ntxiv",
+    "learnMore": "Kawm paub ntxiv",
+    "viewAll": "Saib tag nrho",
+    "skipToContent": "Hla mus rau cov ntsiab lus",
+    "language": "Lus",
+    "selectLanguage": "Xaiv hom lus",
+    "primaryNavigation": "Kev taw qhia tseem ceeb",
+    "dismiss": "Tsis quav ntsej"
+  },
+  "nav": {
+    "home": "Tsev",
+    "events": "Kev tshwm sim",
+    "news": "Xov xwm",
+    "pta": "PTA",
+    "volunteer": "Ua haujlwm dawb",
+    "donate": "Pub nyiaj",
+    "about": "Txog peb",
+    "contact": "Hu rau peb"
+  }
+}

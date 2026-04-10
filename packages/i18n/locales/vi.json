@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "Chào mừng",
+    "loading": "Đang tải",
+    "search": "Tìm kiếm",
+    "menu": "Menu",
+    "close": "Đóng",
+    "readMore": "Đọc thêm",
+    "learnMore": "Tìm hiểu thêm",
+    "viewAll": "Xem tất cả",
+    "skipToContent": "Chuyển đến nội dung",
+    "language": "Ngôn ngữ",
+    "selectLanguage": "Chọn ngôn ngữ",
+    "primaryNavigation": "Điều hướng chính",
+    "dismiss": "Bỏ qua"
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "events": "Sự kiện",
+    "news": "Tin tức",
+    "pta": "PTA",
+    "volunteer": "Tình nguyện",
+    "donate": "Quyên góp",
+    "about": "Giới thiệu",
+    "contact": "Liên hệ"
+  }
+}

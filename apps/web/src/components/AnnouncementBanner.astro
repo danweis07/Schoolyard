@@ -1,0 +1,90 @@
+---
+import { siteConfig } from '@/lib/site'
+import { useTranslate, localizedPath } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = useTranslate(locale)
+const announcements = siteConfig.announcements ?? []
+
+const typeStyles: Record<string, string> = {
+  info: 'bg-primary text-inverse',
+  warning: 'bg-warning text-inverse',
+  urgent: 'bg-error text-inverse',
+}
+---
+
+{
+  announcements.length > 0 && (
+    <div role="region" aria-label={t('home.announcementsTitle')}>
+      {announcements.map((a, i) => {
+        const styles = typeStyles[a.type] ?? typeStyles.info
+        const id = `announcement-${i}`
+        return (
+          <div
+            class={`announcement-banner ${styles} relative px-4 py-2 text-center text-sm font-medium`}
+            data-announcement={id}
+          >
+            {a.url ? (
+              <a
+                href={localizedPath(a.url, locale)}
+                class="underline underline-offset-2 hover:no-underline"
+                style="color: inherit;"
+              >
+                {a.text}
+              </a>
+            ) : (
+              <span>{a.text}</span>
+            )}
+            <button
+              type="button"
+              class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 opacity-80 hover:opacity-100"
+              aria-label={t('common.dismiss')}
+              data-dismiss={id}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                class="h-4 w-4"
+                aria-hidden="true"
+              >
+                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+              </svg>
+            </button>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+<script is:inline>
+  // Dismiss announcements via sessionStorage so they reappear on next visit.
+  ;(function () {
+    document.querySelectorAll('[data-dismiss]').forEach(function (btn) {
+      var id = btn.getAttribute('data-dismiss')
+      if (sessionStorage.getItem('dismissed-' + id)) {
+        var banner = document.querySelector('[data-announcement="' + id + '"]')
+        if (banner) banner.remove()
+        return
+      }
+      btn.addEventListener('click', function () {
+        sessionStorage.setItem('dismissed-' + id, '1')
+        var banner = document.querySelector('[data-announcement="' + id + '"]')
+        if (banner) banner.remove()
+      })
+    })
+    // Also hide already-dismissed banners on load
+    document.querySelectorAll('[data-announcement]').forEach(function (banner) {
+      var id = banner.getAttribute('data-announcement')
+      if (sessionStorage.getItem('dismissed-' + id)) {
+        banner.remove()
+      }
+    })
+  })()
+</script>

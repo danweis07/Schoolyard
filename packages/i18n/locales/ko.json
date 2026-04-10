@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "환영합니다",
+    "loading": "로딩 중",
+    "search": "검색",
+    "menu": "메뉴",
+    "close": "닫기",
+    "readMore": "더 읽기",
+    "learnMore": "자세히 알아보기",
+    "viewAll": "전체 보기",
+    "skipToContent": "콘텐츠로 건너뛰기",
+    "language": "언어",
+    "selectLanguage": "언어 선택",
+    "primaryNavigation": "기본 탐색",
+    "dismiss": "닫기"
+  },
+  "nav": {
+    "home": "홈",
+    "events": "행사",
+    "news": "뉴스",
+    "pta": "PTA",
+    "volunteer": "자원봉사",
+    "donate": "기부",
+    "about": "소개",
+    "contact": "문의"
+  }
+}

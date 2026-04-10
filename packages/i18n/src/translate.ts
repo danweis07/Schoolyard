@@ -1,12 +1,28 @@
 import en from '../locales/en.json'
 import es from '../locales/es.json'
 import zhHans from '../locales/zh-hans.json'
+import zhHant from '../locales/zh-hant.json'
+import ar from '../locales/ar.json'
+import vi from '../locales/vi.json'
+import ht from '../locales/ht.json'
+import so from '../locales/so.json'
 import ru from '../locales/ru.json'
 import tl from '../locales/tl.json'
+import hmn from '../locales/hmn.json'
+import pt from '../locales/pt.json'
+import ko from '../locales/ko.json'
+import hi from '../locales/hi.json'
+import fr from '../locales/fr.json'
+import am from '../locales/am.json'
+import km from '../locales/km.json'
+import ur from '../locales/ur.json'
+import pa from '../locales/pa.json'
+import sw from '../locales/sw.json'
 
 /**
  * The 20 supported language codes per CLAUDE.md spec.
- * Only 5 are populated in v1; the other 15 fall back to English silently.
+ * All 20 are registered; 5 have full translations, 15 have common + nav stubs
+ * with English fallback for deeper keys.
  */
 export const LOCALES = [
   'en',
@@ -75,8 +91,23 @@ const dictionaries: Partial<Record<Locale, LocaleData>> = {
   en: en as LocaleData,
   es: es as LocaleData,
   'zh-hans': zhHans as LocaleData,
+  'zh-hant': zhHant as LocaleData,
+  ar: ar as LocaleData,
+  vi: vi as LocaleData,
+  ht: ht as LocaleData,
+  so: so as LocaleData,
   ru: ru as LocaleData,
   tl: tl as LocaleData,
+  hmn: hmn as LocaleData,
+  pt: pt as LocaleData,
+  ko: ko as LocaleData,
+  hi: hi as LocaleData,
+  fr: fr as LocaleData,
+  am: am as LocaleData,
+  km: km as LocaleData,
+  ur: ur as LocaleData,
+  pa: pa as LocaleData,
+  sw: sw as LocaleData,
 }
 
 /**

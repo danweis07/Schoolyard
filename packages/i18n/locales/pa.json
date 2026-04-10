@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "ਜੀ ਆਇਆਂ ਨੂੰ",
+    "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ",
+    "search": "ਖੋਜੋ",
+    "menu": "ਮੀਨੂ",
+    "close": "ਬੰਦ ਕਰੋ",
+    "readMore": "ਹੋਰ ਪੜ੍ਹੋ",
+    "learnMore": "ਹੋਰ ਜਾਣੋ",
+    "viewAll": "ਸਭ ਦੇਖੋ",
+    "skipToContent": "ਸਮੱਗਰੀ ਤੇ ਜਾਓ",
+    "language": "ਭਾਸ਼ਾ",
+    "selectLanguage": "ਭਾਸ਼ਾ ਚੁਣੋ",
+    "primaryNavigation": "ਮੁੱਖ ਨੈਵੀਗੇਸ਼ਨ",
+    "dismiss": "ਖਾਰਜ ਕਰੋ"
+  },
+  "nav": {
+    "home": "ਹੋਮ",
+    "events": "ਸਮਾਗਮ",
+    "news": "ਖ਼ਬਰਾਂ",
+    "pta": "PTA",
+    "volunteer": "ਸਵੈਸੇਵੀ",
+    "donate": "ਦਾਨ ਕਰੋ",
+    "about": "ਸਾਡੇ ਬਾਰੇ",
+    "contact": "ਸੰਪਰਕ"
+  }
+}
