@@ -2,8 +2,9 @@
 # Schools enable this by setting up Netlify Identity (see DEPLOYMENT.md)
 # and visiting /admin/ on their deployed site.
 #
-# Collections here mirror the Zod schemas in apps/web/src/content/config.ts.
-# Keep them in sync when adding new content types.
+# Content collections mirror the Zod schemas in apps/web/src/content/config.ts.
+# Settings collection mirrors the Zod schema in packages/config/src/schema.ts.
+# Keep them in sync when adding new content types or config fields.
 
 backend:
   name: git-gateway
@@ -14,89 +15,680 @@ public_folder: '/images/uploads'
 
 publish_mode: editorial_workflow
 
+# Limit uploads to 2 MB to keep builds fast on free hosting tiers
+media_library:
+  max_file_size: 2048000
+
 collections:
+  # ──────────────────────────────────────────────
+  # Content collections — ordered by edit frequency
+  # ──────────────────────────────────────────────
+
+  - name: 'news'
+    label: 'News'
+    label_singular: 'News Post'
+    description: 'School announcements and news articles. Most recent posts appear first on the site.'
+    folder: 'apps/web/src/content/news'
+    create: true
+    slug: '{{slug}}'
+    sortable_fields: ['publishDate', 'title']
+    summary: '{{title}} — {{publishDate}}'
+    fields:
+      - label: 'Title'
+        name: 'title'
+        widget: 'string'
+        hint: 'The headline for this news post.'
+      - label: 'Publish date'
+        name: 'publishDate'
+        widget: 'datetime'
+        hint: 'When this post should appear. Future dates will not show until that date.'
+      - label: 'Author'
+        name: 'author'
+        widget: 'string'
+        required: false
+        hint: 'Who wrote this post (optional).'
+      - label: 'Summary'
+        name: 'summary'
+        widget: 'text'
+        hint: 'A 1-2 sentence summary shown on the news listing page.'
+      - label: 'Tags'
+        name: 'tags'
+        widget: 'list'
+        default: []
+        allow_add: true
+        hint: 'Add tags to help categorize this post (e.g., "fundraising", "update").'
+      - label: 'Featured'
+        name: 'featured'
+        widget: 'boolean'
+        default: false
+        hint: 'Featured posts are highlighted on the homepage.'
+      - label: 'Image'
+        name: 'image'
+        widget: 'image'
+        required: false
+        hint: 'Optional header image. Recommended size: 1200x630px.'
+      - label: 'Image alt text'
+        name: 'imageAlt'
+        widget: 'string'
+        required: false
+        hint: 'Describe the image for screen readers. Required if an image is added.'
+      - label: 'Body'
+        name: 'body'
+        widget: 'markdown'
+
   - name: 'events'
     label: 'Events'
+    label_singular: 'Event'
+    description: 'School events and activities. Upcoming events appear on the events page and homepage.'
     folder: 'apps/web/src/content/events'
     create: true
     slug: '{{slug}}'
+    sortable_fields: ['date', 'title']
+    summary: '{{title}} — {{date}}'
     fields:
-      - { label: 'Title', name: 'title', widget: 'string' }
-      - { label: 'Date', name: 'date', widget: 'datetime' }
-      - { label: 'End date', name: 'endDate', widget: 'datetime', required: false }
-      - { label: 'Time', name: 'time', widget: 'string', required: false }
-      - { label: 'Location', name: 'location', widget: 'string', required: false }
-      - { label: 'Description', name: 'description', widget: 'text' }
+      - label: 'Title'
+        name: 'title'
+        widget: 'string'
+        hint: 'The name of the event.'
+      - label: 'Date'
+        name: 'date'
+        widget: 'datetime'
+        hint: 'When the event starts.'
+      - label: 'End date'
+        name: 'endDate'
+        widget: 'datetime'
+        required: false
+        hint: 'Leave blank if the event is a single day.'
+      - label: 'Time'
+        name: 'time'
+        widget: 'string'
+        required: false
+        hint: 'e.g., "3:00 PM - 5:00 PM" or "All Day".'
+      - label: 'Location'
+        name: 'location'
+        widget: 'string'
+        required: false
+        hint: 'Where the event takes place (e.g., "School Auditorium").'
+      - label: 'Description'
+        name: 'description'
+        widget: 'text'
+        hint: 'A short description shown on the events listing page.'
       - label: 'Category'
         name: 'category'
         widget: 'select'
         default: 'other'
-        options: ['fundraiser', 'social', 'academic', 'volunteer', 'other']
-      - { label: 'Registration URL', name: 'registrationUrl', widget: 'string', required: false }
-      - { label: 'Featured', name: 'featured', widget: 'boolean', default: false }
-      - { label: 'Cancelled', name: 'cancelled', widget: 'boolean', default: false }
-      - { label: 'Body', name: 'body', widget: 'markdown' }
-
-  - name: 'news'
-    label: 'News'
-    folder: 'apps/web/src/content/news'
-    create: true
-    slug: '{{slug}}'
-    fields:
-      - { label: 'Title', name: 'title', widget: 'string' }
-      - { label: 'Publish date', name: 'publishDate', widget: 'datetime' }
-      - { label: 'Author', name: 'author', widget: 'string', required: false }
-      - { label: 'Summary', name: 'summary', widget: 'text' }
-      - { label: 'Tags', name: 'tags', widget: 'list', default: [] }
-      - { label: 'Featured', name: 'featured', widget: 'boolean', default: false }
-      - { label: 'Image', name: 'image', widget: 'image', required: false }
-      - { label: 'Image alt text', name: 'imageAlt', widget: 'string', required: false }
-      - { label: 'Body', name: 'body', widget: 'markdown' }
-
-  - name: 'board'
-    label: 'PTA Board'
-    folder: 'apps/web/src/content/board'
-    create: true
-    slug: '{{slug}}'
-    fields:
-      - { label: 'Name', name: 'name', widget: 'string' }
-      - { label: 'Role', name: 'role', widget: 'string' }
-      - { label: 'Email', name: 'email', widget: 'string', required: false }
-      - { label: 'Photo', name: 'photo', widget: 'image', required: false }
-      - { label: 'Bio', name: 'bio', widget: 'text', required: false }
-      - { label: 'Term start', name: 'termStart', widget: 'string', required: false }
-      - { label: 'Term end', name: 'termEnd', widget: 'string', required: false }
-      - { label: 'Display order', name: 'order', widget: 'number', default: 99 }
-      - { label: 'Body', name: 'body', widget: 'markdown', required: false }
+        options:
+          - { label: 'Fundraiser', value: 'fundraiser' }
+          - { label: 'Social', value: 'social' }
+          - { label: 'Academic', value: 'academic' }
+          - { label: 'Volunteer', value: 'volunteer' }
+          - { label: 'Other', value: 'other' }
+        hint: 'Choose the category that best fits this event.'
+      - label: 'Registration URL'
+        name: 'registrationUrl'
+        widget: 'string'
+        required: false
+        hint: 'Link to an external registration page (e.g., Google Form or Eventbrite). Include https://.'
+      - label: 'Featured'
+        name: 'featured'
+        widget: 'boolean'
+        default: false
+        hint: 'Featured events are highlighted on the homepage.'
+      - label: 'Cancelled'
+        name: 'cancelled'
+        widget: 'boolean'
+        default: false
+        hint: 'Mark as cancelled to show a cancellation notice instead of removing the event.'
+      - label: 'Body'
+        name: 'body'
+        widget: 'markdown'
 
   - name: 'volunteers'
     label: 'Volunteer Roles'
+    label_singular: 'Volunteer Role'
+    description: 'Open volunteer positions. Mark roles as filled when no more help is needed.'
     folder: 'apps/web/src/content/volunteers'
     create: true
     slug: '{{slug}}'
+    sortable_fields: ['order', 'title']
+    summary: '{{title}} {{fields.filled | ternary("(Filled)", "(Open)")}}'
     fields:
-      - { label: 'Title', name: 'title', widget: 'string' }
-      - { label: 'Description', name: 'description', widget: 'text' }
-      - { label: 'Commitment', name: 'commitment', widget: 'string' }
-      - { label: 'Contact email', name: 'contact', widget: 'string', required: false }
-      - { label: 'Filled', name: 'filled', widget: 'boolean', default: false }
-      - { label: 'Display order', name: 'order', widget: 'number', default: 99 }
-      - { label: 'Body', name: 'body', widget: 'markdown', required: false }
+      - label: 'Title'
+        name: 'title'
+        widget: 'string'
+        hint: 'The name of the volunteer role (e.g., "Book Fair Cashier").'
+      - label: 'Description'
+        name: 'description'
+        widget: 'text'
+        hint: 'What the volunteer will be doing.'
+      - label: 'Commitment'
+        name: 'commitment'
+        widget: 'string'
+        hint: 'Time commitment, e.g., "2 hours on Saturday morning" or "1 hour/week for 4 weeks".'
+      - label: 'Contact email'
+        name: 'contact'
+        widget: 'string'
+        required: false
+        hint: 'Email address for interested volunteers to reach out to.'
+      - label: 'Filled'
+        name: 'filled'
+        widget: 'boolean'
+        default: false
+        hint: 'Turn on when enough volunteers have signed up. Hides the signup button on the site.'
+      - label: 'Display order'
+        name: 'order'
+        widget: 'number'
+        default: 99
+        hint: 'Lower numbers appear first. Default is 99.'
+      - label: 'Body'
+        name: 'body'
+        widget: 'markdown'
+        required: false
+
+  - name: 'board'
+    label: 'PTA Board'
+    label_singular: 'Board Member'
+    description: 'PTA board members and leadership. Update at the start of each term.'
+    folder: 'apps/web/src/content/board'
+    create: true
+    slug: '{{slug}}'
+    sortable_fields: ['order', 'name']
+    summary: '{{name}} — {{role}}'
+    fields:
+      - label: 'Name'
+        name: 'name'
+        widget: 'string'
+        hint: 'Full name of the board member.'
+      - label: 'Role'
+        name: 'role'
+        widget: 'string'
+        hint: 'Their position (e.g., "President", "Treasurer", "Secretary").'
+      - label: 'Email'
+        name: 'email'
+        widget: 'string'
+        required: false
+        hint: 'Contact email (shown publicly on the site).'
+      - label: 'Photo'
+        name: 'photo'
+        widget: 'image'
+        required: false
+        hint: 'Headshot photo. Recommended: square image, at least 200x200px.'
+      - label: 'Bio'
+        name: 'bio'
+        widget: 'text'
+        required: false
+        hint: 'A short bio or introduction (2-3 sentences).'
+      - label: 'Term start'
+        name: 'termStart'
+        widget: 'string'
+        required: false
+        hint: 'When their term began (e.g., "September 2025").'
+      - label: 'Term end'
+        name: 'termEnd'
+        widget: 'string'
+        required: false
+        hint: 'When their term ends (e.g., "June 2027").'
+      - label: 'Display order'
+        name: 'order'
+        widget: 'number'
+        default: 99
+        hint: 'Lower numbers appear first. Use 1 for President, 2 for VP, etc.'
+      - label: 'Body'
+        name: 'body'
+        widget: 'markdown'
+        required: false
 
   - name: 'resources'
     label: 'Community Resources'
+    label_singular: 'Resource'
+    description: 'Local community resources (food banks, health clinics, legal aid, etc.) for families.'
     folder: 'apps/web/src/content/resources'
     create: true
     slug: '{{slug}}'
+    sortable_fields: ['category', 'name']
+    summary: '{{name}} ({{category}})'
     fields:
-      - { label: 'Name', name: 'name', widget: 'string' }
+      - label: 'Name'
+        name: 'name'
+        widget: 'string'
+        hint: 'Name of the organization or resource.'
       - label: 'Category'
         name: 'category'
         widget: 'select'
-        options: ['food', 'health', 'housing', 'legal', 'mental-health', 'other']
-      - { label: 'Description', name: 'description', widget: 'text' }
-      - { label: 'Address', name: 'address', widget: 'string', required: false }
-      - { label: 'Phone', name: 'phone', widget: 'string', required: false }
-      - { label: 'URL', name: 'url', widget: 'string', required: false }
-      - { label: 'Languages', name: 'languages', widget: 'list', default: ['en'] }
-      - { label: 'Body', name: 'body', widget: 'markdown', required: false }
+        options:
+          - { label: 'Food', value: 'food' }
+          - { label: 'Health', value: 'health' }
+          - { label: 'Housing', value: 'housing' }
+          - { label: 'Legal', value: 'legal' }
+          - { label: 'Mental Health', value: 'mental-health' }
+          - { label: 'Other', value: 'other' }
+        hint: 'Choose the category that best describes this resource.'
+      - label: 'Description'
+        name: 'description'
+        widget: 'text'
+        hint: 'A brief description of what this organization provides.'
+      - label: 'Address'
+        name: 'address'
+        widget: 'string'
+        required: false
+        hint: 'Street address, if applicable.'
+      - label: 'Phone'
+        name: 'phone'
+        widget: 'string'
+        required: false
+        hint: 'Contact phone number.'
+      - label: 'URL'
+        name: 'url'
+        widget: 'string'
+        required: false
+        hint: 'Website URL. Include https://.'
+      - label: 'Languages'
+        name: 'languages'
+        widget: 'select'
+        multiple: true
+        default: ['en']
+        options:
+          - { label: 'English', value: 'en' }
+          - { label: 'Spanish', value: 'es' }
+          - { label: 'Chinese (Simplified)', value: 'zh-hans' }
+          - { label: 'Chinese (Traditional)', value: 'zh-hant' }
+          - { label: 'Arabic', value: 'ar' }
+          - { label: 'Vietnamese', value: 'vi' }
+          - { label: 'Haitian Creole', value: 'ht' }
+          - { label: 'Somali', value: 'so' }
+          - { label: 'Russian', value: 'ru' }
+          - { label: 'Tagalog', value: 'tl' }
+          - { label: 'Hmong', value: 'hmn' }
+          - { label: 'Portuguese', value: 'pt' }
+          - { label: 'Korean', value: 'ko' }
+          - { label: 'Hindi', value: 'hi' }
+          - { label: 'French', value: 'fr' }
+          - { label: 'Amharic', value: 'am' }
+          - { label: 'Khmer', value: 'km' }
+          - { label: 'Urdu', value: 'ur' }
+          - { label: 'Punjabi', value: 'pa' }
+          - { label: 'Swahili', value: 'sw' }
+        hint: 'Which languages does this organization serve families in?'
+      - label: 'Body'
+        name: 'body'
+        widget: 'markdown'
+        required: false
+
+  # ──────────────────────────────────────────────
+  # Site settings — file collection for school.config.json
+  # ──────────────────────────────────────────────
+
+  - name: 'settings'
+    label: 'Site Settings'
+    description: 'School identity, branding, modules, and site configuration. Changes trigger a site rebuild.'
+    editor:
+      preview: false
+    files:
+      - name: 'general'
+        label: 'School & PTA Info'
+        file: 'school.config.json'
+        description: 'Basic school information, PTA details, and contact info.'
+        fields:
+          - label: '$schema'
+            name: '$schema'
+            widget: 'hidden'
+            default: './packages/config/schema.json'
+          - label: 'School'
+            name: 'school'
+            widget: 'object'
+            fields:
+              - label: 'School name'
+                name: 'name'
+                widget: 'string'
+                hint: 'Full official school name (e.g., "Longfellow Elementary").'
+              - label: 'Short name'
+                name: 'shortName'
+                widget: 'string'
+                hint: 'Shorter version used in tight spaces (e.g., "Longfellow").'
+              - label: 'Mascot'
+                name: 'mascot'
+                widget: 'string'
+                required: false
+                hint: 'School mascot name (e.g., "Eagles").'
+              - label: 'Tagline'
+                name: 'tagline'
+                widget: 'string'
+                required: false
+                hint: 'A short motto or tagline for the school.'
+              - label: 'Address'
+                name: 'address'
+                widget: 'string'
+                required: false
+                hint: 'Full street address.'
+              - label: 'Phone'
+                name: 'phone'
+                widget: 'string'
+                required: false
+                hint: 'Main contact phone number.'
+              - label: 'Email'
+                name: 'email'
+                widget: 'string'
+                required: false
+                hint: 'Main contact email address.'
+              - label: 'District'
+                name: 'district'
+                widget: 'string'
+                required: false
+                hint: 'School district name.'
+              - label: 'District website'
+                name: 'districtUrl'
+                widget: 'string'
+                required: false
+                hint: 'Link to the school district website. Include https://.'
+              - label: 'Grades'
+                name: 'grades'
+                widget: 'string'
+                required: false
+                hint: 'Grade range served (e.g., "K-5", "6-8").'
+              - label: 'Year founded'
+                name: 'founded'
+                widget: 'string'
+                required: false
+                hint: 'Year the school was founded.'
+              - label: 'Enrollment'
+                name: 'enrollment'
+                widget: 'number'
+                default: 0
+                value_type: 'int'
+                min: 0
+                hint: 'Current student enrollment count.'
+              - label: 'Title I school'
+                name: 'titleOne'
+                widget: 'boolean'
+                default: false
+                hint: 'Is this a Title I school?'
+              - label: 'Timezone'
+                name: 'timezone'
+                widget: 'select'
+                default: 'America/Los_Angeles'
+                options:
+                  - { label: 'Pacific (Los Angeles)', value: 'America/Los_Angeles' }
+                  - { label: 'Mountain (Denver)', value: 'America/Denver' }
+                  - { label: 'Central (Chicago)', value: 'America/Chicago' }
+                  - { label: 'Eastern (New York)', value: 'America/New_York' }
+                  - { label: 'Alaska (Anchorage)', value: 'America/Anchorage' }
+                  - { label: 'Hawaii (Honolulu)', value: 'Pacific/Honolulu' }
+                hint: 'Used for event times and date formatting.'
+          - label: 'PTA'
+            name: 'pta'
+            widget: 'object'
+            fields:
+              - label: 'PTA name'
+                name: 'name'
+                widget: 'string'
+                required: false
+                hint: 'Full PTA organization name.'
+              - label: 'EIN'
+                name: 'ein'
+                widget: 'string'
+                required: false
+                hint: 'IRS Employer Identification Number for the PTA nonprofit.'
+              - label: 'Membership signup URL'
+                name: 'membershipUrl'
+                widget: 'string'
+                required: false
+                hint: 'Link where families can join the PTA. Include https://.'
+              - label: 'Annual membership fee'
+                name: 'membershipFee'
+                widget: 'number'
+                default: 0
+                value_type: 'float'
+                min: 0
+                hint: 'Annual PTA membership fee in dollars.'
+          - label: 'Branding'
+            name: 'branding'
+            widget: 'object'
+            fields:
+              - label: 'Primary color'
+                name: 'primaryColor'
+                widget: 'color'
+                default: '#1a4f8a'
+                allowInput: true
+                hint: 'Main brand color used for headers, buttons, and links.'
+              - label: 'Accent color'
+                name: 'accentColor'
+                widget: 'color'
+                default: '#f5a623'
+                allowInput: true
+                hint: 'Secondary color used for highlights and call-to-action elements.'
+              - label: 'Logo'
+                name: 'logo'
+                widget: 'image'
+                default: '/images/logo.svg'
+                hint: 'School or PTA logo. SVG format recommended.'
+              - label: 'Hero image'
+                name: 'heroImage'
+                widget: 'image'
+                default: '/images/hero.svg'
+                hint: 'Large image shown on the homepage. Recommended: 1200x600px.'
+              - label: 'Mascot image'
+                name: 'mascotImage'
+                widget: 'image'
+                required: false
+                hint: 'School mascot illustration (optional).'
+          - label: 'Social Media'
+            name: 'social'
+            widget: 'object'
+            fields:
+              - label: 'Instagram'
+                name: 'instagram'
+                widget: 'string'
+                required: false
+                hint: 'Instagram handle or full URL.'
+              - label: 'Facebook'
+                name: 'facebook'
+                widget: 'string'
+                required: false
+                hint: 'Facebook page URL.'
+              - label: 'Twitter / X'
+                name: 'twitter'
+                widget: 'string'
+                required: false
+                hint: 'Twitter/X handle or full URL.'
+              - label: 'YouTube'
+                name: 'youtube'
+                widget: 'string'
+                required: false
+                hint: 'YouTube channel URL.'
+          - label: 'Languages'
+            name: 'languages'
+            widget: 'object'
+            fields:
+              - label: 'Default language'
+                name: 'default'
+                widget: 'select'
+                default: 'en'
+                options:
+                  - { label: 'English', value: 'en' }
+                  - { label: 'Spanish', value: 'es' }
+                  - { label: 'Chinese (Simplified)', value: 'zh-hans' }
+                  - { label: 'Chinese (Traditional)', value: 'zh-hant' }
+                  - { label: 'Arabic', value: 'ar' }
+                  - { label: 'Vietnamese', value: 'vi' }
+                  - { label: 'Haitian Creole', value: 'ht' }
+                  - { label: 'Somali', value: 'so' }
+                  - { label: 'Russian', value: 'ru' }
+                  - { label: 'Tagalog', value: 'tl' }
+                  - { label: 'Hmong', value: 'hmn' }
+                  - { label: 'Portuguese', value: 'pt' }
+                  - { label: 'Korean', value: 'ko' }
+                  - { label: 'Hindi', value: 'hi' }
+                  - { label: 'French', value: 'fr' }
+                  - { label: 'Amharic', value: 'am' }
+                  - { label: 'Khmer', value: 'km' }
+                  - { label: 'Urdu', value: 'ur' }
+                  - { label: 'Punjabi', value: 'pa' }
+                  - { label: 'Swahili', value: 'sw' }
+                hint: 'The primary language for the site. Pages without translations fall back to this.'
+              - label: 'Enabled languages'
+                name: 'supported'
+                widget: 'select'
+                multiple: true
+                default: ['en']
+                options:
+                  - { label: 'English', value: 'en' }
+                  - { label: 'Spanish', value: 'es' }
+                  - { label: 'Chinese (Simplified)', value: 'zh-hans' }
+                  - { label: 'Chinese (Traditional)', value: 'zh-hant' }
+                  - { label: 'Arabic', value: 'ar' }
+                  - { label: 'Vietnamese', value: 'vi' }
+                  - { label: 'Haitian Creole', value: 'ht' }
+                  - { label: 'Somali', value: 'so' }
+                  - { label: 'Russian', value: 'ru' }
+                  - { label: 'Tagalog', value: 'tl' }
+                  - { label: 'Hmong', value: 'hmn' }
+                  - { label: 'Portuguese', value: 'pt' }
+                  - { label: 'Korean', value: 'ko' }
+                  - { label: 'Hindi', value: 'hi' }
+                  - { label: 'French', value: 'fr' }
+                  - { label: 'Amharic', value: 'am' }
+                  - { label: 'Khmer', value: 'km' }
+                  - { label: 'Urdu', value: 'ur' }
+                  - { label: 'Punjabi', value: 'pa' }
+                  - { label: 'Swahili', value: 'sw' }
+                hint: 'Choose which languages to offer via the language switcher. Always include your default language.'
+          - label: 'Modules'
+            name: 'modules'
+            widget: 'object'
+            hint: 'Turn site sections on or off. Disabled modules produce no pages or navigation links.'
+            fields:
+              - label: 'PTA'
+                name: 'pta'
+                widget: 'boolean'
+                default: false
+                hint: 'Board directory, membership info, meeting schedule, and bylaws.'
+              - label: 'Events'
+                name: 'events'
+                widget: 'boolean'
+                default: true
+                hint: 'Event listings with calendar export and categories.'
+              - label: 'Volunteer'
+                name: 'volunteer'
+                widget: 'boolean'
+                default: false
+                hint: 'Open volunteer roles and shift signup.'
+              - label: 'Fundraising'
+                name: 'fundraising'
+                widget: 'boolean'
+                default: false
+                hint: 'Donation page with progress bar and campaign tracking.'
+              - label: 'News'
+                name: 'news'
+                widget: 'boolean'
+                default: true
+                hint: 'School announcements and news articles.'
+              - label: 'Lunch'
+                name: 'lunch'
+                widget: 'boolean'
+                default: false
+                hint: 'Weekly lunch menu and allergy information.'
+              - label: 'Transportation'
+                name: 'transportation'
+                widget: 'boolean'
+                default: false
+                hint: 'Bus routes, schedules, and carpool board.'
+              - label: 'Community'
+                name: 'community'
+                widget: 'boolean'
+                default: false
+                hint: 'Classifieds, skill share, new family guide, and business directory.'
+              - label: 'Classroom'
+                name: 'classroom'
+                widget: 'boolean'
+                default: false
+                hint: 'Teacher pages, wishlists, and reading lists.'
+              - label: 'District'
+                name: 'district'
+                widget: 'boolean'
+                default: false
+                hint: 'Multi-school aggregation for district-level sites.'
+              - label: 'Resources'
+                name: 'resources'
+                widget: 'boolean'
+                default: false
+                hint: 'Community resources: food banks, health clinics, legal aid, etc.'
+              - label: 'Transparency'
+                name: 'transparency'
+                widget: 'boolean'
+                default: false
+                hint: 'Public budget, fund allocation, and meeting decisions.'
+          - label: 'Fundraising'
+            name: 'fundraising'
+            widget: 'object'
+            fields:
+              - label: 'Donation provider'
+                name: 'provider'
+                widget: 'select'
+                default: 'paypal'
+                options:
+                  - { label: 'PayPal', value: 'paypal' }
+                  - { label: 'Stripe', value: 'stripe' }
+                  - { label: 'Other', value: 'other' }
+                hint: 'Which payment platform handles donations.'
+              - label: 'Donation URL'
+                name: 'donateUrl'
+                widget: 'string'
+                required: false
+                hint: 'Link to your donation page (PayPal.me, Stripe link, etc.). Include https://.'
+              - label: 'Annual fundraising goal'
+                name: 'annualGoal'
+                widget: 'number'
+                default: 0
+                value_type: 'int'
+                min: 0
+                hint: 'Total fundraising goal in dollars. Shown on the donation progress bar.'
+              - label: 'Amount raised so far'
+                name: 'currentRaised'
+                widget: 'number'
+                default: 0
+                value_type: 'int'
+                min: 0
+                hint: 'Update this as donations come in. Shown on the donation progress bar.'
+              - label: 'Goal label'
+                name: 'goalLabel'
+                widget: 'string'
+                default: 'Annual Fund'
+                hint: 'Label shown above the progress bar (e.g., "Annual Fund 2025-2026").'
+              - label: 'Stripe publishable key'
+                name: 'stripePublishableKey'
+                widget: 'string'
+                required: false
+                hint: 'Only needed if using Stripe. This is the public key (starts with pk_).'
+          - label: 'Mobile App'
+            name: 'app'
+            widget: 'object'
+            fields:
+              - label: 'Enable mobile app'
+                name: 'enabled'
+                widget: 'boolean'
+                default: false
+                hint: 'Turn on if your school has the Schoolyard mobile app deployed.'
+              - label: 'Push notifications'
+                name: 'pushNotifications'
+                widget: 'boolean'
+                default: false
+                hint: 'Enable push notifications for the mobile app.'
+              - label: 'Offline mode'
+                name: 'offlineMode'
+                widget: 'boolean'
+                default: true
+                hint: 'Allow the mobile app to work offline with cached content.'
+          - label: 'Deployment'
+            name: 'deployment'
+            widget: 'object'
+            fields:
+              - label: 'Site URL'
+                name: 'siteUrl'
+                widget: 'string'
+                required: false
+                hint: 'Your live site URL (e.g., "https://longfellowsfpta.org"). Used for SEO and RSS feeds.'
+              - label: 'Analytics ID'
+                name: 'analyticsId'
+                widget: 'string'
+                required: false
+                hint: 'Google Analytics measurement ID (optional).'

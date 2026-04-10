@@ -4,9 +4,216 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Schoolyard CMS</title>
+    <style>
+      /* Preview pane base styles — approximates site look for CMS previews */
+      .frame-content {
+        font-family:
+          'Inter',
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        color: #1f2937;
+        line-height: 1.6;
+        padding: 1.5rem;
+        max-width: 48rem;
+      }
+      .frame-content h1 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      .frame-content h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .frame-content p {
+        margin-bottom: 1rem;
+      }
+      .frame-content img {
+        max-width: 100%;
+        border-radius: 0.5rem;
+      }
+      .preview-meta {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 1rem;
+      }
+      .preview-badge {
+        display: inline-block;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-right: 0.25rem;
+      }
+      .preview-badge--featured {
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+      .preview-badge--cancelled {
+        background-color: #fee2e2;
+        color: #991b1b;
+      }
+      .preview-badge--filled {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+    </style>
   </head>
   <body>
     <!-- Include the script that builds the page and powers Decap CMS -->
     <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+    <script>
+      // --- Preview templates ---
+      // These give CMS editors a rough visual preview of content before publishing.
+
+      var h = window.CMS.h
+
+      // News preview
+      var NewsPreview = window.CMS.createClass({
+        render: function () {
+          var entry = this.props.entry
+          var data = entry.get('data').toJS()
+          return h(
+            'div',
+            { className: 'frame-content' },
+            data.image
+              ? h('img', { src: this.props.getAsset(data.image).toString(), alt: data.imageAlt || '' })
+              : null,
+            h('h1', {}, data.title || 'Untitled'),
+            h(
+              'div',
+              { className: 'preview-meta' },
+              data.featured ? h('span', { className: 'preview-badge preview-badge--featured' }, 'Featured') : null,
+              data.publishDate ? new Date(data.publishDate).toLocaleDateString() : '',
+              data.author ? ' · ' + data.author : ''
+            ),
+            h('p', { style: { fontStyle: 'italic' } }, data.summary || ''),
+            h('hr'),
+            this.props.widgetFor('body')
+          )
+        },
+      })
+
+      // Event preview
+      var EventPreview = window.CMS.createClass({
+        render: function () {
+          var entry = this.props.entry
+          var data = entry.get('data').toJS()
+          return h(
+            'div',
+            { className: 'frame-content' },
+            h('h1', {}, data.title || 'Untitled Event'),
+            h(
+              'div',
+              { className: 'preview-meta' },
+              data.featured ? h('span', { className: 'preview-badge preview-badge--featured' }, 'Featured') : null,
+              data.cancelled
+                ? h('span', { className: 'preview-badge preview-badge--cancelled' }, 'Cancelled')
+                : null,
+              data.category ? h('span', { className: 'preview-badge' }, data.category) : null
+            ),
+            h(
+              'div',
+              { className: 'preview-meta' },
+              data.date ? '📅 ' + new Date(data.date).toLocaleDateString() : '',
+              data.time ? ' · ' + data.time : '',
+              data.location ? ' · 📍 ' + data.location : ''
+            ),
+            h('p', {}, data.description || ''),
+            data.registrationUrl ? h('p', {}, h('a', { href: '#' }, 'Register →')) : null,
+            h('hr'),
+            this.props.widgetFor('body')
+          )
+        },
+      })
+
+      // Board member preview
+      var BoardPreview = window.CMS.createClass({
+        render: function () {
+          var entry = this.props.entry
+          var data = entry.get('data').toJS()
+          return h(
+            'div',
+            { className: 'frame-content' },
+            data.photo
+              ? h('img', {
+                  src: this.props.getAsset(data.photo).toString(),
+                  alt: data.name,
+                  style: { width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover' },
+                })
+              : null,
+            h('h1', {}, data.name || 'Name'),
+            h('div', { className: 'preview-meta' }, data.role || 'Role'),
+            data.termStart || data.termEnd
+              ? h('div', { className: 'preview-meta' }, 'Term: ' + (data.termStart || '?') + ' – ' + (data.termEnd || '?'))
+              : null,
+            data.email ? h('div', { className: 'preview-meta' }, data.email) : null,
+            data.bio ? h('p', {}, data.bio) : null,
+            this.props.widgetFor('body')
+          )
+        },
+      })
+
+      // Volunteer role preview
+      var VolunteerPreview = window.CMS.createClass({
+        render: function () {
+          var entry = this.props.entry
+          var data = entry.get('data').toJS()
+          return h(
+            'div',
+            { className: 'frame-content' },
+            h('h1', {}, data.title || 'Untitled Role'),
+            h(
+              'div',
+              { className: 'preview-meta' },
+              data.filled
+                ? h('span', { className: 'preview-badge preview-badge--filled' }, 'Filled')
+                : h('span', { className: 'preview-badge' }, 'Open'),
+              data.commitment ? ' · ' + data.commitment : ''
+            ),
+            h('p', {}, data.description || ''),
+            data.contact ? h('div', { className: 'preview-meta' }, 'Contact: ' + data.contact) : null,
+            this.props.widgetFor('body')
+          )
+        },
+      })
+
+      // Resource preview
+      var ResourcePreview = window.CMS.createClass({
+        render: function () {
+          var entry = this.props.entry
+          var data = entry.get('data').toJS()
+          return h(
+            'div',
+            { className: 'frame-content' },
+            h('h1', {}, data.name || 'Untitled Resource'),
+            h(
+              'div',
+              { className: 'preview-meta' },
+              data.category ? h('span', { className: 'preview-badge' }, data.category) : null,
+              data.languages && data.languages.length ? ' · Languages: ' + data.languages.join(', ') : ''
+            ),
+            h('p', {}, data.description || ''),
+            data.address ? h('div', { className: 'preview-meta' }, '📍 ' + data.address) : null,
+            data.phone ? h('div', { className: 'preview-meta' }, '📞 ' + data.phone) : null,
+            data.url ? h('div', { className: 'preview-meta' }, h('a', { href: '#' }, data.url)) : null,
+            this.props.widgetFor('body')
+          )
+        },
+      })
+
+      // Register all preview templates
+      window.CMS.registerPreviewTemplate('news', NewsPreview)
+      window.CMS.registerPreviewTemplate('events', EventPreview)
+      window.CMS.registerPreviewTemplate('board', BoardPreview)
+      window.CMS.registerPreviewTemplate('volunteers', VolunteerPreview)
+      window.CMS.registerPreviewTemplate('resources', ResourcePreview)
+    </script>
   </body>
 </html>
