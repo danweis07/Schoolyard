@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "مرحباً",
+    "loading": "جارٍ التحميل",
+    "search": "بحث",
+    "menu": "القائمة",
+    "close": "إغلاق",
+    "readMore": "اقرأ المزيد",
+    "learnMore": "اعرف المزيد",
+    "viewAll": "عرض الكل",
+    "skipToContent": "انتقل إلى المحتوى",
+    "language": "اللغة",
+    "selectLanguage": "اختر اللغة",
+    "primaryNavigation": "التنقل الرئيسي",
+    "dismiss": "تجاهل"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "events": "الفعاليات",
+    "news": "الأخبار",
+    "pta": "PTA",
+    "volunteer": "تطوع",
+    "donate": "تبرع",
+    "about": "من نحن",
+    "contact": "اتصل بنا"
+  }
+}

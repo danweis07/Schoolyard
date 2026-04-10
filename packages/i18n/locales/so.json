@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "Soo dhawoow",
+    "loading": "Soo dejinaya",
+    "search": "Raadi",
+    "menu": "Liiska",
+    "close": "Xir",
+    "readMore": "Akhri wax badan",
+    "learnMore": "Wax badan baro",
+    "viewAll": "Arag dhammaan",
+    "skipToContent": "U bood nuxurka",
+    "language": "Luqadda",
+    "selectLanguage": "Dooro luqadda",
+    "primaryNavigation": "Hagitaanka aasaasiga",
+    "dismiss": "Iska xir"
+  },
+  "nav": {
+    "home": "Bogga hore",
+    "events": "Dhacdooyinka",
+    "news": "Wararka",
+    "pta": "PTA",
+    "volunteer": "Tabaruc waqti",
+    "donate": "Ku deeq",
+    "about": "Ku saabsan",
+    "contact": "Nala soo xiriir"
+  }
+}

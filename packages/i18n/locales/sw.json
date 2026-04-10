@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "Karibu",
+    "loading": "Inapakia",
+    "search": "Tafuta",
+    "menu": "Menyu",
+    "close": "Funga",
+    "readMore": "Soma zaidi",
+    "learnMore": "Jifunze zaidi",
+    "viewAll": "Tazama yote",
+    "skipToContent": "Ruka hadi maudhui",
+    "language": "Lugha",
+    "selectLanguage": "Chagua lugha",
+    "primaryNavigation": "Urambazaji mkuu",
+    "dismiss": "Ondoa"
+  },
+  "nav": {
+    "home": "Nyumbani",
+    "events": "Matukio",
+    "news": "Habari",
+    "pta": "PTA",
+    "volunteer": "Kujitolea",
+    "donate": "Changia",
+    "about": "Kuhusu",
+    "contact": "Wasiliana"
+  }
+}

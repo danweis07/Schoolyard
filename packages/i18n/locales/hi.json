@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "स्वागत है",
+    "loading": "लोड हो रहा है",
+    "search": "खोजें",
+    "menu": "मेनू",
+    "close": "बंद करें",
+    "readMore": "और पढ़ें",
+    "learnMore": "और जानें",
+    "viewAll": "सभी देखें",
+    "skipToContent": "सामग्री पर जाएं",
+    "language": "भाषा",
+    "selectLanguage": "भाषा चुनें",
+    "primaryNavigation": "मुख्य नेविगेशन",
+    "dismiss": "खारिज करें"
+  },
+  "nav": {
+    "home": "होम",
+    "events": "कार्यक्रम",
+    "news": "समाचार",
+    "pta": "PTA",
+    "volunteer": "स्वयंसेवा",
+    "donate": "दान करें",
+    "about": "हमारे बारे में",
+    "contact": "संपर्क"
+  }
+}
