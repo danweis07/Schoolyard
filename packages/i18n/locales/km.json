@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "សូមស្វាគមន៍",
+    "loading": "កំពុងផ្ទុក",
+    "search": "ស្វែងរក",
+    "menu": "ម៉ឺនុយ",
+    "close": "បិទ",
+    "readMore": "អានបន្ថែម",
+    "learnMore": "ស្វែងយល់បន្ថែម",
+    "viewAll": "មើលទាំងអស់",
+    "skipToContent": "រំលងទៅមាតិកា",
+    "language": "ភាសា",
+    "selectLanguage": "ជ្រើសរើសភាសា",
+    "primaryNavigation": "ការរុករកចម្បង",
+    "dismiss": "បដិសេធ"
+  },
+  "nav": {
+    "home": "ទំព័រដើម",
+    "events": "ព្រឹត្តិការណ៍",
+    "news": "ព័ត៌មាន",
+    "pta": "PTA",
+    "volunteer": "អ្នកស្ម័គ្រចិត្ត",
+    "donate": "បរិច្ចាគ",
+    "about": "អំពីយើង",
+    "contact": "ទំនាក់ទំនង"
+  }
+}

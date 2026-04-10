@@ -1,5 +1,6 @@
 ---
 import '@/styles/global.css'
+import AnnouncementBanner from '@/components/AnnouncementBanner.astro'
 import Header from '@/components/Header.astro'
 import Footer from '@/components/Footer.astro'
 import { siteConfig } from '@/lib/site'
@@ -30,6 +31,7 @@ const brandStyles = `:root { --sy-color-primary: ${siteConfig.branding.primaryCo
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />
     <meta property="og:title" content={pageTitle} />
@@ -39,8 +41,9 @@ const brandStyles = `:root { --sy-color-primary: ${siteConfig.branding.primaryCo
   </head>
   <body>
     <a href="#main" class="skip-link">{t('common.skipToContent')}</a>
+    <AnnouncementBanner locale={locale} />
     <Header locale={locale} />
-    <main id="main" class="flex-1">
+    <main id="main" tabindex="-1" class="flex-1">
       <slot />
     </main>
     <Footer locale={locale} />

@@ -10,7 +10,9 @@
     "viewAll": "查看全部",
     "skipToContent": "跳到主要内容",
     "language": "语言",
-    "selectLanguage": "选择语言"
+    "selectLanguage": "选择语言",
+    "primaryNavigation": "主导航",
+    "dismiss": "关闭"
   },
   "nav": {
     "home": "首页",

@@ -63,4 +63,40 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* Print — show content, hide chrome */
+  @media print {
+    header,
+    footer,
+    .skip-link,
+    .announcement-banner,
+    #mobile-nav-toggle,
+    #mobile-nav,
+    #lang-switcher {
+      display: none !important;
+    }
+
+    body {
+      font-size: 12pt;
+      line-height: 1.5;
+      color: #000;
+      background: #fff;
+    }
+
+    main {
+      max-width: 100% !important;
+      padding: 0 !important;
+    }
+
+    a[href]::after {
+      content: ' (' attr(href) ')';
+      font-size: 0.8em;
+      color: #555;
+    }
+
+    a[href^="/"]::after,
+    a[href^="#"]::after {
+      content: '';
+    }
+  }
 }

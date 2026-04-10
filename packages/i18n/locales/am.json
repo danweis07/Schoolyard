@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "እንኳን ደህና መጡ",
+    "loading": "በመጫን ላይ",
+    "search": "ፈልግ",
+    "menu": "ምናሌ",
+    "close": "ዝጋ",
+    "readMore": "ተጨማሪ ያንብቡ",
+    "learnMore": "ተጨማሪ ይወቁ",
+    "viewAll": "ሁሉንም ይመልከቱ",
+    "skipToContent": "ወደ ይዘት ዝለል",
+    "language": "ቋንቋ",
+    "selectLanguage": "ቋንቋ ይምረጡ",
+    "primaryNavigation": "ዋና ዳሰሳ",
+    "dismiss": "አሰናብት"
+  },
+  "nav": {
+    "home": "መነሻ",
+    "events": "ክስተቶች",
+    "news": "ዜና",
+    "pta": "PTA",
+    "volunteer": "በጎ ፈቃደኛ",
+    "donate": "ለግስ",
+    "about": "ስለ እኛ",
+    "contact": "ያግኙን"
+  }
+}

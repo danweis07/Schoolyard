@@ -21,6 +21,17 @@ describe('t()', () => {
   it('interpolates {param} placeholders', () => {
     expect(t('common.welcomeName', 'en', { name: 'Maria' })).toBe('Welcome, Maria!')
   })
+
+  it('returns stub locale translations for common/nav keys', () => {
+    expect(t('nav.home', 'fr')).toBe('Accueil')
+    expect(t('nav.home', 'ko')).toBe('홈')
+    expect(t('common.search', 'ar')).toBe('بحث')
+  })
+
+  it('falls back to English for keys missing in stub locales', () => {
+    // Stub locales only have common.* and nav.* — deeper keys fall back
+    expect(t('events.title', 'fr')).toBe('School Events')
+  })
 })
 
 describe('isPopulated()', () => {
@@ -32,9 +43,10 @@ describe('isPopulated()', () => {
     expect(isPopulated('tl')).toBe(true)
   })
 
-  it('reports unpopulated locales as false', () => {
-    expect(isPopulated('ar')).toBe(false)
-    expect(isPopulated('fr')).toBe(false)
+  it('reports stub locales as populated (all 20 are registered)', () => {
+    expect(isPopulated('ar')).toBe(true)
+    expect(isPopulated('fr')).toBe(true)
+    expect(isPopulated('ko')).toBe(true)
   })
 })
 

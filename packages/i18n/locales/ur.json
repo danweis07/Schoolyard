@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "خوش آمدید",
+    "loading": "لوڈ ہو رہا ہے",
+    "search": "تلاش",
+    "menu": "مینو",
+    "close": "بند کریں",
+    "readMore": "مزید پڑھیں",
+    "learnMore": "مزید جانیں",
+    "viewAll": "سب دیکھیں",
+    "skipToContent": "مواد پر جائیں",
+    "language": "زبان",
+    "selectLanguage": "زبان منتخب کریں",
+    "primaryNavigation": "بنیادی نیویگیشن",
+    "dismiss": "خارج کریں"
+  },
+  "nav": {
+    "home": "ہوم",
+    "events": "تقریبات",
+    "news": "خبریں",
+    "pta": "PTA",
+    "volunteer": "رضاکار",
+    "donate": "عطیہ",
+    "about": "ہمارے بارے میں",
+    "contact": "رابطہ"
+  }
+}

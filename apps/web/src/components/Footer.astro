@@ -1,6 +1,6 @@
 ---
 import { siteConfig } from '@/lib/site'
-import { useTranslate } from '@/i18n/index'
+import { useTranslate, localizedPath } from '@/i18n/index'
 import type { Locale } from '@schoolyard/i18n'
 
 interface Props {
@@ -77,6 +77,9 @@ const year = new Date().getFullYear()
               <li>{t('about.grades', { grades: siteConfig.school.grades })}</li>
             )
           }
+          <li>
+            <a href={localizedPath('/search', locale)}>{t('common.search')}</a>
+          </li>
         </ul>
       </div>
     </div>
@@ -90,7 +93,9 @@ const year = new Date().getFullYear()
       <p>
         {t('footer.builtWith')}
         {' '}
-        <a href="https://github.com/schoolyard-org/schoolyard" rel="noopener"> Schoolyard </a>
+        <a href="https://github.com/schoolyard-org/schoolyard" rel="noopener noreferrer">
+          Schoolyard
+        </a>
         {' — '}
         {t('footer.openSourceFor')}.
       </p>

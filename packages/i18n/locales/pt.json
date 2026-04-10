@@ -1,0 +1,27 @@
+{
+  "common": {
+    "welcome": "Bem-vindo",
+    "loading": "Carregando",
+    "search": "Pesquisar",
+    "menu": "Menu",
+    "close": "Fechar",
+    "readMore": "Leia mais",
+    "learnMore": "Saiba mais",
+    "viewAll": "Ver tudo",
+    "skipToContent": "Pular para o conteúdo",
+    "language": "Idioma",
+    "selectLanguage": "Selecionar idioma",
+    "primaryNavigation": "Navegação principal",
+    "dismiss": "Dispensar"
+  },
+  "nav": {
+    "home": "Início",
+    "events": "Eventos",
+    "news": "Notícias",
+    "pta": "PTA",
+    "volunteer": "Voluntariado",
+    "donate": "Doar",
+    "about": "Sobre",
+    "contact": "Contato"
+  }
+}
