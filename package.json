@@ -28,6 +28,7 @@
     "tokens:build": "pnpm --filter @schoolyard/tokens build",
     "validate-config": "tsx scripts/validate-config.ts",
     "setup": "node scripts/setup.js",
+    "setup:fsk": "cd josh && bash setup.sh && cd ..",
     "clean": "turbo run clean && rimraf node_modules"
   },
   "devDependencies": {

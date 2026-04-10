@@ -58,9 +58,19 @@ pnpm build             # Build all apps and packages
 pnpm test              # Run all tests
 pnpm lint              # Lint everything
 pnpm typecheck         # Type-check all packages
+pnpm format            # Auto-format all files with Prettier
 pnpm tokens:build      # Rebuild design tokens (web CSS + RN theme)
 pnpm validate-config   # Check school.config.json against the schema
+pnpm setup:fsk         # Deploy FSK Elementary content (see josh/ folder)
 ```
+
+### IDE Support
+
+**VS Code:** Open the project and accept the recommended extensions prompt. Formatting, linting, and Astro IntelliSense are configured automatically via `.vscode/settings.json`.
+
+**Other editors:** Respect `.editorconfig`. Run `pnpm format` before committing.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for full developer setup.
 
 ### Repo layout
 
@@ -75,12 +85,23 @@ schoolyard/
 │   ├── i18n/         # 20-language translation system
 │   ├── content-api/  # Shared content layer for web and mobile
 │   └── ui/           # Shared React components for the mobile app
+├── josh/             # FSK Elementary deployment (demo for Josh)
 ├── cms/              # Decap CMS configuration
 ├── scripts/          # Setup wizard and config validator
 └── school.config.json # ← The one file every school edits
 ```
 
-For deeper architectural docs see [CLAUDE.md](./CLAUDE.md) (the platform spec) and [AI.md](./AI.md) (conventions for AI-assisted contributions).
+### Documentation guide
+
+| File | Audience | What it covers |
+|------|----------|----------------|
+| [README.md](./README.md) | Everyone | Quick start, what's in the box |
+| [CLAUDE.md](./CLAUDE.md) | AI agents + architects | Full platform spec, every design decision |
+| [AI.md](./AI.md) | AI agents + developers | Architecture conventions, code patterns |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Developers | IDE setup, dev workflow, PR checklist |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | PTA volunteers | Netlify / Vercel / GH Pages step-by-step |
+| [ROADMAP.md](./ROADMAP.md) | Everyone | What's planned, what's out of scope |
+| [josh/README.md](./josh/README.md) | Josh / FSK PTA | FSK-specific content and setup |
 
 ---
 
@@ -122,7 +143,7 @@ Schoolyard is community maintained. The smallest pull request — a typo fix, a 
 - **Designers** to make the demo theme even friendlier
 - **Engineers** to fill in the stubbed modules
 
-See [AI.md](./AI.md) for architecture conventions before opening a PR.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for full developer setup, PR checklist, and how to add features. See [AI.md](./AI.md) for architecture conventions.
 
 ---
 
