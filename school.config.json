@@ -69,5 +69,12 @@
   "deployment": {
     "siteUrl": "https://longfellowsfpta.org",
     "analyticsId": ""
-  }
+  },
+  "announcements": [
+    {
+      "text": "Walk-a-Thon is this Saturday! Volunteers still needed.",
+      "url": "/events/walk-a-thon",
+      "type": "info"
+    }
+  ]
 }

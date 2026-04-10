@@ -140,6 +140,12 @@ export const deploymentSchema = z.object({
   analyticsId: z.string().default(''),
 })
 
+export const announcementSchema = z.object({
+  text: z.string().min(1),
+  url: z.string().default(''),
+  type: z.enum(['info', 'warning', 'urgent']).default('info'),
+})
+
 export const schoolConfigSchema = z.object({
   $schema: z.string().optional(),
   school: schoolSchema,
@@ -151,6 +157,7 @@ export const schoolConfigSchema = z.object({
   fundraising: fundraisingSchema.default({}),
   app: appSchema.default({}),
   deployment: deploymentSchema.default({}),
+  announcements: z.array(announcementSchema).default([]),
 })
 
 export type SchoolConfig = z.infer<typeof schoolConfigSchema>
