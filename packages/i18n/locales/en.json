@@ -78,7 +78,11 @@
       "volunteer": "Volunteer",
       "other": "Other"
     },
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "rsvpGoing": "I'm going",
+    "rsvpMaybe": "Maybe",
+    "rsvpCanceled": "Can't make it",
+    "rsvpSigninHint": "Sign in to RSVP for this event."
   },
   "news": {
     "title": "School News",
@@ -132,7 +136,13 @@
     "commitment": "Commitment",
     "contact": "Contact",
     "signUp": "Sign up",
-    "noRoles": "No open volunteer roles right now."
+    "noRoles": "No open volunteer roles right now.",
+    "logHoursTitle": "Log your volunteer hours",
+    "logHoursDescription": "Record hours you've already given so we can thank you and help your employer match program.",
+    "servedOn": "Date served",
+    "hours": "Hours",
+    "notes": "Notes (optional)",
+    "logHoursSubmit": "Save hours"
   },
   "fundraising": {
     "title": "Support Our School",
@@ -147,7 +157,12 @@
     "campaigns": "Campaigns",
     "whereItGoesHeading": "Where your donation goes",
     "whereItGoesBody": "Every dollar you give stays at our school. Your contribution funds programs the district doesn't pay for: classroom supplies, music instruments, science kits, field trip scholarships, and more. Our PTA is a registered 501(c)(3) — your gift is tax-deductible.",
-    "employerMatchBody": "Many employers will match your gift dollar-for-dollar. Email us at the address below if you'd like help with the matching paperwork."
+    "employerMatchBody": "Many employers will match your gift dollar-for-dollar. Email us at the address below if you'd like help with the matching paperwork.",
+    "donateTitle": "Make a donation",
+    "donateDescription": "Choose an amount — 100% of your gift stays at our school.",
+    "amount": "Amount",
+    "customAmount": "Other amount",
+    "continueToPayment": "Continue to secure payment"
   },
   "home": {
     "heroCta": "Learn more",
@@ -212,6 +227,15 @@
     "neighborhood": "Neighborhood",
     "contact": "Contact",
     "noListings": "No listings yet. Check back soon.",
+    "report": "Report this listing",
+    "reportReason": "Reason",
+    "reportReasons": {
+      "spam": "Spam",
+      "inappropriate": "Inappropriate content",
+      "scam": "Looks like a scam",
+      "other": "Other"
+    },
+    "reportSubmit": "Submit report",
     "categories": {
       "classified": "Classifieds",
       "carpool": "Carpool",
@@ -263,7 +287,8 @@
     "totalSpent": "Total Spent",
     "categories": "Categories",
     "summary": "Summary",
-    "noBudgets": "Budget information will be published soon."
+    "noBudgets": "Budget information will be published soon.",
+    "yearOverYear": "YoY"
   },
   "errors": {
     "notFound": "Page not found",

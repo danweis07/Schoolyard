@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro'
+import ContactForm from '@/components/ContactForm.astro'
 import { siteConfig } from '@/lib/site'
 import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
 
@@ -45,60 +46,7 @@ const t = useTranslate(locale)
         </ul>
       </div>
 
-      <form
-        name="contact"
-        method="POST"
-        data-netlify="true"
-        class="rounded-card border border-border bg-surface p-card"
-      >
-        <input type="hidden" name="form-name" value="contact" />
-
-        <label class="block">
-          <span class="text-sm font-semibold">{t('contact.form.name')}</span>
-          <input
-            type="text"
-            name="name"
-            required
-            class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
-          />
-        </label>
-
-        <label class="mt-4 block">
-          <span class="text-sm font-semibold">{t('contact.form.email')}</span>
-          <input
-            type="email"
-            name="email"
-            required
-            class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
-          />
-        </label>
-
-        <label class="mt-4 block">
-          <span class="text-sm font-semibold">{t('contact.form.subject')}</span>
-          <input
-            type="text"
-            name="subject"
-            class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
-          />
-        </label>
-
-        <label class="mt-4 block">
-          <span class="text-sm font-semibold">{t('contact.form.message')}</span>
-          <textarea
-            name="message"
-            rows="4"
-            required
-            class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
-          ></textarea>
-        </label>
-
-        <button
-          type="submit"
-          class="mt-6 rounded-button bg-primary px-6 py-2.5 font-semibold text-inverse hover:opacity-90"
-        >
-          {t('contact.form.send')}
-        </button>
-      </form>
+      <ContactForm locale={locale} />
     </div>
   </section>
 </BaseLayout>

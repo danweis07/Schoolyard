@@ -56,4 +56,6 @@ export const defaultConfig: SchoolConfig = {
   app: { enabled: false, pushNotifications: false, offlineMode: true },
   deployment: { siteUrl: '', analyticsId: '' },
   announcements: [],
+  backend: 'static',
+  supabase: { url: '', anonKey: '', projectRef: '' },
 }

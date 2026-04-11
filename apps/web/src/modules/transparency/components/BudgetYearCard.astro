@@ -1,0 +1,77 @@
+---
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+import type { CollectionEntry } from 'astro:content'
+import LineItemTable from './LineItemTable.astro'
+
+interface Props {
+  year: CollectionEntry<'budgetYears'>
+  locale: Locale
+  /** Optional previous-year entry for variance display. */
+  previousYear?: CollectionEntry<'budgetYears'>
+}
+
+const { year, locale, previousYear } = Astro.props
+const t = useTranslate(locale)
+const currencyFormatter = new Intl.NumberFormat(locale, {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+})
+
+function variance(current: number, previous?: number): string | null {
+  if (typeof previous !== 'number' || previous === 0) return null
+  const delta = ((current - previous) / previous) * 100
+  const sign = delta >= 0 ? '+' : ''
+  return `${sign}${delta.toFixed(0)}%`
+}
+
+const raisedVariance = variance(year.data.totalRaised, previousYear?.data.totalRaised)
+const spentVariance = variance(year.data.totalSpent, previousYear?.data.totalSpent)
+---
+
+<article class="rounded-card border border-border bg-surface p-card shadow-sm">
+  <h2 class="text-2xl font-bold">
+    {t('transparency.budgetYear')}: {year.data.year}
+  </h2>
+  <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+    <div>
+      <dt class="text-xs font-semibold uppercase tracking-wide text-muted">
+        {t('transparency.totalRaised')}
+      </dt>
+      <dd class="text-2xl font-bold">{currencyFormatter.format(year.data.totalRaised)}</dd>
+      {
+        raisedVariance && (
+          <p class="mt-1 text-xs text-muted">
+            {t('transparency.yearOverYear')}: {raisedVariance}
+          </p>
+        )
+      }
+    </div>
+    <div>
+      <dt class="text-xs font-semibold uppercase tracking-wide text-muted">
+        {t('transparency.totalSpent')}
+      </dt>
+      <dd class="text-2xl font-bold">{currencyFormatter.format(year.data.totalSpent)}</dd>
+      {
+        spentVariance && (
+          <p class="mt-1 text-xs text-muted">
+            {t('transparency.yearOverYear')}: {spentVariance}
+          </p>
+        )
+      }
+    </div>
+  </dl>
+
+  {
+    year.data.categories.length > 0 && (
+      <LineItemTable
+        items={year.data.categories}
+        locale={locale}
+        headingKey="transparency.categories"
+      />
+    )
+  }
+
+  {year.data.summary && <p class="mt-4 text-sm text-muted">{year.data.summary}</p>}
+</article>

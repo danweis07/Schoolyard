@@ -3,7 +3,8 @@ import BaseLayout from '@/layouts/BaseLayout.astro'
 import { siteConfig } from '@/lib/site'
 import { isModuleEnabled } from '@schoolyard/config'
 import { getCollection } from 'astro:content'
-import { useTranslate, getLocaleFromUrl, localizedPath, localeStaticPaths } from '@/i18n/index'
+import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
+import TeacherCard from '@/modules/classroom/components/TeacherCard.astro'
 
 export const getStaticPaths = localeStaticPaths
 
@@ -17,6 +18,15 @@ const t = useTranslate(locale)
 const teachers = (await getCollection('classroomTeachers')).sort(
   (a, b) => a.data.order - b.data.order,
 )
+
+// Group teachers by grade for a cleaner reading experience.
+const byGrade = new Map<string, typeof teachers>()
+for (const teacher of teachers) {
+  const list = byGrade.get(teacher.data.grade) ?? []
+  list.push(teacher)
+  byGrade.set(teacher.data.grade, list)
+}
+const grades = Array.from(byGrade.keys())
 ---
 
 <BaseLayout title={t('classroom.title')} description={t('classroom.description')}>
@@ -29,23 +39,18 @@ const teachers = (await getCollection('classroomTeachers')).sort(
       teachers.length === 0 ? (
         <p class="mt-4 text-muted">{t('classroom.noTeachers')}</p>
       ) : (
-        <div class="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {teachers.map((teacher) => (
-            <a
-              href={localizedPath(`/classroom/${teacher.slug}`, locale)}
-              class="rounded-card border border-border bg-surface p-card no-underline shadow-sm transition hover:shadow-md"
-            >
-              <h3 class="text-xl font-bold">{teacher.data.name}</h3>
-              <p class="mt-1 text-sm text-muted">
-                {t('classroom.grade')}: {teacher.data.grade}
-                {teacher.data.subject && ` · ${teacher.data.subject}`}
-              </p>
-              {teacher.data.wishlist.length > 0 && (
-                <p class="mt-3 text-xs text-muted">
-                  {teacher.data.wishlist.length} {t('classroom.wishlist').toLowerCase()} items
-                </p>
-              )}
-            </a>
+        <div class="mt-6 space-y-10">
+          {grades.map((grade) => (
+            <div>
+              <h3 class="text-lg font-semibold text-muted">
+                {t('classroom.grade')}: {grade}
+              </h3>
+              <div class="mt-3 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {byGrade.get(grade)!.map((teacher) => (
+                  <TeacherCard teacher={teacher} locale={locale} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )

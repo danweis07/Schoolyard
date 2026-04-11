@@ -1,8 +1,109 @@
 # DEPLOYMENT.md — How to Get Your School's Site Online
 
-> This guide is for school PTA volunteers and administrators with no coding background. If you can edit a Google Doc, you can deploy Schoolyard.
+> This guide covers two deployment paths:
+>
+> 1. **Supabase-backed (recommended)** — dynamic features, auth, live donations. Requires a technical maintainer (district IT, PTO volunteer who can run the CLI, state DoE team).
+> 2. **Legacy static** — pure git + Netlify, zero backend, limited features. Good for very small deployments and contributors who want to try the project without standing up Postgres.
 
-There are three deployment options. **We recommend Netlify** — it's free, the easiest, and handles forms, the CMS, and SSL automatically.
+---
+
+## Path 1: Supabase-backed deployment (recommended)
+
+### 1. Create a Supabase project
+
+1. Sign up at [supabase.com](https://supabase.com) (free tier)
+2. Create a new project — region close to your users, strong database password
+3. Once it's up, grab three values from **Project Settings → API**:
+   - **Project URL** — e.g. `https://abc123.supabase.co`
+   - **anon / public key** — safe to expose in bundles
+   - **service_role / secret key** — KEEP SECRET, only used by `scripts/migrate-to-supabase.ts` and edge functions
+
+### 2. Apply the schema
+
+Two options:
+
+**Supabase CLI (preferred):**
+
+```sh
+npm install -g supabase
+supabase login
+supabase link --project-ref <your-ref>
+supabase db push     # applies supabase/migrations/0001…0006.sql
+```
+
+**SQL editor (no CLI):** open each of the 6 files under `supabase/migrations/` in the Supabase Dashboard SQL editor, in numeric order, and run them.
+
+After the schema is up, check security advisors:
+
+```sh
+supabase inspect db advisors
+```
+
+Any finding is release-blocking. Common ones: missing RLS on a new table, missing `with check` clause, functions without `security definer`.
+
+### 3. Set env vars
+
+Create `.env.local` at the repo root:
+
+```sh
+SCHOOLYARD_BACKEND=supabase
+SUPABASE_URL=https://<your-ref>.supabase.co
+SUPABASE_ANON_KEY=<anon public key>
+SUPABASE_SERVICE_ROLE_KEY=<service role secret key>
+```
+
+For the Expo app, also add the `EXPO_PUBLIC_*` twins so Metro can see them at build time:
+
+```sh
+EXPO_PUBLIC_SUPABASE_URL=https://<your-ref>.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon public key>
+```
+
+### 4. Seed your content
+
+If you're starting from the existing Markdown in `apps/web/src/content/`:
+
+```sh
+pnpm migrate:supabase --dry-run   # parse + report, no writes
+pnpm migrate:supabase             # upsert to Postgres
+```
+
+The migrator is idempotent — re-running it upserts on `(school_id, slug)` and doesn't duplicate rows.
+
+### 5. Deploy web (hybrid mode)
+
+Hybrid mode means public pages are prerendered as static HTML while pages that need live data (donations, RSVPs, contact forms) render per request. This requires a **Node** deploy target, not a static one.
+
+- **Vercel** — works out of the box; pick the Node adapter in project settings.
+- **Netlify** — install `@astrojs/netlify`, set `output: 'hybrid'` in `astro.config.mjs` (already done), deploy.
+- **Fly.io / Railway / your own box** — `pnpm --filter web build` then `node ./dist/server/entry.mjs`.
+
+Set `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SCHOOLYARD_BACKEND=supabase` in the host's env vars.
+
+### 6. Deploy edge functions
+
+```sh
+supabase functions deploy contact-submit
+supabase functions deploy donate
+supabase functions deploy stripe-webhook
+supabase functions deploy announce
+supabase functions deploy volunteer-hours-export
+```
+
+Set their secrets (Stripe keys, Resend API key, etc.) via `supabase secrets set`.
+
+### 7. Verify
+
+- Visit `/contact`, submit the form with the honeypot filled → should reject. Leave honeypot empty → should accept.
+- Sign in via magic link → RSVP an event → confirm row in `event_rsvps`.
+- Donate via Stripe test card → check `fundraising_donations` grew, and the fundraising page total updates (via the `fundraising_program_totals` view).
+- `supabase inspect db advisors` → still clean.
+
+---
+
+## Path 2: Legacy static deployment
+
+Three deployment options. **We recommend Netlify** — it's free, the easiest, and handles forms, the CMS, and SSL automatically.
 
 ---
 

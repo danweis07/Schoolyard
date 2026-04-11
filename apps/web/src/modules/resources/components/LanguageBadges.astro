@@ -1,0 +1,15 @@
+---
+interface Props {
+  languages: string[]
+}
+
+const { languages } = Astro.props
+---
+
+<ul class="mt-2 flex flex-wrap gap-1" aria-label="languages">
+  {
+    languages.map((lang) => (
+      <li class="rounded-button bg-muted/50 px-2 py-0.5 text-xs text-muted">{lang}</li>
+    ))
+  }
+</ul>

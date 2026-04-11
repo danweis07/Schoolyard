@@ -1,0 +1,14 @@
+---
+interface Props {
+  allergen: string
+}
+
+const { allergen } = Astro.props
+---
+
+<span
+  class="rounded-button bg-warning/10 px-2 py-0.5 text-xs font-semibold text-warning"
+  aria-label={`allergen: ${allergen}`}
+>
+  {allergen}
+</span>

@@ -4,45 +4,70 @@
 
 ## TL;DR
 
-Schoolyard is a Turborepo monorepo with two apps (Astro web, Expo mobile) and five shared packages (`config`, `tokens`, `i18n`, `content-api`, `ui`). Every school configures the platform via a single `school.config.json` at the repo root. Modules are opt-in: disabling a module produces zero output.
+Schoolyard is a Turborepo monorepo with two apps (Astro web, Expo mobile) and six shared packages (`config`, `tokens`, `i18n`, `content-api`, `supabase`, `ui`). Every school configures the platform via `school.config.json` (branding + modules + locales), and content lives in a shared multi-tenant Supabase project behind RLS. A legacy `static` backend mode still reads Markdown from Git and emits JSON via `scripts/generate-manifest.ts` for deployments that don't want a backend.
+
+## Backend modes
+
+The `SCHOOLYARD_BACKEND` env var picks the data source:
+
+- **`supabase`** (default): all content reads go through `@schoolyard/content-api`'s Supabase adapter → `@schoolyard/supabase` client → Postgres. RLS enforces `school_id` isolation.
+- **`static`** (legacy): all content reads go through the static adapter → `fetch()` of `dist/api/*.json` files generated at build time.
+
+Consumers (Astro pages, Expo hooks) should use `createContentClient({ backend, ... })` from `@schoolyard/content-api` — same types for both backends.
 
 ## Architecture in One Picture
 
 ```
 school.config.json  ──┐
-                      ├──► @schoolyard/config (Zod schema, loader)
+                      ├──► @schoolyard/config (Zod schema, loader, tenant helpers)
                       │            │
-                      │            ├──► apps/web (Astro)  ──► nav auto-gen, conditional pages
-                      │            └──► apps/mobile (Expo) ──► conditional tabs
+                      │            ├──► apps/web (Astro, hybrid)
+                      │            │      └── middleware → resolveRequestSchool
+                      │            └──► apps/mobile (Expo, React Query)
                       │
 @schoolyard/tokens ───┤  Style Dictionary → web.css + native.ts
                       │
 @schoolyard/i18n   ───┤  20 locales, t() with English fallback
                       │
-@schoolyard/content-api ─┤  Markdown collections (web) + JSON manifest (mobile)
-                      │
-@schoolyard/ui ───────┘  Shared React Native components
+@schoolyard/content-api
+                      ├──► adapters/static.ts   (fetch JSON from dist/api/)
+                      └──► adapters/supabase.ts (reads Postgres via client)
+                                     │
+                                     ▼
+@schoolyard/supabase  ──► createBrowserClient / createServerClient
+                           / createServiceClient + Database types
+                                     │
+                                     ▼
+                           Supabase Postgres (shared, RLS by school_id)
+                           └── districts → schools → content + dynamic tables
 ```
 
 ## Monorepo Layout
 
-| Path                         | Purpose                                                              |
-| ---------------------------- | -------------------------------------------------------------------- |
-| `apps/web/`                  | Astro 5 web app — the primary surface for v1                         |
-| `apps/web/src/modules/`      | One folder per module. Add pages here, not in `src/pages/`.          |
-| `apps/web/src/content/`      | Astro content collections (Markdown). Schemas in `content/config.ts` |
-| `apps/web/src/components/`   | App-wide components (Header, Footer, Hero)                           |
-| `apps/web/src/layouts/`      | Astro layouts                                                        |
-| `apps/web/src/i18n/`         | Wraps `@schoolyard/i18n` with the current page locale                |
-| `apps/mobile/`               | Expo Router app (React Native)                                       |
-| `packages/config/`           | Zod schema, loader, helpers (`getEnabledModules`)                    |
-| `packages/tokens/`           | `tokens.json` + Style Dictionary build script                        |
-| `packages/i18n/`             | Locale JSON files + `t()` utility + locale detection                 |
-| `packages/content-api/`      | Thin shared content helpers usable from both apps                    |
-| `packages/ui/`               | Shared React Native components                                       |
-| `cms/config.yml`             | Decap CMS schema (matches Astro content collections)                 |
-| `scripts/setup.js`           | Interactive first-time setup wizard                                  |
-| `scripts/validate-config.js` | Pre-build validation of `school.config.json`                         |
+| Path                             | Purpose                                                              |
+| -------------------------------- | -------------------------------------------------------------------- |
+| `apps/web/`                      | Astro 5 web app — the primary surface for v1                         |
+| `apps/web/src/modules/`          | One folder per module. Add pages here, not in `src/pages/`.          |
+| `apps/web/src/content/`          | Astro content collections (Markdown). Schemas in `content/config.ts` |
+| `apps/web/src/components/`       | App-wide components (Header, Footer, Hero)                           |
+| `apps/web/src/layouts/`          | Astro layouts                                                        |
+| `apps/web/src/i18n/`             | Wraps `@schoolyard/i18n` with the current page locale                |
+| `apps/mobile/`                   | Expo Router app (React Native)                                       |
+| `packages/config/`               | Zod schema, loader, helpers (`getEnabledModules`)                    |
+| `packages/tokens/`               | `tokens.json` + Style Dictionary build script                        |
+| `packages/i18n/`                 | Locale JSON files + `t()` utility + locale detection                 |
+| `packages/content-api/`          | Adapter router — `createContentClient({ backend })`                  |
+| `packages/supabase/`             | Typed client factories + generated `Database` types                  |
+| `packages/ui/`                   | Shared React Native components                                       |
+| `supabase/migrations/`           | Postgres DDL + RLS (0001–0006)                                       |
+| `supabase/tests/`                | RLS policy matrix (release-blocking)                                 |
+| `supabase/functions/`            | Edge functions (contact-submit, donate, announce, …)                 |
+| `cms/config.yml`                 | Decap CMS schema (used only in `static` backend mode)                |
+| `scripts/setup.ts`               | Interactive first-time setup wizard                                  |
+| `scripts/validate-config.ts`     | Pre-build validation of `school.config.json`                         |
+| `scripts/generate-manifest.ts`   | Legacy static manifest writer (backend=static path)                  |
+| `scripts/migrate-to-supabase.ts` | Markdown → Postgres seeder (service-role)                            |
+| `scripts/lib/normalizers.ts`     | Shared parse + normalize pipeline for both writers                   |
 
 ## The Single Source of Truth: `school.config.json`
 
@@ -131,6 +156,17 @@ Add a new content type by:
 
 `apps/web/src/components/Header.astro` calls `getEnabledModules(config)` and produces nav links from each enabled module's `index.ts` manifest. Schools never edit nav by hand.
 
+## Supabase Conventions
+
+- **All migrations go through `supabase/migrations/*.sql`** and are applied via `supabase db push` or the MCP `apply_migration` tool. Never run ad-hoc DDL against prod.
+- **After every DDL change**, run `get_advisors type=security` via MCP or `supabase inspect db advisors` via CLI. Any findings are release-blocking.
+- **After every schema change**, regenerate `packages/supabase/src/database.types.ts` via `supabase gen types typescript` and commit the result. Downstream typechecks depend on it.
+- **Every query MUST filter by `school_id`** (or a column that transitively references it). RLS is the safety net, not the first line of defense.
+- **Never bypass RLS from client code.** Service-role keys only live in `scripts/migrate-to-supabase.ts` and `supabase/functions/**`. Importing `createServiceClient` from any `apps/*` file is a bug.
+- **Every new content table mirrors its Astro collection counterpart** so the static and Supabase adapters return identical types. The shape contract lives in `packages/content-api/src/types.ts`.
+- **New RLS policies require matching tests** in `supabase/tests/rls.spec.ts`. The test matrix covers `anon`, `member-a`, `editor-a`, `editor-b`, `admin-a`, `district_admin`. Add a row for any new table before merging.
+- **Edge functions live under `supabase/functions/<name>/`** and are deployed via `supabase functions deploy <name>` or MCP `deploy_edge_function`.
+
 ## What NOT to Change Without Discussion
 
 These are load-bearing architectural choices. Changing them ripples across the whole repo:
@@ -139,7 +175,10 @@ These are load-bearing architectural choices. Changing them ripples across the w
 - The design tokens schema in `tokens.json`
 - The set of supported locales in `packages/i18n/src/index.ts`
 - The content collection schemas in `apps/web/src/content/config.ts`
+- The Supabase schema shape in `packages/supabase/src/database.types.ts` and `supabase/migrations/`
+- The `ContentAdapter` interface in `packages/content-api/src/adapters/types.ts`
 - The fact that disabled modules produce zero output
+- The fact that RLS is enabled on every content and dynamic table
 
 If you have a good reason to change one, open an issue first.
 

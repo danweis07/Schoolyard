@@ -1,0 +1,38 @@
+---
+import { useTranslate, localizedPath } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  teacher: CollectionEntry<'classroomTeachers'>
+  locale: Locale
+}
+
+const { teacher, locale } = Astro.props
+const t = useTranslate(locale)
+---
+
+<a
+  href={localizedPath(`/classroom/${teacher.slug}`, locale)}
+  class="block rounded-card border border-border bg-surface p-card no-underline shadow-sm transition hover:shadow-md"
+>
+  <h3 class="text-xl font-bold">{teacher.data.name}</h3>
+  <p class="mt-1 text-sm text-muted">
+    {t('classroom.grade')}: {teacher.data.grade}
+    {teacher.data.subject && ` · ${teacher.data.subject}`}
+  </p>
+  {
+    teacher.data.wishlist.length > 0 && (
+      <p class="mt-3 text-xs text-muted">
+        {teacher.data.wishlist.length} {t('classroom.wishlist').toLowerCase()}
+      </p>
+    )
+  }
+  {
+    teacher.data.readingList.length > 0 && (
+      <p class="mt-1 text-xs text-muted">
+        {teacher.data.readingList.length} {t('classroom.readingList').toLowerCase()}
+      </p>
+    )
+  }
+</a>

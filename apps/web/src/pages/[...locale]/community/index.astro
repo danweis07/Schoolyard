@@ -4,6 +4,8 @@ import { siteConfig } from '@/lib/site'
 import { isModuleEnabled } from '@schoolyard/config'
 import { getCollection } from 'astro:content'
 import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
+import CommunityListingCard from '@/modules/community/components/CommunityListingCard.astro'
+import CategoryFilter from '@/modules/community/components/CategoryFilter.astro'
 
 export const getStaticPaths = localeStaticPaths
 
@@ -55,27 +57,10 @@ for (const listing of listings) {
           {categories.map((cat) =>
             byCategory[cat].length > 0 ? (
               <div>
-                <h2 class="text-2xl font-bold">{t(`community.categories.${cat}`)}</h2>
+                <CategoryFilter category={cat} count={byCategory[cat].length} locale={locale} />
                 <div class="mt-4 grid gap-4 md:grid-cols-2">
                   {byCategory[cat].map((listing) => (
-                    <article class="rounded-card border border-border bg-surface p-card shadow-sm">
-                      <h3 class="text-lg font-bold">{listing.data.title}</h3>
-                      <p class="mt-2 text-sm">{listing.data.description}</p>
-                      <dl class="mt-3 text-xs text-muted">
-                        {listing.data.neighborhood && (
-                          <div>
-                            <dt class="inline font-semibold">{t('community.neighborhood')}:</dt>{' '}
-                            <dd class="inline">{listing.data.neighborhood}</dd>
-                          </div>
-                        )}
-                        {listing.data.contact && (
-                          <div>
-                            <dt class="inline font-semibold">{t('community.contact')}:</dt>{' '}
-                            <dd class="inline">{listing.data.contact}</dd>
-                          </div>
-                        )}
-                      </dl>
-                    </article>
+                    <CommunityListingCard listing={listing} locale={locale} />
                   ))}
                 </div>
               </div>

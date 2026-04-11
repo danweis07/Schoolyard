@@ -1,0 +1,27 @@
+---
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  items: string[]
+  locale: Locale
+  /** Translation key for the section heading. Defaults to 'classroom.wishlist'. */
+  headingKey?: string
+}
+
+const { items, locale, headingKey = 'classroom.wishlist' } = Astro.props
+const t = useTranslate(locale)
+---
+
+{
+  items.length > 0 && (
+    <section class="mt-6">
+      <h3 class="text-sm font-semibold uppercase tracking-wide text-muted">{t(headingKey)}</h3>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+        {items.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+    </section>
+  )
+}

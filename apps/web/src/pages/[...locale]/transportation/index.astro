@@ -4,6 +4,7 @@ import { siteConfig } from '@/lib/site'
 import { isModuleEnabled } from '@schoolyard/config'
 import { getCollection } from 'astro:content'
 import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
+import RouteCard from '@/modules/transportation/components/RouteCard.astro'
 
 export const getStaticPaths = localeStaticPaths
 
@@ -31,51 +32,7 @@ const routes = (await getCollection('transportationRoutes')).sort(
       ) : (
         <div class="mt-6 space-y-6">
           {routes.map((route) => (
-            <article class="rounded-card border border-border bg-surface p-card shadow-sm">
-              <div class="flex items-baseline justify-between gap-4">
-                <h3 class="text-xl font-bold">
-                  {t('transportation.route')} {route.data.routeNumber}: {route.data.routeName}
-                </h3>
-              </div>
-              <dl class="mt-4 grid gap-3 sm:grid-cols-3 text-sm">
-                {route.data.driver && (
-                  <div>
-                    <dt class="font-semibold text-muted">{t('transportation.driver')}</dt>
-                    <dd>{route.data.driver}</dd>
-                  </div>
-                )}
-                {route.data.morningArrival && (
-                  <div>
-                    <dt class="font-semibold text-muted">{t('transportation.morningArrival')}</dt>
-                    <dd>{route.data.morningArrival}</dd>
-                  </div>
-                )}
-                {route.data.afternoonDeparture && (
-                  <div>
-                    <dt class="font-semibold text-muted">
-                      {t('transportation.afternoonDeparture')}
-                    </dt>
-                    <dd>{route.data.afternoonDeparture}</dd>
-                  </div>
-                )}
-              </dl>
-              {route.data.stops.length > 0 && (
-                <div class="mt-4">
-                  <h4 class="text-sm font-semibold uppercase tracking-wide text-muted">
-                    {t('transportation.stops')}
-                  </h4>
-                  <ul class="mt-2 space-y-1 text-sm">
-                    {route.data.stops.map((stop) => (
-                      <li class="flex justify-between border-b border-border/50 py-1 last:border-0">
-                        <span>{stop.name}</span>
-                        {stop.time && <span class="text-muted">{stop.time}</span>}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {route.data.notes && <p class="mt-4 text-sm text-muted">{route.data.notes}</p>}
-            </article>
+            <RouteCard route={route} locale={locale} />
           ))}
         </div>
       )

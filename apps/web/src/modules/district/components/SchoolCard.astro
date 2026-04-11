@@ -1,0 +1,22 @@
+---
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+import type { TenantSchool } from '@schoolyard/config'
+
+interface Props {
+  school: TenantSchool
+  locale: Locale
+}
+
+const { school, locale } = Astro.props
+const t = useTranslate(locale)
+---
+
+<article class="rounded-card border border-border bg-surface p-card shadow-sm">
+  <h3 class="text-xl font-bold">{school.name}</h3>
+  <p class="mt-2 text-sm text-muted">{school.shortName}</p>
+  {school.address && <p class="mt-1 text-xs text-muted">{school.address}</p>}
+  <a href={`/schools/${school.slug}`} class="mt-4 inline-block text-sm font-semibold text-primary">
+    {t('district.visitSchool')} →
+  </a>
+</article>

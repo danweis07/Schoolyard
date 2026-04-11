@@ -19,6 +19,7 @@
     "@schoolyard/config": "workspace:*",
     "@schoolyard/content-api": "workspace:*",
     "@schoolyard/i18n": "workspace:*",
+    "@schoolyard/supabase": "workspace:*",
     "@schoolyard/tokens": "workspace:*",
     "@schoolyard/ui": "workspace:*",
     "expo": "~52.0.0",

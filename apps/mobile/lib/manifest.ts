@@ -1,19 +1,19 @@
 /**
- * Mobile-side wrapper around the content manifest fetch helpers.
+ * Mobile-side content client — one shared instance that routes reads
+ * to the configured backend (static JSON or Supabase).
  *
- * The base URL comes from `siteConfig.deployment.siteUrl` — the school's
- * published website, which serves `api/*.json` alongside the HTML. In
- * development you can override via the EXPO_PUBLIC_MANIFEST_BASE_URL env var.
+ * Backend selection order:
+ *
+ *   1. `EXPO_PUBLIC_SCHOOLYARD_BACKEND` env var, if set
+ *   2. `supabase` when a Supabase URL + anon key are present
+ *   3. `static` otherwise (reads from the school's deployed JSON API)
+ *
+ * The exported `fetch*` helpers keep their original signatures so the
+ * existing hooks (`useEvents`, `useNews`, …) don't need to change.
  */
 import { siteConfig } from './config'
-import {
-  fetchManifest as apiFetchManifest,
-  fetchEvents as apiFetchEvents,
-  fetchNews as apiFetchNews,
-  fetchBoard as apiFetchBoard,
-  fetchVolunteers as apiFetchVolunteers,
-  fetchResources as apiFetchResources,
-} from '@schoolyard/content-api'
+import { getSupabase } from './supabase'
+import { createContentClient, type ContentAdapter } from '@schoolyard/content-api'
 import type {
   ManifestIndex,
   ManifestEvent,
@@ -23,14 +23,7 @@ import type {
   ManifestResource,
 } from '@schoolyard/content-api'
 
-/**
- * Returns the base URL the mobile app uses to fetch the content manifest.
- * Priority: env override → school.config.json deployment.siteUrl → empty string.
- * An empty base URL short-circuits fetches so the app doesn't crash in dev
- * when no site has been deployed yet.
- */
 export function getBaseUrl(): string {
-  // EXPO_PUBLIC_ env vars are injected at bundle time by the Expo runtime.
   const envUrl =
     typeof process !== 'undefined' ? (process.env?.EXPO_PUBLIC_MANIFEST_BASE_URL ?? '') : ''
   return envUrl || siteConfig.deployment.siteUrl || ''
@@ -40,26 +33,61 @@ export function hasBaseUrl(): boolean {
   return getBaseUrl().length > 0
 }
 
+function resolveBackend(): 'static' | 'supabase' {
+  const override = process.env?.EXPO_PUBLIC_SCHOOLYARD_BACKEND
+  if (override === 'static' || override === 'supabase') return override
+  return getSupabase() ? 'supabase' : 'static'
+}
+
+function resolveSchoolSlug(): string {
+  const envSlug = process.env?.EXPO_PUBLIC_SCHOOLYARD_SCHOOL_SLUG
+  if (envSlug) return envSlug
+  return siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+}
+
+let client: ContentAdapter | null = null
+
+function getClient(): ContentAdapter {
+  if (client) return client
+  const backend = resolveBackend()
+  if (backend === 'supabase') {
+    const supabase = getSupabase()!
+    client = createContentClient({
+      backend: 'supabase',
+      supabase,
+      defaultSchoolSlug: resolveSchoolSlug(),
+    })
+  } else {
+    client = createContentClient({
+      backend: 'static',
+      baseUrl: getBaseUrl(),
+    })
+  }
+  return client
+}
+
+// ── Back-compat helpers keeping the old signature ──────────────────
+
 export function fetchManifest(signal?: AbortSignal): Promise<ManifestIndex> {
-  return apiFetchManifest(getBaseUrl(), { signal })
+  return getClient().fetchManifest(undefined, { signal })
 }
 
 export function fetchEvents(signal?: AbortSignal): Promise<ManifestEvent[]> {
-  return apiFetchEvents(getBaseUrl(), { signal })
+  return getClient().fetchEvents(undefined, { signal })
 }
 
 export function fetchNews(signal?: AbortSignal): Promise<ManifestNewsPost[]> {
-  return apiFetchNews(getBaseUrl(), { signal })
+  return getClient().fetchNews(undefined, { signal })
 }
 
 export function fetchBoard(signal?: AbortSignal): Promise<ManifestBoardMember[]> {
-  return apiFetchBoard(getBaseUrl(), { signal })
+  return getClient().fetchBoard(undefined, { signal })
 }
 
 export function fetchVolunteers(signal?: AbortSignal): Promise<ManifestVolunteerRole[]> {
-  return apiFetchVolunteers(getBaseUrl(), { signal })
+  return getClient().fetchVolunteers(undefined, { signal })
 }
 
 export function fetchResources(signal?: AbortSignal): Promise<ManifestResource[]> {
-  return apiFetchResources(getBaseUrl(), { signal })
+  return getClient().fetchResources(undefined, { signal })
 }

@@ -1,0 +1,52 @@
+---
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+import type { CollectionEntry } from 'astro:content'
+import AllergenBadge from './AllergenBadge.astro'
+
+interface Props {
+  menu: CollectionEntry<'lunchMenus'>
+  locale: Locale
+  /** When true, the heading says "This Week" instead of the week-of date. */
+  isThisWeek?: boolean
+}
+
+const { menu, locale, isThisWeek = false } = Astro.props
+const t = useTranslate(locale)
+const dateFormatter = new Intl.DateTimeFormat(locale, {
+  month: 'long',
+  day: 'numeric',
+})
+
+type WeekDay = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday'
+const days: WeekDay[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+---
+
+<article class="rounded-card border border-border bg-surface p-card shadow-sm">
+  <h2 class="text-xl font-bold">
+    {isThisWeek ? t('lunch.thisWeek') : dateFormatter.format(menu.data.weekStart)}
+  </h2>
+  <dl class="mt-4 grid gap-3 sm:grid-cols-5">
+    {
+      days.map((day) => (
+        <div>
+          <dt class="text-xs font-semibold uppercase tracking-wide text-muted">
+            {t(`lunch.weekdays.${day}`)}
+          </dt>
+          <dd class="mt-1 text-sm">{menu.data[day] || '—'}</dd>
+        </div>
+      ))
+    }
+  </dl>
+  {
+    menu.data.allergens.length > 0 && (
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <span class="text-sm font-semibold text-muted">{t('lunch.allergens')}:</span>
+        {menu.data.allergens.map((allergen) => (
+          <AllergenBadge allergen={allergen} />
+        ))}
+      </div>
+    )
+  }
+  {menu.data.freeReducedNote && <p class="mt-3 text-xs text-muted">{menu.data.freeReducedNote}</p>}
+</article>

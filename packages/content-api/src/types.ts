@@ -68,3 +68,117 @@ export interface SchoolResource {
   url?: string
   languages: string[]
 }
+
+// ── Newly exposed shapes for modules that previously lived only in
+// Astro content collections. Mobile + third-party consumers now get
+// these through the unified content-api.
+
+export interface LunchMenu {
+  slug: string
+  /** ISO date for the Monday of the week. */
+  weekOf: string
+  /** Optional end-of-week date; inferred if omitted. */
+  weekEnd?: string
+  /** Keyed day → list of items. Free-form JSON to allow school-specific shapes. */
+  meals: Record<string, unknown>
+  allergens: string[]
+  freeReducedNote?: string
+  pdfUrl?: string
+}
+
+export interface TransportationRoute {
+  slug: string
+  routeNumber: string
+  routeName: string
+  driver?: string
+  morningArrival?: string
+  afternoonDeparture?: string
+  /** Ordered stops along the route. Schema is open to allow school variation. */
+  stops: Array<Record<string, unknown>>
+  notes?: string
+  order: number
+}
+
+export type CommunityCategory =
+  | 'classified'
+  | 'carpool'
+  | 'skill-share'
+  | 'business'
+  | 'new-family'
+  | 'other'
+
+export interface CommunityListing {
+  slug: string
+  title: string
+  category: CommunityCategory
+  description: string
+  contact?: string
+  neighborhood?: string
+  postedDate?: string
+  expiresDate?: string
+  url?: string
+  flaggedCount: number
+  hidden: boolean
+  order: number
+}
+
+export interface ClassroomTeacher {
+  slug: string
+  name: string
+  grade: string
+  subject?: string
+  email?: string
+  photo?: string
+  bio?: string
+  wishlist: Array<Record<string, unknown>>
+  readingList: Array<Record<string, unknown>>
+  order: number
+}
+
+export interface BudgetLineItem {
+  category: string
+  budgeted?: number
+  actual?: number
+  note?: string
+}
+
+export interface BudgetYear {
+  slug: string
+  year: number
+  totalRaised: number
+  totalSpent: number
+  categories: BudgetLineItem[]
+  summary?: string
+  order: number
+}
+
+export interface Committee {
+  slug: string
+  name: string
+  icon?: string
+  description?: string
+  meets?: string
+  members: Array<Record<string, unknown>>
+  order: number
+}
+
+export interface Program {
+  slug: string
+  name: string
+  grades?: string
+  schedule?: string
+  description?: string
+  funding?: string
+  partner?: string
+  /** Goal + raised are in cents to match the backend column type. */
+  goalCents?: number
+  raisedCents: number
+  order: number
+}
+
+export interface PtaNewsletter {
+  slug: string
+  title: string
+  pdfUrl?: string
+  publishedAt: string
+}

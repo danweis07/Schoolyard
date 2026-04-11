@@ -1,38 +1,103 @@
 # ROADMAP.md — What's Coming and What's Not
 
-> v1 is intentionally focused. This document lists what we deferred and why.
+> Schoolyard recently pivoted to a Supabase-backed multi-tenant architecture. The original "non-technical PTA parent edits markdown" path still works via the legacy `static` backend, but the default path is now `SCHOOLYARD_BACKEND=supabase`. This file reflects the post-pivot state.
 
-## v1 Scope (shipped in this monorepo)
+## v1 Scope — what shipped
 
-- Astro web app, working build
-- Single-file `school.config.json` driving everything
-- Zod schema and validator
-- Style Dictionary design tokens (web CSS + RN theme)
-- 5 demo locales populated (en fully, es/zh-hans/ru/tl partial)
-- All 12 modules functional: **events, news, pta, volunteer, fundraising, community, lunch, transportation, classroom, district, resources, transparency**
-- Progressive onboarding presets (`just-getting-started`, `active-pta`, `full-community-hub`, `district-wide`) in `@schoolyard/config`
-- Multi-tenant build driver via `SCHOOLYARD_CONFIG` env var + `pnpm build:school <path>`
-- Demo content for Longfellow Elementary, SFUSD
-- Runnable Expo mobile skeleton with 5-tab structure
-- Documentation: CLAUDE.md (spec), README.md (PTA-friendly), AI.md (architecture), DEPLOYMENT.md (Netlify/Vercel/GH Pages)
-- Decap CMS configuration
+### Monorepo foundations
 
-## v1.x — Near-term follow-ups (welcoming PRs)
+- Turborepo + pnpm, TypeScript strict, ESLint, Prettier, Husky, CI
+- `school.config.json` — Zod schema, loader, presets, district support
+- `pnpm build:school <path>` multi-tenant build driver
+- 4 onboarding presets: `just-getting-started`, `active-pta`, `full-community-hub`, `district-wide`
+- Style Dictionary design tokens → web CSS vars + RN theme, runtime color overrides
+- 20 locales (11 full-coverage, 9 essentials-only)
 
-- **Deepen the existing modules.** Every module has a working landing page, but richer content types, filters, and exports are welcome. Check individual modules for open feature gaps.
-- **Polish the draft translations.** All 20 locales ship with working translations, but quality varies by tier:
-  - **Tier 1 (production-ready):** `en`, `es`, `zh-hans`, `ru`, `tl`, `ar`, `vi`, `pt`, `ko`, `hi`, `fr` — 11 locales, all ~247 keys covered. These are the demo defaults plus the languages of the largest US ELL populations. Native-speaker review is still welcome.
-  - **Tier 2 (essentials, awaiting community polish):** `zh-hant`, `ht`, `so`, `hmn`, `am`, `km`, `ur`, `pa`, `sw` — 9 locales, ~60-80 keys each covering `common.*`, `nav.*`, `footer.*`, `home.*`, `errors.*`, and module landing-page titles. Deeper keys fall back to English silently via `t()`. PRs that expand these to full coverage are the fastest way to contribute.
-- **Real demo images.** Replace placeholder SVGs with royalty-free Unsplash photos. See `apps/web/public/images/demo/CREDITS.md`.
+### Web — 12 modules, component parity
+
+All 12 modules now follow the same shape: `modules/<name>/index.ts` manifest + `i18n-keys.ts` + `components/` folder + pages under `src/pages/[...locale]/<route>/`.
+
+- **events** — listings, detail, per-event `.ics`, `calendar.ics`
+- **news** — listings, detail, per-tag RSS
+- **pta** — board, committees, meetings, membership, newsletters, enrichment, budget
+- **volunteer** — role listings, detail
+- **fundraising** — progress bar, donate CTA, aggregate view wired in Supabase mode
+- **community** — listing card, category filter, flag button (stub for Phase 6)
+- **lunch** — weekly menu card, allergen badge
+- **transportation** — route card, stop list
+- **classroom** — teacher card, wishlist/reading-list sections
+- **district** — school card, district header, multi-school aggregation
+- **resources** — resource card, category + language badges
+- **transparency** — budget-year card, line-item table, year-over-year variance
+
+### Backend (Supabase-backed, new in this pivot)
+
+- `packages/supabase/` — typed client factories (`createBrowserClient`, `createServerClient`, `createServiceClient`)
+- `supabase/migrations/0001…0006.sql` — tenant, content, dynamic state, RLS, indexes, functions + triggers
+- 14 content tables mirroring existing Astro collections (events, news, board_members, volunteer_roles, resources, lunch_menus, transportation_routes, community_listings, classroom_teachers, budget_years, committees, programs, pta_newsletters) + schools / districts
+- 8 dynamic tables: `profiles`, `event_rsvps`, `fundraising_donations`, `contact_submissions`, `volunteer_hours`, `community_flags`, `push_tokens`, `announcements`
+- RLS on every table, keyed on `school_id`; role hierarchy `member → editor → admin → district_admin`
+- `fundraising_program_totals` aggregate view (donations never selectable directly)
+- `handle_new_user()` trigger auto-creates a profile row on signup
+- `packages/content-api/src/adapters/{static,supabase}.ts` — dual backends, identical types
+- `createContentClient({ backend })` router
+- `scripts/migrate-to-supabase.ts` — idempotent Markdown → Postgres seeder (service-role)
+- `scripts/lib/normalizers.ts` — shared parse + normalize pipeline used by both static manifest writer and migrator
+
+### Mobile
+
+- Expo + Expo Router + NativeWind, 5-tab structure, already wired to `@schoolyard/content-api`
+- React Query + Supabase client + auth + offline cache land in Phase 7
+
+### Tests & docs
+
+- Vitest unit tests, Playwright E2E (7 golden paths), content-api dual-adapter tests
+- CLAUDE.md, AI.md, DEPLOYMENT.md updated for the pivot
+- New `BACKEND.md` — schema reference, RLS cheat sheet, admin workflows, edge-function index
+
+## v1 — Still in progress
+
+### Phase 4 — Web middleware + hybrid mode
+
+- Flip `apps/web/astro.config.mjs` to `output: 'hybrid'` + `@astrojs/node`
+- `apps/web/src/middleware.ts` — resolves school from subdomain → `Astro.locals.school` + `Astro.locals.supabase`
+- Split `apps/web/src/lib/site.ts` into build-time + request-time helpers
+
+### Phase 6 — Auth + dynamic feature components
+
+- Supabase Auth (email magic link) + JWT claim hook for role / school_id / district_id
+- `RsvpButton`, `HoursLogForm`, `FlagButton`, `DonateForm` client islands
+- Edge functions: `contact-submit`, `donate`, `stripe-webhook`, `volunteer-hours-export`, `announce`
+- CSV export for volunteer hours (authed only)
+
+### Phase 7 — Mobile Supabase wiring
+
+- `apps/mobile/lib/supabase.ts` (`@supabase/supabase-js` + AsyncStorage)
+- Replace `useFetch.ts` with React Query + `expo-sqlite` persistence
+- Magic-link sign-in at `app/(auth)/sign-in.tsx`, guest mode stays default
+- Expo Notifications + `push_tokens` upsert on launch
+
+### Translation backlog
+
+- 9 Tier-2 locales need ~170 more keys each to reach Tier-1 parity
+- RTL visual verification for `ar` and `ur`
+
+### Content polish
+
+- Swap placeholder SVGs for real Unsplash photos + update `apps/web/public/images/demo/CREDITS.md`
+- Add a third-school config to stress-test multi-tenancy harder
 
 ## v2 — Major feature work
 
-- **Mobile feature parity.** Wire each tab to live content from `@schoolyard/content-api`. Add push notifications via Expo Notifications. Add offline mode via Expo SQLite. Add auth via Clerk or Supabase.
-- **District module.** Aggregate multiple schools into a single Schoolyard deployment with cross-school events and announcements.
-- **Resources auto-localization.** Pull food bank, healthcare, and legal aid listings from a curated dataset, filtered by the school's zip code.
-- **Newsletter builder.** Compose newsletters from existing news posts and send via Buttondown or Mailchimp.
-- **Volunteer hour tracking export.** Generate CSV/PDF reports for employer volunteer-match programs.
-- **Annual report PDF generator.** Auto-build a year-in-review PDF from the year's events, fundraising, and volunteer hours.
+- **District aggregated calendar + announcements** via `district_id` on dynamic tables
+- **Newsletter module** — compose from news posts, send via Buttondown or Mailchimp
+- **Volunteer hour reports** — CSV + PDF for employer match programs
+- **Annual report PDF generator** — auto-compile year-in-review from events + fundraising + volunteer hours
+- **Grants module** — filter US federal/state/foundation grants by school profile
+- **Emergency module** — SMS alerts via Twilio, offline-first
+- **Resources auto-localization** — pull food bank / healthcare / legal aid listings from a curated dataset filtered by ZIP
+- **NCES integration** — seed school profiles from public data
+- **Mobile EAS production builds**, App Store + Play Store submission tooling
 
 ---
 

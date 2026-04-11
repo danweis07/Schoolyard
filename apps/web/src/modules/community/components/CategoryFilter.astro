@@ -1,0 +1,22 @@
+---
+/**
+ * Renders a section header for a community-listings category group.
+ * Separated from the page so category labels aren't inlined everywhere.
+ */
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  category: 'classified' | 'carpool' | 'skill-share' | 'business' | 'new-family' | 'other'
+  count: number
+  locale: Locale
+}
+
+const { category, count, locale } = Astro.props
+const t = useTranslate(locale)
+---
+
+<header class="flex items-baseline justify-between gap-4">
+  <h2 class="text-2xl font-bold">{t(`community.categories.${category}`)}</h2>
+  <span class="text-xs text-muted">{count}</span>
+</header>

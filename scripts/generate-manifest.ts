@@ -23,11 +23,9 @@
  * No database, no server, no runtime API — just static files.
  */
 
-import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
-import { join, resolve, dirname, basename, extname } from 'node:path'
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import matter from 'gray-matter'
-import { marked } from 'marked'
 import {
   isDistrictMode,
   getTenantSlugs,
@@ -36,15 +34,16 @@ import {
 } from '@schoolyard/config'
 import { loadSchoolConfigSync } from '@schoolyard/config/loader'
 import type { SchoolConfig } from '@schoolyard/config'
-import type {
-  ManifestIndex,
-  ManifestEvent,
-  ManifestNewsPost,
-  ManifestBoardMember,
-  ManifestVolunteerRole,
-  ManifestResource,
-  ManifestConfig,
-} from '@schoolyard/content-api'
+import type { ManifestIndex } from '@schoolyard/content-api'
+import {
+  readMarkdownCollection,
+  normalizeEvent,
+  normalizeNews,
+  normalizeBoard,
+  normalizeVolunteer,
+  normalizeResource,
+  sanitizeConfig,
+} from './lib/normalizers.js'
 
 // ────────────────────────────────────────────────────────────────────
 // Paths
@@ -63,165 +62,6 @@ const MANIFEST_VERSION = 1
  */
 const CORE_COLLECTIONS = ['events', 'news', 'board', 'volunteers', 'resources'] as const
 type CoreCollection = (typeof CORE_COLLECTIONS)[number]
-
-// ────────────────────────────────────────────────────────────────────
-// Markdown loader
-// ────────────────────────────────────────────────────────────────────
-
-marked.setOptions({ gfm: true, breaks: false })
-
-interface ParsedContent {
-  slug: string
-  data: Record<string, unknown>
-  htmlBody: string
-}
-
-/**
- * Reads a directory of `.md` files and returns a slug + frontmatter + rendered HTML
- * for each. Missing directories return an empty array so disabled or future modules
- * don't break the build.
- */
-function readMarkdownCollection(collectionDir: string): ParsedContent[] {
-  if (!existsSync(collectionDir)) return []
-
-  const entries = readdirSync(collectionDir, { withFileTypes: true })
-  const results: ParsedContent[] = []
-
-  for (const entry of entries) {
-    if (!entry.isFile()) continue
-    if (extname(entry.name) !== '.md') continue
-
-    const filePath = join(collectionDir, entry.name)
-    const slug = basename(entry.name, '.md')
-    const raw = readFileSync(filePath, 'utf8')
-    const parsed = matter(raw)
-    const htmlBody = parsed.content.trim() ? String(marked.parse(parsed.content)) : ''
-
-    results.push({ slug, data: parsed.data as Record<string, unknown>, htmlBody })
-  }
-
-  return results
-}
-
-// ────────────────────────────────────────────────────────────────────
-// Per-collection normalizers
-// ────────────────────────────────────────────────────────────────────
-
-/**
- * Coerces a frontmatter date (which gray-matter may parse as a Date,
- * a string, or leave as-is) to an ISO-8601 string. Returns the current
- * timestamp if the value is missing, so the manifest always has a
- * stable date field to sort by.
- */
-function toIsoDate(value: unknown): string {
-  if (value instanceof Date) return value.toISOString()
-  if (typeof value === 'string') {
-    const parsed = new Date(value)
-    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString()
-    return value
-  }
-  return new Date().toISOString()
-}
-
-function normalizeEvent(item: ParsedContent): ManifestEvent {
-  const data = item.data
-  return {
-    slug: item.slug,
-    title: String(data.title ?? ''),
-    date: toIsoDate(data.date),
-    endDate: data.endDate ? toIsoDate(data.endDate) : undefined,
-    time: data.time ? String(data.time) : undefined,
-    location: data.location ? String(data.location) : undefined,
-    description: String(data.description ?? ''),
-    category: (data.category as ManifestEvent['category']) ?? 'other',
-    registrationUrl: data.registrationUrl ? String(data.registrationUrl) : undefined,
-    featured: Boolean(data.featured),
-    cancelled: Boolean(data.cancelled),
-    htmlBody: item.htmlBody,
-  }
-}
-
-function normalizeNews(item: ParsedContent): ManifestNewsPost {
-  const data = item.data
-  return {
-    slug: item.slug,
-    title: String(data.title ?? ''),
-    publishDate: toIsoDate(data.publishDate),
-    author: data.author ? String(data.author) : undefined,
-    summary: String(data.summary ?? ''),
-    tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
-    featured: Boolean(data.featured),
-    image: data.image ? String(data.image) : undefined,
-    imageAlt: data.imageAlt ? String(data.imageAlt) : undefined,
-    htmlBody: item.htmlBody,
-  }
-}
-
-function normalizeBoard(item: ParsedContent): ManifestBoardMember {
-  const data = item.data
-  return {
-    slug: item.slug,
-    name: String(data.name ?? ''),
-    role: String(data.role ?? ''),
-    email: data.email ? String(data.email) : undefined,
-    photo: data.photo ? String(data.photo) : undefined,
-    bio: data.bio ? String(data.bio) : undefined,
-    termStart: data.termStart ? String(data.termStart) : undefined,
-    termEnd: data.termEnd ? String(data.termEnd) : undefined,
-    order: typeof data.order === 'number' ? data.order : 99,
-    htmlBody: item.htmlBody,
-  }
-}
-
-function normalizeVolunteer(item: ParsedContent): ManifestVolunteerRole {
-  const data = item.data
-  return {
-    slug: item.slug,
-    title: String(data.title ?? ''),
-    description: String(data.description ?? ''),
-    commitment: String(data.commitment ?? ''),
-    contact: data.contact ? String(data.contact) : undefined,
-    filled: Boolean(data.filled),
-    order: typeof data.order === 'number' ? data.order : 99,
-    htmlBody: item.htmlBody,
-  }
-}
-
-function normalizeResource(item: ParsedContent): ManifestResource {
-  const data = item.data
-  return {
-    slug: item.slug,
-    name: String(data.name ?? ''),
-    category: (data.category as ManifestResource['category']) ?? 'other',
-    description: String(data.description ?? ''),
-    address: data.address ? String(data.address) : undefined,
-    phone: data.phone ? String(data.phone) : undefined,
-    url: data.url ? String(data.url) : undefined,
-    languages: Array.isArray(data.languages) ? data.languages.map(String) : ['en'],
-    htmlBody: item.htmlBody,
-  }
-}
-
-// ────────────────────────────────────────────────────────────────────
-// Config sanitization — strip secrets from the published JSON
-// ────────────────────────────────────────────────────────────────────
-
-/**
- * Returns a copy of the school config with secret/internal fields
- * removed. The Stripe publishable key is actually safe to expose, but
- * we strip any future `*SecretKey` fields defensively.
- */
-function sanitizeConfig(config: SchoolConfig): ManifestConfig {
-  const clone = JSON.parse(JSON.stringify(config)) as Record<string, unknown>
-  // Drop anything obviously sensitive — currently nothing is truly secret
-  // in the schema, but this is the single place to add redactions.
-  if (clone.fundraising && typeof clone.fundraising === 'object') {
-    const f = clone.fundraising as Record<string, unknown>
-    // The Stripe PK is safe to expose by design, keep it.
-    delete f.stripeSecretKey // defense-in-depth for future fields
-  }
-  return clone
-}
 
 // ────────────────────────────────────────────────────────────────────
 // Writers

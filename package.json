@@ -21,6 +21,7 @@
     "dev:mobile": "turbo run dev --filter=mobile",
     "build": "turbo run build",
     "build:school": "tsx scripts/build-school.ts",
+    "migrate:supabase": "tsx scripts/migrate-to-supabase.ts",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
