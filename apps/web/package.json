@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build && pagefind --site dist",
+    "build": "astro build && tsx ../../scripts/generate-manifest.ts && pagefind --site dist",
+    "build:manifest": "tsx ../../scripts/generate-manifest.ts",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint src",

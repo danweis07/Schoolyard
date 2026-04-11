@@ -2,6 +2,7 @@
 import BaseLayout from '@/layouts/BaseLayout.astro'
 import { siteConfig } from '@/lib/site'
 import { isModuleEnabled } from '@schoolyard/config'
+import { getCollection } from 'astro:content'
 import { useTranslate, getLocaleFromUrl } from '@/i18n/index'
 
 if (!isModuleEnabled(siteConfig, 'pta')) {
@@ -11,56 +12,7 @@ if (!isModuleEnabled(siteConfig, 'pta')) {
 const locale = getLocaleFromUrl(Astro.url)
 const t = useTranslate(locale)
 
-const committees = [
-  {
-    name: 'Events',
-    icon: '🎪',
-    description:
-      'Plans and executes school events including the Fall Festival, Movie Nights, Halloween Parade, Winter Ball, Lunar New Year Festival, and Passport Day.',
-    meets: '1st Monday of each month, 7:00 PM',
-    members: '8–12 parents',
-  },
-  {
-    name: 'Fundraising',
-    icon: '💰',
-    description:
-      'Organizes the Annual Fund, Spring Gala, restaurant nights, and corporate matching programs. Manages donor relations and fundraising communications.',
-    meets: '2nd Wednesday of each month, 7:00 PM',
-    members: '6–10 parents',
-  },
-  {
-    name: 'Communications',
-    icon: '📣',
-    description:
-      'Manages the weekly newsletter, social media, website updates, and translation coordination. Ensures all families stay informed in their preferred language.',
-    meets: 'As needed (mostly async via email)',
-    members: '4–6 parents',
-  },
-  {
-    name: 'Enrichment',
-    icon: '🔬',
-    description:
-      'Oversees PTA-funded enrichment programs including STEAM residencies, the school garden, and after-school activities. Evaluates proposals and manages vendor relationships.',
-    meets: 'Quarterly, plus as needed',
-    members: '4–6 parents',
-  },
-  {
-    name: 'Volunteer Coordination',
-    icon: '🤝',
-    description:
-      'Recruits and manages parent volunteers across all PTA activities. Maintains the sign-up system, tracks hours, and ensures background check compliance.',
-    meets: 'Monthly check-in with board',
-    members: '2–4 parents',
-  },
-  {
-    name: 'Community & Inclusion',
-    icon: '🌍',
-    description:
-      'Focuses on welcoming new families, building cross-cultural connections, and ensuring PTA activities are accessible to all. Coordinates the buddy system for incoming families.',
-    meets: '3rd Tuesday of each month, 6:30 PM',
-    members: '4–8 parents',
-  },
-]
+const committees = (await getCollection('committees')).sort((a, b) => a.data.order - b.data.order)
 ---
 
 <BaseLayout title={t('pta.committees')}>
@@ -73,19 +25,25 @@ const committees = [
         committees.map((committee) => (
           <article class="rounded-card border border-border bg-surface p-card shadow-sm">
             <div class="flex items-start gap-4">
-              <span class="text-3xl" aria-hidden="true">
-                {committee.icon}
-              </span>
+              {committee.data.icon && (
+                <span class="text-3xl" aria-hidden="true">
+                  {committee.data.icon}
+                </span>
+              )}
               <div class="flex-1">
-                <h2 class="text-xl font-bold">{committee.name}</h2>
-                <p class="mt-2 text-base">{committee.description}</p>
+                <h2 class="text-xl font-bold">{committee.data.name}</h2>
+                <p class="mt-2 text-base">{committee.data.description}</p>
                 <div class="mt-4 flex flex-wrap gap-4 text-sm text-muted">
-                  <span>
-                    <strong>Meets:</strong> {committee.meets}
-                  </span>
-                  <span>
-                    <strong>Size:</strong> {committee.members}
-                  </span>
+                  {committee.data.meets && (
+                    <span>
+                      <strong>{t('pta.committeesMeets')}:</strong> {committee.data.meets}
+                    </span>
+                  )}
+                  {committee.data.members && (
+                    <span>
+                      <strong>{t('pta.committeesSize')}:</strong> {committee.data.members}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -95,9 +53,7 @@ const committees = [
     </div>
 
     <div class="mt-10 rounded-card border border-primary/20 bg-primary/5 p-card">
-      <p class="text-base font-medium">
-        {t('pta.committeesJoin')}
-      </p>
+      <p class="text-base font-medium">{t('pta.committeesJoin')}</p>
       {
         siteConfig.school.email && (
           <p class="mt-2">

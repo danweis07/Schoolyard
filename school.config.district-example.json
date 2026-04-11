@@ -1,0 +1,75 @@
+{
+  "$schema": "./packages/config/schema.json",
+  "school": {
+    "name": "Unified School District",
+    "shortName": "Unified",
+    "tagline": "Every child, every day",
+    "district": "Unified School District",
+    "districtUrl": "https://unified.example.edu",
+    "grades": "K-12",
+    "timezone": "America/Los_Angeles"
+  },
+  "branding": {
+    "primaryColor": "#1a4f8a",
+    "accentColor": "#f5a623",
+    "logo": "/images/logo.svg",
+    "heroImage": "/images/hero.svg"
+  },
+  "languages": {
+    "default": "en",
+    "supported": ["en", "es"]
+  },
+  "modules": {
+    "pta": true,
+    "events": true,
+    "volunteer": true,
+    "fundraising": false,
+    "news": true,
+    "lunch": true,
+    "transportation": true,
+    "community": false,
+    "classroom": false,
+    "district": true,
+    "resources": true,
+    "transparency": true
+  },
+  "deployment": {
+    "siteUrl": "https://unified.example.edu"
+  },
+  "district": {
+    "name": "Unified School District",
+    "shortName": "Unified",
+    "schools": [
+      {
+        "slug": "longfellow",
+        "name": "Longfellow Elementary",
+        "shortName": "Longfellow",
+        "address": "755 Morse St",
+        "phone": "(555) 111-1111",
+        "branding": {
+          "primaryColor": "#1a4f8a"
+        },
+        "modules": {
+          "fundraising": true
+        }
+      },
+      {
+        "slug": "mission-hills",
+        "name": "Mission Hills Middle School",
+        "shortName": "Mission Hills",
+        "address": "200 Mission Hills Ave",
+        "phone": "(555) 222-2222",
+        "branding": {
+          "primaryColor": "#2d5f3f"
+        }
+      },
+      {
+        "slug": "washington",
+        "name": "Washington High School",
+        "shortName": "Washington",
+        "address": "1000 Washington Blvd",
+        "phone": "(555) 333-3333"
+      }
+    ]
+  }
+}

@@ -45,13 +45,13 @@
     "volunteer": true,
     "fundraising": true,
     "news": true,
-    "lunch": false,
-    "transportation": false,
-    "community": false,
-    "classroom": false,
+    "lunch": true,
+    "transportation": true,
+    "community": true,
+    "classroom": true,
     "district": false,
-    "resources": false,
-    "transparency": false
+    "resources": true,
+    "transparency": true
   },
   "fundraising": {
     "provider": "paypal",

@@ -5,7 +5,7 @@ const manifest: ModuleManifest = {
   navLabelKey: 'nav.transportation',
   icon: 'heroicons:truck',
   route: '/transportation',
-  implemented: false,
+  implemented: true,
 }
 
 export default manifest

@@ -146,6 +146,48 @@ export const announcementSchema = z.object({
   type: z.enum(['info', 'warning', 'urgent']).default('info'),
 })
 
+/**
+ * Per-school entry inside a district block. Each school gets its own
+ * slug, name, and optional overrides for branding/languages/modules.
+ * Unset overrides inherit from the root (district) config.
+ */
+export const tenantSchoolSchema = z.object({
+  slug: z
+    .string()
+    .regex(
+      /^[a-z0-9-]+$/,
+      'slug must be lowercase letters, numbers, and hyphens only (e.g. "longfellow")',
+    ),
+  name: z.string().min(1),
+  shortName: z.string().min(1),
+  active: z.boolean().default(true),
+  /** Optional per-school branding override. Inherits from district otherwise. */
+  branding: brandingSchema.partial().optional(),
+  /** Optional per-school language override. Inherits from district otherwise. */
+  languages: languagesSchema.partial().optional(),
+  /** Optional per-school module override. Inherits from district otherwise. */
+  modules: modulesSchema.partial().optional(),
+  /** Optional per-school timezone override. */
+  timezone: z.string().optional(),
+  /** Optional per-school address/phone/email override. */
+  address: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email().or(z.literal('')).optional(),
+})
+
+/**
+ * District block — present only when a single deployment serves multiple
+ * schools. When absent (the default), the platform runs in single-tenant
+ * mode and the root config describes the one school.
+ */
+export const districtSchema = z
+  .object({
+    name: z.string().min(1),
+    shortName: z.string().min(1),
+    schools: z.array(tenantSchoolSchema).min(1),
+  })
+  .optional()
+
 export const schoolConfigSchema = z.object({
   $schema: z.string().optional(),
   school: schoolSchema,
@@ -158,7 +200,13 @@ export const schoolConfigSchema = z.object({
   app: appSchema.default({}),
   deployment: deploymentSchema.default({}),
   announcements: z.array(announcementSchema).default([]),
+  /**
+   * Multi-tenant district block. Omit for single-school deployments.
+   */
+  district: districtSchema,
 })
 
 export type SchoolConfig = z.infer<typeof schoolConfigSchema>
 export type Modules = z.infer<typeof modulesSchema>
+export type TenantSchool = z.infer<typeof tenantSchoolSchema>
+export type District = NonNullable<z.infer<typeof districtSchema>>

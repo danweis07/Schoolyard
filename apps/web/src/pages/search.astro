@@ -20,14 +20,14 @@ const t = useTranslate(locale)
     <div id="search" class="mt-8"></div>
 
     <script is:inline src="/pagefind/pagefind-ui.js"></script>
-    <script is:inline define:vars={{ locale }}>
+    <script is:inline define:vars={{ locale, searchPlaceholder: t('common.searchPlaceholder') }}>
       window.addEventListener('DOMContentLoaded', () => {
         // @ts-ignore — PagefindUI is injected by the script tag above
         new PagefindUI({
           element: '#search',
           showSubResults: true,
           translations: {
-            placeholder: 'Search the site…',
+            placeholder: searchPlaceholder,
           },
           language: locale,
         })

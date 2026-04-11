@@ -18,17 +18,10 @@ const t = useTranslate(locale)
     <p class="mt-4 text-lg text-muted">{t('pta.meetingsDescription')}</p>
 
     <div class="mt-8 rounded-card border border-border bg-surface p-card">
-      <p class="text-base">
-        Meetings are held the second Tuesday of each month, 6:30 PM in the Longfellow library.
-      </p>
-      <p class="mt-2 text-base">
-        Childcare is provided. Spanish translation available on request — contact our communications
-        chair at least 48 hours in advance.
-      </p>
+      <h2 class="text-xl font-bold">{t('pta.meetingsWhenHeading')}</h2>
+      <p class="mt-4 text-base">{t('pta.meetingsDescription')}</p>
     </div>
 
-    <p class="mt-8 text-sm text-muted">
-      Past meeting minutes are archived and available on request from the PTA secretary.
-    </p>
+    <p class="mt-8 text-sm text-muted">{t('pta.meetingsArchive')}</p>
   </section>
 </BaseLayout>

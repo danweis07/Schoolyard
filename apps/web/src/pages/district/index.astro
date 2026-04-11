@@ -1,0 +1,50 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled, isDistrictMode, getTenantSlugs, findTenant } from '@schoolyard/config'
+import { useTranslate, getLocaleFromUrl } from '@/i18n/index'
+
+if (!isModuleEnabled(siteConfig, 'district')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+
+const districtMode = isDistrictMode(siteConfig)
+const slugs = getTenantSlugs(siteConfig)
+const schools = slugs
+  .map((slug) => findTenant(siteConfig, slug))
+  .filter((s): s is NonNullable<typeof s> => s !== undefined)
+---
+
+<BaseLayout title={t('district.title')} description={t('district.description')}>
+  <section class="mx-auto max-w-4xl px-4 py-12">
+    <h1 class="text-4xl font-bold">
+      {siteConfig.district?.name ?? siteConfig.school.district ?? t('district.title')}
+    </h1>
+    <p class="mt-2 text-lg text-muted">{t('district.description')}</p>
+
+    <h2 class="mt-12 text-2xl font-bold">{t('district.schools')}</h2>
+    {
+      !districtMode || schools.length === 0 ? (
+        <p class="mt-4 text-muted">{t('district.noSchools')}</p>
+      ) : (
+        <div class="mt-6 grid gap-4 md:grid-cols-2">
+          {schools.map((school) => (
+            <article class="rounded-card border border-border bg-surface p-card shadow-sm">
+              <h3 class="text-xl font-bold">{school.name}</h3>
+              <p class="mt-2 text-sm text-muted">{school.shortName}</p>
+              <a
+                href={`/schools/${school.slug}`}
+                class="mt-4 inline-block text-sm font-semibold text-primary"
+              >
+                {t('district.visitSchool')} →
+              </a>
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

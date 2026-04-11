@@ -5,7 +5,7 @@ const manifest: ModuleManifest = {
   navLabelKey: 'nav.classroom',
   icon: 'heroicons:academic-cap',
   route: '/classroom',
-  implemented: false,
+  implemented: true,
 }
 
 export default manifest

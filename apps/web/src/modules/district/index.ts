@@ -5,7 +5,7 @@ const manifest: ModuleManifest = {
   navLabelKey: 'nav.district',
   icon: 'heroicons:building-library',
   route: '/district',
-  implemented: false,
+  implemented: true,
 }
 
 export default manifest

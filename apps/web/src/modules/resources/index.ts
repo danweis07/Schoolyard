@@ -5,7 +5,7 @@ const manifest: ModuleManifest = {
   navLabelKey: 'nav.resources',
   icon: 'heroicons:lifebuoy',
   route: '/resources',
-  implemented: false,
+  implemented: true,
 }
 
 export default manifest

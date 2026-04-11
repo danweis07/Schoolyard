@@ -47,17 +47,9 @@ const { annualGoal, currentRaised, goalLabel, donateUrl } = siteConfig.fundraisi
     }
 
     <div class="mt-12 prose max-w-none text-base">
-      <h2>Where your donation goes</h2>
-      <p>
-        Every dollar you give stays at our school. Your contribution funds programs the district
-        doesn't pay for: classroom art supplies, music instruments, science kits, field trip
-        scholarships, and the new outdoor classroom. Our PTA is a registered 501(c)(3) — your gift
-        is tax-deductible.
-      </p>
-      <p>
-        Many employers will match your gift dollar-for-dollar. Email us at the address below if
-        you'd like help with the matching paperwork.
-      </p>
+      <h2>{t('fundraising.whereItGoesHeading')}</h2>
+      <p>{t('fundraising.whereItGoesBody')}</p>
+      <p>{t('fundraising.employerMatchBody')}</p>
     </div>
   </section>
 </BaseLayout>

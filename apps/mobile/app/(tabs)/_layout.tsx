@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { useSchoolConfig } from '../../hooks/useSchoolConfig'
+import { useTranslate } from '../../hooks/useLocale'
 import { isModuleEnabled } from '@schoolyard/config'
 import { theme } from '../../lib/theme'
 
@@ -10,6 +11,7 @@ import { theme } from '../../lib/theme'
  */
 export default function TabLayout() {
   const config = useSchoolConfig()
+  const t = useTranslate()
 
   return (
     <Tabs
@@ -24,14 +26,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: t('nav.home'),
           tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="events"
         options={{
-          title: 'Events',
+          title: t('nav.events'),
           href: isModuleEnabled(config, 'events') ? '/events' : null,
           tabBarIcon: ({ color, size }) => <Ionicons name="calendar" size={size} color={color} />,
         }}
@@ -39,7 +41,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="volunteer"
         options={{
-          title: 'Volunteer',
+          title: t('nav.volunteer'),
           href: isModuleEnabled(config, 'volunteer') ? '/volunteer' : null,
           tabBarIcon: ({ color, size }) => <Ionicons name="hand-left" size={size} color={color} />,
         }}
@@ -47,7 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="community"
         options={{
-          title: 'Community',
+          title: t('nav.community'),
           href: isModuleEnabled(config, 'community') ? '/community' : null,
           tabBarIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} />,
         }}
@@ -55,7 +57,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="more"
         options={{
-          title: 'More',
+          title: t('nav.more'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="ellipsis-horizontal" size={size} color={color} />
           ),

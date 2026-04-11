@@ -5,7 +5,7 @@ const manifest: ModuleManifest = {
   navLabelKey: 'nav.transparency',
   icon: 'heroicons:chart-pie',
   route: '/transparency',
-  implemented: false,
+  implemented: true,
 }
 
 export default manifest

@@ -1,12 +1,53 @@
-import { View, Text } from 'react-native'
+import { ScrollView, View, Text, ActivityIndicator } from 'react-native'
+import { useVolunteers } from '../../hooks/useVolunteers'
+import { useLocale, useTranslate } from '../../hooks/useLocale'
 
 export default function VolunteerScreen() {
+  const locale = useLocale()
+  const t = useTranslate(locale)
+  const { data: roles, loading, error } = useVolunteers()
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-surface p-4">
+        <ActivityIndicator />
+        <Text className="mt-3 text-muted">{t('common.loading')}</Text>
+      </View>
+    )
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 items-center justify-center bg-surface p-4">
+        <Text className="text-lg font-semibold">{t('volunteer.title')}</Text>
+        <Text className="mt-2 text-center text-muted">{error.message}</Text>
+      </View>
+    )
+  }
+
+  const openRoles = (roles ?? []).filter((r) => !r.filled).sort((a, b) => a.order - b.order)
+
+  if (openRoles.length === 0) {
+    return (
+      <View className="flex-1 items-center justify-center bg-surface p-4">
+        <Text className="text-lg font-semibold">{t('volunteer.title')}</Text>
+        <Text className="mt-2 text-center text-muted">{t('volunteer.noRoles')}</Text>
+      </View>
+    )
+  }
+
   return (
-    <View className="flex-1 items-center justify-center bg-surface p-4">
-      <Text className="text-2xl font-bold">Volunteer</Text>
-      <Text className="mt-2 text-center text-muted">
-        Open volunteer roles will appear here. v1 is the skeleton.
-      </Text>
-    </View>
+    <ScrollView className="flex-1 bg-surface" contentContainerClassName="p-4">
+      <Text className="mb-4 text-2xl font-bold">{t('volunteer.openRoles')}</Text>
+      {openRoles.map((role) => (
+        <View key={role.slug} className="mb-3 rounded-xl border border-border bg-surface p-4">
+          <Text className="text-lg font-bold">{role.title}</Text>
+          <Text className="mt-1 text-xs uppercase text-muted">
+            {t('volunteer.commitment')}: {role.commitment}
+          </Text>
+          <Text className="mt-2 text-sm">{role.description}</Text>
+        </View>
+      ))}
+    </ScrollView>
   )
 }

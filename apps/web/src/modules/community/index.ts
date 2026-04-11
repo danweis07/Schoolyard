@@ -5,7 +5,7 @@ const manifest: ModuleManifest = {
   navLabelKey: 'nav.community',
   icon: 'heroicons:users',
   route: '/community',
-  implemented: false,
+  implemented: true,
 }
 
 export default manifest
