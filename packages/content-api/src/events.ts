@@ -22,7 +22,10 @@ export function getPastEvents(events: SchoolEvent[], now: Date = new Date()): Sc
   return sortByDateDesc(events.filter((e) => new Date(e.date) < now))
 }
 
-export function getFeaturedEvent(events: SchoolEvent[]): SchoolEvent | undefined {
-  const upcoming = getUpcomingEvents(events)
+export function getFeaturedEvent(
+  events: SchoolEvent[],
+  now: Date = new Date(),
+): SchoolEvent | undefined {
+  const upcoming = getUpcomingEvents(events, now)
   return upcoming.find((e) => e.featured) ?? upcoming[0]
 }

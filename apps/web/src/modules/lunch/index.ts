@@ -5,7 +5,7 @@ const manifest: ModuleManifest = {
   navLabelKey: 'nav.lunch',
   icon: 'heroicons:cake',
   route: '/lunch',
-  implemented: false,
+  implemented: true,
 }
 
 export default manifest

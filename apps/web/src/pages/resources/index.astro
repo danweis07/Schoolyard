@@ -1,0 +1,95 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { getCollection } from 'astro:content'
+import { useTranslate, getLocaleFromUrl } from '@/i18n/index'
+
+if (!isModuleEnabled(siteConfig, 'resources')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+
+const resources = (await getCollection('resources')).sort((a, b) =>
+  a.data.name.localeCompare(b.data.name),
+)
+
+const categories = ['food', 'health', 'housing', 'legal', 'mental-health', 'other'] as const
+type Category = (typeof categories)[number]
+
+const byCategory: Record<Category, typeof resources> = {
+  food: [],
+  health: [],
+  housing: [],
+  legal: [],
+  'mental-health': [],
+  other: [],
+}
+for (const resource of resources) {
+  byCategory[resource.data.category].push(resource)
+}
+---
+
+<BaseLayout title={t('resources.title')} description={t('resources.description')}>
+  <section class="mx-auto max-w-4xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{t('resources.title')}</h1>
+    <p class="mt-2 text-lg text-muted">{t('resources.callToAction')}</p>
+
+    {
+      resources.length === 0 ? (
+        <p class="mt-8 text-muted">{t('resources.noResources')}</p>
+      ) : (
+        <div class="mt-10 space-y-10">
+          {categories.map((cat) =>
+            byCategory[cat].length > 0 ? (
+              <div>
+                <h2 class="text-2xl font-bold">{t(`resources.categories.${cat}`)}</h2>
+                <div class="mt-4 grid gap-4 md:grid-cols-2">
+                  {byCategory[cat].map((resource) => (
+                    <article class="rounded-card border border-border bg-surface p-card shadow-sm">
+                      <h3 class="text-lg font-bold">{resource.data.name}</h3>
+                      <p class="mt-2 text-sm">{resource.data.description}</p>
+                      <dl class="mt-3 space-y-1 text-xs text-muted">
+                        {resource.data.address && (
+                          <div>
+                            <dt class="inline font-semibold">{t('footer.address')}:</dt>{' '}
+                            <dd class="inline">{resource.data.address}</dd>
+                          </div>
+                        )}
+                        {resource.data.phone && (
+                          <div>
+                            <dt class="inline font-semibold">{t('footer.phone')}:</dt>{' '}
+                            <dd class="inline">
+                              <a href={`tel:${resource.data.phone}`}>{resource.data.phone}</a>
+                            </dd>
+                          </div>
+                        )}
+                        {resource.data.languages.length > 0 && (
+                          <div>
+                            <dt class="inline font-semibold">{t('resources.languages')}:</dt>{' '}
+                            <dd class="inline">{resource.data.languages.join(', ')}</dd>
+                          </div>
+                        )}
+                      </dl>
+                      {resource.data.url && (
+                        <a
+                          href={resource.data.url}
+                          class="mt-3 inline-block text-sm font-semibold text-primary"
+                          rel="noopener"
+                        >
+                          {t('resources.visitWebsite')} →
+                        </a>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              </div>
+            ) : null,
+          )}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

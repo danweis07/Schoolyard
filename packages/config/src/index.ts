@@ -14,13 +14,25 @@ export {
   appSchema,
   deploymentSchema,
   localeSchema,
+  tenantSchoolSchema,
+  districtSchema,
   SUPPORTED_LOCALES,
   MODULE_NAMES,
 } from './schema.js'
 
-export type { SchoolConfig, Modules, Locale, ModuleName } from './schema.js'
+export type { SchoolConfig, Modules, Locale, ModuleName, TenantSchool, District } from './schema.js'
 
 export { defaultConfig } from './defaults.js'
+
+export {
+  isDistrictMode,
+  isSingleTenant,
+  getTenantSlugs,
+  getDistrict,
+  findTenant,
+  resolveTenantConfig,
+  getTenantContentSubdir,
+} from './tenant.js'
 
 import { MODULE_NAMES } from './schema.js'
 import type { ModuleName, SchoolConfig } from './schema.js'

@@ -2,6 +2,7 @@
 import BaseLayout from '@/layouts/BaseLayout.astro'
 import { siteConfig } from '@/lib/site'
 import { isModuleEnabled } from '@schoolyard/config'
+import { getCollection } from 'astro:content'
 import { useTranslate, getLocaleFromUrl, localizedPath } from '@/i18n/index'
 
 if (!isModuleEnabled(siteConfig, 'pta')) {
@@ -11,53 +12,25 @@ if (!isModuleEnabled(siteConfig, 'pta')) {
 const locale = getLocaleFromUrl(Astro.url)
 const t = useTranslate(locale)
 
-const programs = [
-  {
-    name: 'STEAM Residencies',
-    grades: 'K–5',
-    schedule: '6-week sessions, rotating by grade',
-    description:
-      'Every grade receives a 6-week STEAM residency each year. Kindergarten and 1st grade focus on robotics and hands-on engineering. Grades 2–3 explore coding and digital design. Grades 4–5 tackle engineering design challenges and data science.',
-    funding: '$30,000/year',
-    partner: 'SF STEM',
-  },
-  {
-    name: 'School Garden Program',
-    grades: 'K–5',
-    schedule: 'Weekly, year-round',
-    description:
-      'Students visit the school garden weekly for hands-on lessons in biology, nutrition, and environmental science. The program includes composting, a pollinator habitat, and a "seed to table" cooking series where students prepare food they\'ve grown.',
-    funding: '$20,000/year',
-    partner: 'In-house garden instructor',
-  },
-  {
-    name: 'After-School Activities',
-    grades: 'K–5 (varies by activity)',
-    schedule: 'Mon–Fri, 2:00–3:30 PM (fall & spring sessions)',
-    description:
-      'PTA-subsidized after-school enrichment including chess club, art studio, coding club, running club, drama, and Mandarin enrichment. Scholarship spots available for every program to ensure access for all families.',
-    funding: '$15,000/year',
-    partner: 'Multiple vendors',
-  },
-  {
-    name: 'Lunch & Recess Enrichment',
-    grades: 'K–5',
-    schedule: 'Daily during lunch/recess',
-    description:
-      'Organized games, sports equipment, library access during indoor recess, and trained yard supervisors to ensure all students have a positive, inclusive break time. Parent volunteers supplement the program.',
-    funding: '$15,000/year',
-    partner: 'PTA volunteers + staff',
-  },
-  {
-    name: 'Classroom Books & Supplies',
-    grades: 'K–5',
-    schedule: 'Ongoing',
-    description:
-      'Supplemental books, art supplies, science kits, and classroom materials beyond what the district provides. Teachers submit requests and the PTA fulfills them throughout the year.',
-    funding: '$15,000/year',
-    partner: 'Direct teacher support',
-  },
-]
+const programs = (await getCollection('programs')).sort((a, b) => a.data.order - b.data.order)
+
+/**
+ * Parse "$30,000/year" to 30000 so we can total the annual cost.
+ * Programs with non-parseable funding strings are ignored in the total.
+ */
+function parseFunding(value: string | undefined): number {
+  if (!value) return 0
+  const match = value.match(/\$?([\d,]+)/)
+  if (!match) return 0
+  return Number(match[1].replace(/,/g, '')) || 0
+}
+
+const totalBudget = programs.reduce((sum, p) => sum + parseFunding(p.data.funding), 0)
+const currencyFormatter = new Intl.NumberFormat(locale, {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+})
 ---
 
 <BaseLayout title={t('pta.enrichment')}>
@@ -70,41 +43,46 @@ const programs = [
       {
         programs.map((program) => (
           <article class="rounded-card border border-border bg-surface p-card shadow-sm">
-            <h2 class="text-xl font-bold">{program.name}</h2>
-            <p class="mt-3 text-base">{program.description}</p>
+            <h2 class="text-xl font-bold">{program.data.name}</h2>
+            <p class="mt-3 text-base">{program.data.description}</p>
             <div class="mt-4 grid gap-2 text-sm text-muted sm:grid-cols-3">
               <div>
-                <span class="font-semibold">Grades:</span> {program.grades}
+                <span class="font-semibold">{t('pta.enrichmentGrades')}:</span>{' '}
+                {program.data.grades}
               </div>
               <div>
-                <span class="font-semibold">Schedule:</span> {program.schedule}
+                <span class="font-semibold">{t('pta.enrichmentSchedule')}:</span>{' '}
+                {program.data.schedule}
               </div>
-              <div>
-                <span class="font-semibold">Annual cost:</span> {program.funding}
-              </div>
+              {program.data.funding && (
+                <div>
+                  <span class="font-semibold">{t('pta.enrichmentCost')}:</span>{' '}
+                  {program.data.funding}
+                </div>
+              )}
             </div>
           </article>
         ))
       }
     </div>
 
-    <div class="mt-10 rounded-card border border-accent/20 bg-accent/5 p-card">
-      <h2 class="text-xl font-bold">Total annual enrichment budget: $95,000</h2>
-      <p class="mt-2 text-base">
-        Every dollar comes from family donations through the Annual Fund and Spring Gala. No taxpayer
-        money funds these programs — they exist because FSK families invest in their children's
-        education.
-      </p>
-      {
-        isModuleEnabled(siteConfig, 'fundraising') && siteConfig.fundraising.donateUrl && (
-          <a
-            href={localizedPath('/donate', locale)}
-            class="mt-4 inline-block rounded-button bg-primary px-6 py-3 font-semibold text-inverse no-underline hover:opacity-90"
-          >
-            {t('fundraising.donate')}
-          </a>
-        )
-      }
-    </div>
+    {
+      totalBudget > 0 && (
+        <div class="mt-10 rounded-card border border-accent/20 bg-accent/5 p-card">
+          <h2 class="text-xl font-bold">
+            {t('pta.enrichmentTotalHeading')}: {currencyFormatter.format(totalBudget)}
+          </h2>
+          <p class="mt-2 text-base">{t('pta.enrichmentTotalBody')}</p>
+          {isModuleEnabled(siteConfig, 'fundraising') && siteConfig.fundraising.donateUrl && (
+            <a
+              href={localizedPath('/donate', locale)}
+              class="mt-4 inline-block rounded-button bg-primary px-6 py-3 font-semibold text-inverse no-underline hover:opacity-90"
+            >
+              {t('fundraising.donate')}
+            </a>
+          )}
+        </div>
+      )
+    }
   </section>
 </BaseLayout>

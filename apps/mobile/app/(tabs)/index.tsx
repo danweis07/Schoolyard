@@ -1,10 +1,13 @@
 import { ScrollView, View, Text } from 'react-native'
 import { useSchoolConfig } from '../../hooks/useSchoolConfig'
+import { useLocale, useTranslate } from '../../hooks/useLocale'
 import { AnnouncementBanner, DonationProgress } from '@schoolyard/ui'
 import { isModuleEnabled } from '@schoolyard/config'
 
 export default function HomeScreen() {
   const config = useSchoolConfig()
+  const locale = useLocale()
+  const t = useTranslate(locale)
 
   return (
     <ScrollView className="flex-1 bg-surface" contentContainerClassName="p-4">
@@ -15,8 +18,8 @@ export default function HomeScreen() {
 
       <View className="mt-6">
         <AnnouncementBanner
-          title="Welcome to Schoolyard"
-          message="This is the v1 mobile skeleton. Tabs adapt to which modules your school has enabled."
+          title={t('common.appIntroTitle', { school: config.school.shortName })}
+          message={t('common.appIntroMessage')}
         />
       </View>
 
@@ -26,12 +29,17 @@ export default function HomeScreen() {
             raised={config.fundraising.currentRaised}
             goal={config.fundraising.annualGoal}
             label={config.fundraising.goalLabel}
+            locale={locale}
+            labels={{
+              of: t('fundraising.of'),
+              percentOfGoal: (percent) => t('fundraising.percentRaised', { percent }),
+            }}
           />
         </View>
       ) : null}
 
       <Text className="mt-8 text-center text-xs text-muted">
-        Schoolyard — open source for every school
+        {t('footer.builtWith')} Schoolyard — {t('footer.openSourceFor')}
       </Text>
     </ScrollView>
   )

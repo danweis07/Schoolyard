@@ -1,0 +1,82 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { getCollection } from 'astro:content'
+import { useTranslate, getLocaleFromUrl, localizedPath } from '@/i18n/index'
+
+export async function getStaticPaths() {
+  const teachers = await getCollection('classroomTeachers')
+  return teachers.map((teacher) => ({
+    params: { slug: teacher.slug },
+    props: { teacher },
+  }))
+}
+
+const { teacher } = Astro.props
+const { Content } = await teacher.render()
+
+if (!isModuleEnabled(siteConfig, 'classroom')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+---
+
+<BaseLayout title={teacher.data.name}>
+  <article class="mx-auto max-w-3xl px-4 py-12">
+    <p class="text-sm font-semibold uppercase tracking-wide text-primary">
+      {t('classroom.grade')}: {teacher.data.grade}
+      {teacher.data.subject && ` · ${teacher.data.subject}`}
+    </p>
+    <h1 class="mt-2 text-4xl font-bold">{teacher.data.name}</h1>
+
+    {
+      teacher.data.email && (
+        <p class="mt-4">
+          <a href={`mailto:${teacher.data.email}`} class="text-primary">
+            {t('classroom.emailTeacher')}
+          </a>
+        </p>
+      )
+    }
+
+    <div class="prose mt-8 max-w-none text-base">
+      <Content />
+    </div>
+
+    {
+      teacher.data.wishlist.length > 0 && (
+        <div class="mt-10 rounded-card border border-border bg-surface p-card">
+          <h2 class="text-xl font-bold">{t('classroom.wishlist')}</h2>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-base">
+            {teacher.data.wishlist.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    {
+      teacher.data.readingList.length > 0 && (
+        <div class="mt-6 rounded-card border border-border bg-surface p-card">
+          <h2 class="text-xl font-bold">{t('classroom.readingList')}</h2>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-base">
+            {teacher.data.readingList.map((book) => (
+              <li>{book}</li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    <p class="mt-12">
+      <a href={localizedPath('/classroom', locale)} class="text-primary">
+        ← {t('common.back')}
+        {t('classroom.teachers').toLowerCase()}
+      </a>
+    </p>
+  </article>
+</BaseLayout>

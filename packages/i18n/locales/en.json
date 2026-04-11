@@ -4,6 +4,7 @@
     "welcomeName": "Welcome, {name}!",
     "loading": "Loading…",
     "search": "Search",
+    "searchPlaceholder": "Search the site…",
     "menu": "Menu",
     "close": "Close",
     "open": "Open",
@@ -20,7 +21,15 @@
     "previous": "Previous",
     "today": "Today",
     "tomorrow": "Tomorrow",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "open24": "Open",
+    "closed": "Closed",
+    "contact": "Contact",
+    "schoolLabel": "School",
+    "languagesEnabledLabel": "Languages enabled",
+    "moreTitle": "More",
+    "appIntroTitle": "Welcome to {school}",
+    "appIntroMessage": "Stay connected to school events, volunteer opportunities, and news — all in one place."
   },
   "nav": {
     "home": "Home",
@@ -38,7 +47,8 @@
     "classroom": "Classroom",
     "district": "District",
     "resources": "Resources",
-    "transparency": "Transparency"
+    "transparency": "Transparency",
+    "more": "More"
   },
   "footer": {
     "address": "Address",
@@ -91,10 +101,15 @@
     "joinNow": "Join now",
     "meetings": "Meetings",
     "meetingsDescription": "PTA meetings are open to all parents and guardians.",
+    "meetingsWhenHeading": "When we meet",
+    "meetingsNoSchedule": "Meeting schedule will be posted soon.",
+    "meetingsArchive": "Past meeting minutes are archived and available on request from the PTA secretary.",
     "term": "Term: {start} – {end}",
     "committees": "Committees",
     "committeesDescription": "Our PTA committees focus on specific areas to support our school community. Join a committee that matches your interests.",
     "committeesJoin": "Interested? Email us to join.",
+    "committeesMeets": "Meets",
+    "committeesSize": "Size",
     "newsletters": "Newsletters",
     "newslettersDescription": "Stay up to date with our monthly PTA newsletters.",
     "newslettersCurrent": "Current Newsletter",
@@ -102,7 +117,12 @@
     "newslettersSignup": "Subscribe to get newsletters by email.",
     "enrichment": "Enrichment Programs",
     "enrichmentDescription": "PTA-funded programs that give every student access to arts, science, and more — beyond what the district provides.",
-    "enrichmentFundedBy": "Funded by your Annual Fund and Gala donations."
+    "enrichmentFundedBy": "Funded by your Annual Fund and Gala donations.",
+    "enrichmentGrades": "Grades",
+    "enrichmentSchedule": "Schedule",
+    "enrichmentCost": "Annual cost",
+    "enrichmentTotalHeading": "Total annual enrichment budget",
+    "enrichmentTotalBody": "Every dollar comes from family donations. No taxpayer money funds these programs — they exist because families invest in their children's education."
   },
   "volunteer": {
     "title": "Volunteer With Us",
@@ -120,10 +140,14 @@
     "donate": "Donate Now",
     "annualGoal": "Annual Goal",
     "raised": "Raised",
+    "of": "of",
     "ofGoal": "of {goal} goal",
     "percentRaised": "{percent}% of goal",
     "thankYou": "Thank you for your support!",
-    "campaigns": "Campaigns"
+    "campaigns": "Campaigns",
+    "whereItGoesHeading": "Where your donation goes",
+    "whereItGoesBody": "Every dollar you give stays at our school. Your contribution funds programs the district doesn't pay for: classroom supplies, music instruments, science kits, field trip scholarships, and more. Our PTA is a registered 501(c)(3) — your gift is tax-deductible.",
+    "employerMatchBody": "Many employers will match your gift dollar-for-dollar. Email us at the address below if you'd like help with the matching paperwork."
   },
   "home": {
     "heroCta": "Learn more",
@@ -150,6 +174,96 @@
       "send": "Send message",
       "thanks": "Thanks — we'll be in touch."
     }
+  },
+  "lunch": {
+    "title": "Lunch Menu",
+    "description": "Weekly menu, allergies, and free/reduced lunch information.",
+    "thisWeek": "This Week",
+    "upcoming": "Upcoming Weeks",
+    "allergens": "Allergens",
+    "freeReduced": "Free & Reduced Lunch",
+    "freeReducedDescription": "All students qualify regardless of family income. Ask the office for details.",
+    "noMenu": "No menu posted yet. Check back soon.",
+    "weekdays": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday"
+    }
+  },
+  "transportation": {
+    "title": "Transportation",
+    "description": "Bus routes, schedules, and family carpool resources.",
+    "routes": "Bus Routes",
+    "route": "Route",
+    "driver": "Driver",
+    "morningArrival": "Morning arrival",
+    "afternoonDeparture": "Afternoon departure",
+    "stops": "Stops",
+    "notes": "Notes",
+    "noRoutes": "Bus routes will be posted before the school year begins."
+  },
+  "community": {
+    "title": "Community Board",
+    "description": "Classifieds, carpool offers, skill share, and local businesses that support our school.",
+    "listings": "Listings",
+    "posted": "Posted",
+    "neighborhood": "Neighborhood",
+    "contact": "Contact",
+    "noListings": "No listings yet. Check back soon.",
+    "categories": {
+      "classified": "Classifieds",
+      "carpool": "Carpool",
+      "skill-share": "Skill Share",
+      "business": "Local Businesses",
+      "new-family": "New Family",
+      "other": "Other"
+    }
+  },
+  "classroom": {
+    "title": "Classroom Pages",
+    "description": "Meet our teachers and see what their classrooms need.",
+    "teachers": "Teachers",
+    "wishlist": "Classroom Wishlist",
+    "readingList": "Reading List",
+    "grade": "Grade",
+    "subject": "Subject",
+    "emailTeacher": "Email teacher",
+    "noTeachers": "Teacher pages will be added soon."
+  },
+  "district": {
+    "title": "District",
+    "description": "Schools in our district.",
+    "schools": "Schools",
+    "visitSchool": "Visit school",
+    "noSchools": "No schools configured yet."
+  },
+  "resources": {
+    "title": "Community Resources",
+    "description": "Trusted local resources for families.",
+    "callToAction": "Resources for food, housing, health, legal help, and mental health support.",
+    "languages": "Languages",
+    "visitWebsite": "Visit website",
+    "noResources": "No resources listed yet.",
+    "categories": {
+      "food": "Food",
+      "health": "Health",
+      "housing": "Housing",
+      "legal": "Legal",
+      "mental-health": "Mental Health",
+      "other": "Other"
+    }
+  },
+  "transparency": {
+    "title": "Transparency",
+    "description": "Our public budget, fund allocation, and year-over-year spending.",
+    "budgetYear": "Budget Year",
+    "totalRaised": "Total Raised",
+    "totalSpent": "Total Spent",
+    "categories": "Categories",
+    "summary": "Summary",
+    "noBudgets": "Budget information will be published soon."
   },
   "errors": {
     "notFound": "Page not found",
