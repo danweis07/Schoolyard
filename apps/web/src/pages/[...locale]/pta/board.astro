@@ -1,0 +1,29 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import BoardCard from '@/modules/pta/components/BoardCard.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { getCollection } from 'astro:content'
+import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
+
+export const getStaticPaths = localeStaticPaths
+
+if (!isModuleEnabled(siteConfig, 'pta')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+const members = (await getCollection('board')).sort((a, b) => a.data.order - b.data.order)
+---
+
+<BaseLayout title={t('pta.board')}>
+  <section class="mx-auto max-w-6xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{t('pta.board')}</h1>
+    <p class="mt-2 text-lg text-muted">{t('pta.boardDescription')}</p>
+
+    <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {members.map((member) => <BoardCard member={member} locale={locale} />)}
+    </div>
+  </section>
+</BaseLayout>

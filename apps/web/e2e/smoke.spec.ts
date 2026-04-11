@@ -100,31 +100,13 @@ test.describe('Schoolyard web — golden paths', () => {
     )
   })
 
-  /**
-   * KNOWN BUG — i18n routing is half-wired.
-   *
-   * The language switcher generates URLs like `/es/events` but Astro's
-   * i18n config in `apps/web/astro.config.mjs` has no `fallback` set and
-   * `apps/web/src/pages/` has no `[locale]` route files, so locale-prefixed
-   * URLs 404 on the built site. Verified via:
-   *
-   *   curl -sI http://127.0.0.1:4322/es/events/  →  HTTP/1.1 404 Not Found
-   *
-   * Pages internally already use `getLocaleFromUrl(Astro.url)` +
-   * `useTranslate(locale)` so the translation plumbing works — the
-   * build just isn't emitting locale routes. Likely fixes:
-   *   1. Add `i18n.fallback: { es: 'en', 'zh-hans': 'en', ru: 'en', tl: 'en' }`
-   *      in astro.config.mjs (simplest, but may require routing.fallbackType
-   *      tweaks to render in the target locale rather than redirect to default).
-   *   2. Refactor each page to use `getStaticPaths()` with locales list.
-   *
-   * This test is `fixme`-skipped so the rest of the suite stays green while
-   * the bug is tracked. Un-skip it when the routing fix lands — if it's
-   * still broken, the test will fail loudly.
-   */
-  test.fixme('language switcher navigates to Spanish and translates the page (BLOCKED: i18n routing bug)', async ({
-    page,
-  }) => {
+  test('language switcher navigates to Spanish and translates the page', async ({ page }) => {
+    // Pages live under `src/pages/[...locale]/` with `getStaticPaths` that
+    // emits one route per supported locale. Default locale renders at the
+    // bare path (e.g. `/events`), non-default locales at `/es/events`, etc.
+    // The same page module runs once per locale, so `getLocaleFromUrl`
+    // returns the correct locale from the rendered URL and `useTranslate`
+    // picks up the right dictionary.
     await page.goto('/events')
     const switcher = page.locator('#lang-switcher')
     await Promise.all([
