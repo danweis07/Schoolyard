@@ -1,10 +1,13 @@
 {
   "common": {
     "welcome": "환영합니다",
-    "loading": "로딩 중",
+    "welcomeName": "환영합니다, {name}님!",
+    "loading": "로딩 중…",
     "search": "검색",
+    "searchPlaceholder": "사이트 검색…",
     "menu": "메뉴",
     "close": "닫기",
+    "open": "열기",
     "readMore": "더 읽기",
     "learnMore": "자세히 알아보기",
     "viewAll": "전체 보기",
@@ -12,7 +15,21 @@
     "language": "언어",
     "selectLanguage": "언어 선택",
     "primaryNavigation": "기본 탐색",
-    "dismiss": "닫기"
+    "dismiss": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "today": "오늘",
+    "tomorrow": "내일",
+    "yesterday": "어제",
+    "open24": "운영 중",
+    "closed": "운영 종료",
+    "contact": "연락",
+    "schoolLabel": "학교",
+    "languagesEnabledLabel": "사용 가능한 언어",
+    "moreTitle": "더 보기",
+    "appIntroTitle": "{school}에 오신 것을 환영합니다",
+    "appIntroMessage": "학교 행사, 자원봉사 기회, 소식을 한 곳에서 확인하세요."
   },
   "nav": {
     "home": "홈",
@@ -21,7 +38,236 @@
     "pta": "PTA",
     "volunteer": "자원봉사",
     "donate": "기부",
+    "fundraising": "모금",
     "about": "소개",
-    "contact": "문의"
+    "contact": "문의",
+    "community": "커뮤니티",
+    "lunch": "급식",
+    "transportation": "교통",
+    "classroom": "교실",
+    "district": "교육구",
+    "resources": "자료",
+    "transparency": "투명성",
+    "more": "더 보기"
+  },
+  "footer": {
+    "address": "주소",
+    "phone": "전화",
+    "email": "이메일",
+    "rights": "© {year} {school}. 모든 권리 보유.",
+    "builtWith": "이 사이트는",
+    "openSourceFor": "모든 학교를 위한 오픈 소스"
+  },
+  "events": {
+    "title": "학교 행사",
+    "description": "우리 학교 커뮤니티의 다가오는 행사",
+    "upcoming": "다가오는 행사",
+    "past": "지난 행사",
+    "featured": "주요 행사",
+    "noEvents": "예정된 행사가 없습니다. 나중에 다시 확인하세요!",
+    "addToCalendar": "캘린더에 추가",
+    "register": "등록하기",
+    "rsvp": "참석 확인",
+    "location": "장소",
+    "when": "일시",
+    "category": "카테고리",
+    "categories": {
+      "fundraiser": "모금 행사",
+      "social": "친목",
+      "academic": "학업",
+      "volunteer": "자원봉사",
+      "other": "기타"
+    },
+    "cancelled": "취소됨"
+  },
+  "news": {
+    "title": "학교 소식",
+    "description": "우리 학교의 최신 소식",
+    "latest": "최신 소식",
+    "featured": "주요 기사",
+    "by": "작성자",
+    "publishedOn": "게시일",
+    "tags": "태그",
+    "readingTime": "읽는 시간 {minutes}분",
+    "noPosts": "아직 게시물이 없습니다."
+  },
+  "pta": {
+    "title": "학부모 교사 협의회",
+    "overview": "우리 PTA는 학부모, 교사, 지역 주민이 함께 학교를 지원합니다.",
+    "board": "이사회",
+    "boardDescription": "올해 PTA를 운영하는 자원봉사자들을 만나보세요.",
+    "membership": "회원 가입",
+    "membershipFee": "회비: ${fee}",
+    "joinNow": "지금 가입",
+    "meetings": "회의",
+    "meetingsDescription": "PTA 회의는 모든 학부모와 보호자에게 열려 있습니다.",
+    "meetingsWhenHeading": "회의 시간",
+    "meetingsNoSchedule": "회의 일정은 곧 게시됩니다.",
+    "meetingsArchive": "지난 회의록은 보관되어 있으며 PTA 서기에게 요청하면 받아볼 수 있습니다.",
+    "term": "임기: {start} – {end}",
+    "committees": "위원회",
+    "committeesDescription": "우리 PTA 위원회는 학교 커뮤니티를 지원하기 위해 특정 분야에 집중합니다. 관심 분야에 맞는 위원회에 가입하세요.",
+    "committeesJoin": "관심 있으신가요? 이메일로 문의 주세요.",
+    "committeesMeets": "모임 시간",
+    "committeesSize": "규모",
+    "newsletters": "뉴스레터",
+    "newslettersDescription": "월간 PTA 뉴스레터로 최신 소식을 받아보세요.",
+    "newslettersCurrent": "이번 호 뉴스레터",
+    "newslettersArchive": "뉴스레터 모음",
+    "newslettersSignup": "이메일로 뉴스레터를 받으려면 구독하세요.",
+    "enrichment": "특별 프로그램",
+    "enrichmentDescription": "PTA가 후원하는 프로그램으로 모든 학생이 예술, 과학 등을 접할 수 있게 합니다 — 교육구가 제공하는 것 이상입니다.",
+    "enrichmentFundedBy": "연간 기금과 갈라에 대한 여러분의 기부로 지원됩니다.",
+    "enrichmentGrades": "학년",
+    "enrichmentSchedule": "일정",
+    "enrichmentCost": "연간 비용",
+    "enrichmentTotalHeading": "연간 특별 프로그램 총 예산",
+    "enrichmentTotalBody": "모든 기부금은 가족들의 기부에서 나옵니다. 어떠한 세금도 이 프로그램을 지원하지 않습니다 — 가족들이 자녀 교육에 투자하기에 존재합니다."
+  },
+  "volunteer": {
+    "title": "자원봉사",
+    "description": "모든 학부모의 시간이 소중합니다. 일정에 맞는 역할을 찾아보세요.",
+    "openRoles": "모집 중인 역할",
+    "filled": "마감",
+    "commitment": "참여 시간",
+    "contact": "연락",
+    "signUp": "신청하기",
+    "noRoles": "현재 모집 중인 자원봉사 역할이 없습니다."
+  },
+  "fundraising": {
+    "title": "학교를 후원해 주세요",
+    "description": "여러분의 기부는 학생들을 위한 프로그램에 직접 쓰입니다.",
+    "donate": "지금 기부",
+    "annualGoal": "연간 목표",
+    "raised": "모금액",
+    "of": "중",
+    "ofGoal": "{goal} 목표 중",
+    "percentRaised": "목표의 {percent}%",
+    "thankYou": "여러분의 후원에 감사드립니다!",
+    "campaigns": "캠페인",
+    "whereItGoesHeading": "기부금의 사용처",
+    "whereItGoesBody": "여러분이 기부한 돈은 모두 우리 학교에 머뭅니다. 여러분의 기부는 교육구가 지원하지 않는 프로그램에 쓰입니다: 교실 용품, 악기, 과학 키트, 현장학습 장학금 등. 우리 PTA는 등록된 501(c)(3) 단체이며 — 기부금은 세금 공제가 가능합니다.",
+    "employerMatchBody": "많은 고용주들이 기부금을 매칭해 줍니다. 매칭 서류에 대한 도움이 필요하면 아래 이메일로 연락해 주세요."
+  },
+  "home": {
+    "heroCta": "자세히 알아보기",
+    "announcementsTitle": "공지사항",
+    "upcomingEventsTitle": "다가오는 행사",
+    "latestNewsTitle": "최신 소식",
+    "donateBannerTitle": "학교를 후원해 주세요",
+    "donateBannerCta": "기부하기"
+  },
+  "about": {
+    "title": "학교 소개",
+    "founded": "{year}년 설립",
+    "grades": "{grades}학년",
+    "enrollment": "학생 {count}명"
+  },
+  "contact": {
+    "title": "문의하기",
+    "description": "학교 커뮤니티와 소통하세요.",
+    "form": {
+      "name": "이름",
+      "email": "이메일",
+      "subject": "제목",
+      "message": "메시지",
+      "send": "메시지 보내기",
+      "thanks": "감사합니다 — 곧 연락드리겠습니다."
+    }
+  },
+  "lunch": {
+    "title": "급식 메뉴",
+    "description": "주간 메뉴, 알레르기 정보, 무료 및 할인 급식 안내.",
+    "thisWeek": "이번 주",
+    "upcoming": "다가오는 주",
+    "allergens": "알레르기 정보",
+    "freeReduced": "무료 및 할인 급식",
+    "freeReducedDescription": "모든 학생은 가정 소득과 관계없이 자격이 있습니다. 자세한 내용은 사무실에 문의하세요.",
+    "noMenu": "아직 게시된 메뉴가 없습니다. 나중에 다시 확인하세요.",
+    "weekdays": {
+      "monday": "월요일",
+      "tuesday": "화요일",
+      "wednesday": "수요일",
+      "thursday": "목요일",
+      "friday": "금요일"
+    }
+  },
+  "transportation": {
+    "title": "교통",
+    "description": "스쿨버스 노선, 시간표, 카풀 자료.",
+    "routes": "버스 노선",
+    "route": "노선",
+    "driver": "운전기사",
+    "morningArrival": "오전 도착",
+    "afternoonDeparture": "오후 출발",
+    "stops": "정류장",
+    "notes": "참고 사항",
+    "noRoutes": "버스 노선은 학기 시작 전에 게시됩니다."
+  },
+  "community": {
+    "title": "커뮤니티 게시판",
+    "description": "광고, 카풀, 기술 공유, 학교를 지원하는 지역 상점.",
+    "listings": "목록",
+    "posted": "게시됨",
+    "neighborhood": "동네",
+    "contact": "연락",
+    "noListings": "아직 게시글이 없습니다. 나중에 다시 확인하세요.",
+    "categories": {
+      "classified": "광고",
+      "carpool": "카풀",
+      "skill-share": "기술 공유",
+      "business": "지역 상점",
+      "new-family": "새 가족",
+      "other": "기타"
+    }
+  },
+  "classroom": {
+    "title": "교실 페이지",
+    "description": "우리 선생님들을 만나고 교실에 필요한 것을 살펴보세요.",
+    "teachers": "교사",
+    "wishlist": "교실 위시리스트",
+    "readingList": "추천 도서",
+    "grade": "학년",
+    "subject": "과목",
+    "emailTeacher": "교사에게 이메일",
+    "noTeachers": "교사 페이지가 곧 추가됩니다."
+  },
+  "district": {
+    "title": "교육구",
+    "description": "우리 교육구 내 학교들.",
+    "schools": "학교",
+    "visitSchool": "학교 방문",
+    "noSchools": "아직 등록된 학교가 없습니다."
+  },
+  "resources": {
+    "title": "지역 자원",
+    "description": "가족을 위한 믿을 수 있는 지역 자원.",
+    "callToAction": "음식, 주거, 건강, 법률 지원, 정신 건강 지원 자원.",
+    "languages": "언어",
+    "visitWebsite": "웹사이트 방문",
+    "noResources": "아직 등록된 자원이 없습니다.",
+    "categories": {
+      "food": "음식",
+      "health": "건강",
+      "housing": "주거",
+      "legal": "법률",
+      "mental-health": "정신 건강",
+      "other": "기타"
+    }
+  },
+  "transparency": {
+    "title": "투명성",
+    "description": "공개 예산, 기금 배분, 연도별 지출.",
+    "budgetYear": "예산 연도",
+    "totalRaised": "총 모금액",
+    "totalSpent": "총 지출액",
+    "categories": "카테고리",
+    "summary": "요약",
+    "noBudgets": "예산 정보는 곧 공개됩니다."
+  },
+  "errors": {
+    "notFound": "페이지를 찾을 수 없습니다",
+    "notFoundDescription": "찾으시는 페이지가 존재하지 않습니다.",
+    "goHome": "홈으로"
   }
 }

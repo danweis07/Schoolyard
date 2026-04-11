@@ -1,10 +1,13 @@
 {
   "common": {
     "welcome": "Zoo siab txais tos",
-    "loading": "Tabtom nrhiav",
+    "welcomeName": "Zoo siab txais tos, {name}!",
+    "loading": "Tabtom nrhiav…",
     "search": "Tshawb nrhiav",
-    "menu": "Ntawv qhia zaub mov",
+    "searchPlaceholder": "Tshawb nrhiav hauv lub site…",
+    "menu": "Ntawv qhia",
     "close": "Kaw",
+    "open": "Qhib",
     "readMore": "Nyeem ntxiv",
     "learnMore": "Kawm paub ntxiv",
     "viewAll": "Saib tag nrho",
@@ -12,7 +15,17 @@
     "language": "Lus",
     "selectLanguage": "Xaiv hom lus",
     "primaryNavigation": "Kev taw qhia tseem ceeb",
-    "dismiss": "Tsis quav ntsej"
+    "dismiss": "Tsis quav ntsej",
+    "back": "Rov qab",
+    "next": "Tom ntej",
+    "previous": "Yav tas",
+    "today": "Hnub no",
+    "tomorrow": "Tag kis",
+    "yesterday": "Nag hmo",
+    "contact": "Hu",
+    "schoolLabel": "Tsev kawm ntawv",
+    "moreTitle": "Ntxiv",
+    "appIntroTitle": "Zoo siab txais tos rau {school}"
   },
   "nav": {
     "home": "Tsev",
@@ -21,7 +34,93 @@
     "pta": "PTA",
     "volunteer": "Ua haujlwm dawb",
     "donate": "Pub nyiaj",
+    "fundraising": "Sau nyiaj",
     "about": "Txog peb",
-    "contact": "Hu rau peb"
+    "contact": "Hu rau peb",
+    "community": "Zej zog",
+    "lunch": "Nruab hnub su",
+    "transportation": "Kev thauj",
+    "classroom": "Chav kawm",
+    "district": "Koog tsev kawm ntawv",
+    "resources": "Kev pab",
+    "transparency": "Kev ncaj ncees",
+    "more": "Ntxiv"
+  },
+  "footer": {
+    "address": "Chaw nyob",
+    "phone": "Xov tooj",
+    "email": "Email",
+    "rights": "© {year} {school}. Tag nrho cov cai raug tiv thaiv.",
+    "builtWith": "Ua los ntawm",
+    "openSourceFor": "qhib rau txhua lub tsev kawm ntawv"
+  },
+  "events": {
+    "title": "Cov Kev Tshwm Sim Hauv Tsev Kawm Ntawv",
+    "description": "Cov kev tshwm sim yav tom ntej rau peb lub zej zog tsev kawm ntawv",
+    "upcoming": "Cov kev tshwm sim tom ntej",
+    "past": "Cov kev tshwm sim yav dhau",
+    "noEvents": "Tsis muaj kev tshwm sim tom ntej. Rov qab los saib tom ntej!",
+    "rsvp": "Lees paub",
+    "location": "Qhov chaw"
+  },
+  "news": {
+    "title": "Xov Xwm Hauv Tsev Kawm Ntawv",
+    "description": "Xov xwm tshiab tshaj plaws ntawm peb lub tsev kawm ntawv",
+    "latest": "Xov xwm tshiab",
+    "by": "los ntawm"
+  },
+  "pta": {
+    "title": "Koom Haum Niam Txiv thiab Xib Fwb",
+    "overview": "Peb lub PTA coj niam txiv, xib fwb, thiab cov tswv cuab zej zog los txhawb peb lub tsev kawm ntawv."
+  },
+  "volunteer": {
+    "title": "Ua Haujlwm Dawb Nrog Peb",
+    "description": "Txhua tus niam txiv lub sijhawm tseem ceeb."
+  },
+  "fundraising": {
+    "title": "Txhawb Peb Lub Tsev Kawm Ntawv",
+    "description": "Koj cov nyiaj pub ncaj qha pab rau cov kev kawm rau peb cov menyuam kawm ntawv.",
+    "donate": "Pub nyiaj tam sim no",
+    "thankYou": "Ua tsaug rau koj txoj kev txhawb nqa!"
+  },
+  "home": {
+    "heroCta": "Kawm paub ntxiv",
+    "upcomingEventsTitle": "Cov kev tshwm sim tom ntej",
+    "latestNewsTitle": "Xov xwm tshiab",
+    "donateBannerTitle": "Txhawb peb lub tsev kawm ntawv",
+    "donateBannerCta": "Ua kev pub dawb"
+  },
+  "about": {
+    "title": "Txog Peb Lub Tsev Kawm Ntawv"
+  },
+  "contact": {
+    "title": "Hu Rau Peb",
+    "description": "Nrog peb lub zej zog tsev kawm ntawv tiv toj."
+  },
+  "lunch": {
+    "title": "Ntawv Qhia Nruab Hnub Su"
+  },
+  "transportation": {
+    "title": "Kev Thauj"
+  },
+  "community": {
+    "title": "Daim Phiaj Zej Zog"
+  },
+  "classroom": {
+    "title": "Nplooj Ntawv Chav Kawm"
+  },
+  "district": {
+    "title": "Koog Tsev Kawm Ntawv"
+  },
+  "resources": {
+    "title": "Cov Kev Pab Zej Zog"
+  },
+  "transparency": {
+    "title": "Kev Ncaj Ncees"
+  },
+  "errors": {
+    "notFound": "Tsis pom nplooj ntawv",
+    "notFoundDescription": "Nplooj ntawv uas koj nrhiav tsis muaj.",
+    "goHome": "Rov mus tsev"
   }
 }

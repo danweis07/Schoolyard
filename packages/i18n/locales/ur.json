@@ -1,18 +1,31 @@
 {
   "common": {
     "welcome": "خوش آمدید",
-    "loading": "لوڈ ہو رہا ہے",
+    "welcomeName": "خوش آمدید، {name}!",
+    "loading": "لوڈ ہو رہا ہے…",
     "search": "تلاش",
+    "searchPlaceholder": "سائٹ تلاش کریں…",
     "menu": "مینو",
     "close": "بند کریں",
+    "open": "کھولیں",
     "readMore": "مزید پڑھیں",
     "learnMore": "مزید جانیں",
     "viewAll": "سب دیکھیں",
-    "skipToContent": "مواد پر جائیں",
+    "skipToContent": "مرکزی مواد پر جائیں",
     "language": "زبان",
     "selectLanguage": "زبان منتخب کریں",
     "primaryNavigation": "بنیادی نیویگیشن",
-    "dismiss": "خارج کریں"
+    "dismiss": "خارج کریں",
+    "back": "واپس",
+    "next": "اگلا",
+    "previous": "پچھلا",
+    "today": "آج",
+    "tomorrow": "کل",
+    "yesterday": "گزشتہ کل",
+    "contact": "رابطہ",
+    "schoolLabel": "اسکول",
+    "moreTitle": "مزید",
+    "appIntroTitle": "{school} میں خوش آمدید"
   },
   "nav": {
     "home": "ہوم",
@@ -21,7 +34,93 @@
     "pta": "PTA",
     "volunteer": "رضاکار",
     "donate": "عطیہ",
+    "fundraising": "فنڈ ریزنگ",
     "about": "ہمارے بارے میں",
-    "contact": "رابطہ"
+    "contact": "رابطہ",
+    "community": "کمیونٹی",
+    "lunch": "دوپہر کا کھانا",
+    "transportation": "ٹرانسپورٹ",
+    "classroom": "کلاس روم",
+    "district": "ڈسٹرکٹ",
+    "resources": "وسائل",
+    "transparency": "شفافیت",
+    "more": "مزید"
+  },
+  "footer": {
+    "address": "پتہ",
+    "phone": "فون",
+    "email": "ای میل",
+    "rights": "© {year} {school}. جملہ حقوق محفوظ ہیں۔",
+    "builtWith": "کے ساتھ بنایا گیا",
+    "openSourceFor": "ہر اسکول کے لیے اوپن سورس"
+  },
+  "events": {
+    "title": "اسکول کی تقریبات",
+    "description": "ہماری اسکول کمیونٹی کے لیے آنے والی تقریبات",
+    "upcoming": "آنے والی تقریبات",
+    "past": "گزشتہ تقریبات",
+    "noEvents": "کوئی آنے والی تقریبات نہیں ہیں۔ جلد ہی واپس آئیں!",
+    "rsvp": "تصدیق کریں",
+    "location": "مقام"
+  },
+  "news": {
+    "title": "اسکول کی خبریں",
+    "description": "ہمارے اسکول سے تازہ ترین اپ ڈیٹس",
+    "latest": "تازہ ترین خبریں",
+    "by": "از"
+  },
+  "pta": {
+    "title": "والدین اساتذہ انجمن",
+    "overview": "ہماری PTA والدین، اساتذہ اور کمیونٹی کے اراکین کو ہمارے اسکول کی حمایت کے لیے اکٹھا کرتی ہے۔"
+  },
+  "volunteer": {
+    "title": "ہمارے ساتھ رضاکار بنیں",
+    "description": "ہر والدین کا وقت اہمیت رکھتا ہے۔"
+  },
+  "fundraising": {
+    "title": "ہمارے اسکول کی حمایت کریں",
+    "description": "آپ کا عطیہ براہ راست ہمارے طلباء کے لیے پروگراموں کو فنڈ دیتا ہے۔",
+    "donate": "ابھی عطیہ کریں",
+    "thankYou": "آپ کی حمایت کا شکریہ!"
+  },
+  "home": {
+    "heroCta": "مزید جانیں",
+    "upcomingEventsTitle": "آنے والی تقریبات",
+    "latestNewsTitle": "تازہ ترین خبریں",
+    "donateBannerTitle": "ہمارے اسکول کی حمایت کریں",
+    "donateBannerCta": "عطیہ کریں"
+  },
+  "about": {
+    "title": "ہمارے اسکول کے بارے میں"
+  },
+  "contact": {
+    "title": "ہم سے رابطہ کریں",
+    "description": "ہماری اسکول کمیونٹی سے جڑیں۔"
+  },
+  "lunch": {
+    "title": "دوپہر کے کھانے کا مینو"
+  },
+  "transportation": {
+    "title": "ٹرانسپورٹ"
+  },
+  "community": {
+    "title": "کمیونٹی بورڈ"
+  },
+  "classroom": {
+    "title": "کلاس روم صفحات"
+  },
+  "district": {
+    "title": "ڈسٹرکٹ"
+  },
+  "resources": {
+    "title": "کمیونٹی وسائل"
+  },
+  "transparency": {
+    "title": "شفافیت"
+  },
+  "errors": {
+    "notFound": "صفحہ نہیں ملا",
+    "notFoundDescription": "آپ جس صفحے کو تلاش کر رہے ہیں وہ موجود نہیں ہے۔",
+    "goHome": "ہوم پر جائیں"
   }
 }

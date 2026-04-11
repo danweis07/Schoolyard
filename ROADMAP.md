@@ -20,11 +20,10 @@
 ## v1.x — Near-term follow-ups (welcoming PRs)
 
 - **Deepen the existing modules.** Every module has a working landing page, but richer content types, filters, and exports are welcome. Check individual modules for open feature gaps.
-- **Translate the remaining 15 locales.** `packages/i18n/locales/<code>.json` files are needed for: zh-hant, ar, vi, ht, so, hmn, pt, ko, hi, fr, am, km, ur, pa, sw. Start by translating `nav.*` and `common.*`.
+- **Polish the draft translations.** All 20 locales ship with working translations, but quality varies by tier:
+  - **Tier 1 (production-ready):** `en`, `es`, `zh-hans`, `ru`, `tl`, `ar`, `vi`, `pt`, `ko`, `hi`, `fr` — 11 locales, all ~247 keys covered. These are the demo defaults plus the languages of the largest US ELL populations. Native-speaker review is still welcome.
+  - **Tier 2 (essentials, awaiting community polish):** `zh-hant`, `ht`, `so`, `hmn`, `am`, `km`, `ur`, `pa`, `sw` — 9 locales, ~60-80 keys each covering `common.*`, `nav.*`, `footer.*`, `home.*`, `errors.*`, and module landing-page titles. Deeper keys fall back to English silently via `t()`. PRs that expand these to full coverage are the fastest way to contribute.
 - **Real demo images.** Replace placeholder SVGs with royalty-free Unsplash photos. See `apps/web/public/images/demo/CREDITS.md`.
-- **Husky pre-commit hooks** wired up for Prettier formatting on staged files.
-- **Pagefind search** index on the production build.
-- **End-to-end tests** with Playwright for the critical user flows (events list → event detail, donate flow, language switch).
 
 ## v2 — Major feature work
 

@@ -1,10 +1,13 @@
 {
   "common": {
     "welcome": "Chào mừng",
-    "loading": "Đang tải",
+    "welcomeName": "Chào mừng, {name}!",
+    "loading": "Đang tải…",
     "search": "Tìm kiếm",
+    "searchPlaceholder": "Tìm kiếm trên trang…",
     "menu": "Menu",
     "close": "Đóng",
+    "open": "Mở",
     "readMore": "Đọc thêm",
     "learnMore": "Tìm hiểu thêm",
     "viewAll": "Xem tất cả",
@@ -12,7 +15,21 @@
     "language": "Ngôn ngữ",
     "selectLanguage": "Chọn ngôn ngữ",
     "primaryNavigation": "Điều hướng chính",
-    "dismiss": "Bỏ qua"
+    "dismiss": "Bỏ qua",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "previous": "Trước đó",
+    "today": "Hôm nay",
+    "tomorrow": "Ngày mai",
+    "yesterday": "Hôm qua",
+    "open24": "Mở cửa",
+    "closed": "Đóng cửa",
+    "contact": "Liên hệ",
+    "schoolLabel": "Trường học",
+    "languagesEnabledLabel": "Ngôn ngữ có sẵn",
+    "moreTitle": "Thêm",
+    "appIntroTitle": "Chào mừng đến với {school}",
+    "appIntroMessage": "Cập nhật các sự kiện của trường, cơ hội tình nguyện và tin tức — tất cả trong một nơi."
   },
   "nav": {
     "home": "Trang chủ",
@@ -21,7 +38,236 @@
     "pta": "PTA",
     "volunteer": "Tình nguyện",
     "donate": "Quyên góp",
+    "fundraising": "Gây quỹ",
     "about": "Giới thiệu",
-    "contact": "Liên hệ"
+    "contact": "Liên hệ",
+    "community": "Cộng đồng",
+    "lunch": "Bữa trưa",
+    "transportation": "Vận chuyển",
+    "classroom": "Lớp học",
+    "district": "Học khu",
+    "resources": "Tài nguyên",
+    "transparency": "Minh bạch",
+    "more": "Thêm"
+  },
+  "footer": {
+    "address": "Địa chỉ",
+    "phone": "Điện thoại",
+    "email": "Email",
+    "rights": "© {year} {school}. Bảo lưu mọi quyền.",
+    "builtWith": "Xây dựng với",
+    "openSourceFor": "mã nguồn mở cho mọi trường học"
+  },
+  "events": {
+    "title": "Sự kiện của Trường",
+    "description": "Các sự kiện sắp tới cho cộng đồng trường chúng ta",
+    "upcoming": "Sự kiện sắp tới",
+    "past": "Sự kiện đã qua",
+    "featured": "Sự kiện nổi bật",
+    "noEvents": "Không có sự kiện sắp tới. Hãy quay lại sau!",
+    "addToCalendar": "Thêm vào lịch",
+    "register": "Đăng ký",
+    "rsvp": "Xác nhận tham dự",
+    "location": "Địa điểm",
+    "when": "Khi nào",
+    "category": "Danh mục",
+    "categories": {
+      "fundraiser": "Gây quỹ",
+      "social": "Giao lưu",
+      "academic": "Học thuật",
+      "volunteer": "Tình nguyện",
+      "other": "Khác"
+    },
+    "cancelled": "Đã hủy"
+  },
+  "news": {
+    "title": "Tin tức của Trường",
+    "description": "Cập nhật mới nhất từ trường chúng ta",
+    "latest": "Tin tức mới nhất",
+    "featured": "Bài nổi bật",
+    "by": "bởi",
+    "publishedOn": "Xuất bản ngày",
+    "tags": "Thẻ",
+    "readingTime": "Đọc {minutes} phút",
+    "noPosts": "Chưa có bài viết."
+  },
+  "pta": {
+    "title": "Hội Phụ Huynh Giáo Viên",
+    "overview": "Hội Phụ Huynh Giáo Viên của chúng tôi tập hợp phụ huynh, giáo viên và các thành viên cộng đồng để hỗ trợ trường.",
+    "board": "Thành viên hội đồng",
+    "boardDescription": "Gặp gỡ những tình nguyện viên điều hành hội năm nay.",
+    "membership": "Trở thành thành viên",
+    "membershipFee": "Phí hội viên: ${fee}",
+    "joinNow": "Tham gia ngay",
+    "meetings": "Cuộc họp",
+    "meetingsDescription": "Các cuộc họp của hội mở cho tất cả phụ huynh và người giám hộ.",
+    "meetingsWhenHeading": "Thời gian họp",
+    "meetingsNoSchedule": "Lịch họp sẽ được đăng sớm.",
+    "meetingsArchive": "Biên bản các cuộc họp trước được lưu trữ và có sẵn theo yêu cầu từ thư ký hội.",
+    "term": "Nhiệm kỳ: {start} – {end}",
+    "committees": "Các ban",
+    "committeesDescription": "Các ban của hội chúng tôi tập trung vào các lĩnh vực cụ thể để hỗ trợ cộng đồng trường. Tham gia một ban phù hợp với sở thích của bạn.",
+    "committeesJoin": "Quan tâm? Gửi email cho chúng tôi để tham gia.",
+    "committeesMeets": "Họp",
+    "committeesSize": "Quy mô",
+    "newsletters": "Bản tin",
+    "newslettersDescription": "Cập nhật với bản tin hàng tháng của hội.",
+    "newslettersCurrent": "Bản tin hiện tại",
+    "newslettersArchive": "Kho bản tin",
+    "newslettersSignup": "Đăng ký để nhận bản tin qua email.",
+    "enrichment": "Chương trình bổ sung",
+    "enrichmentDescription": "Các chương trình do hội tài trợ mang đến cho mọi học sinh cơ hội tiếp cận nghệ thuật, khoa học và nhiều hơn nữa — vượt trên những gì học khu cung cấp.",
+    "enrichmentFundedBy": "Được tài trợ bởi khoản quyên góp của bạn cho Quỹ hàng năm và Tiệc Gala.",
+    "enrichmentGrades": "Khối lớp",
+    "enrichmentSchedule": "Lịch",
+    "enrichmentCost": "Chi phí hàng năm",
+    "enrichmentTotalHeading": "Tổng ngân sách chương trình bổ sung hàng năm",
+    "enrichmentTotalBody": "Mỗi đô la đến từ sự đóng góp của các gia đình. Không có tiền thuế nào tài trợ cho các chương trình này — chúng tồn tại vì các gia đình đầu tư vào giáo dục của con em mình."
+  },
+  "volunteer": {
+    "title": "Tình nguyện với chúng tôi",
+    "description": "Thời gian của mỗi phụ huynh đều quan trọng. Tìm một vai trò phù hợp với lịch của bạn.",
+    "openRoles": "Vị trí còn trống",
+    "filled": "Đã đủ",
+    "commitment": "Cam kết",
+    "contact": "Liên hệ",
+    "signUp": "Đăng ký",
+    "noRoles": "Hiện không có vị trí tình nguyện nào."
+  },
+  "fundraising": {
+    "title": "Ủng hộ trường chúng ta",
+    "description": "Khoản quyên góp của bạn trực tiếp tài trợ cho các chương trình dành cho học sinh.",
+    "donate": "Quyên góp ngay",
+    "annualGoal": "Mục tiêu hàng năm",
+    "raised": "Đã quyên góp",
+    "of": "trên",
+    "ofGoal": "trên mục tiêu {goal}",
+    "percentRaised": "{percent}% mục tiêu",
+    "thankYou": "Cảm ơn sự ủng hộ của bạn!",
+    "campaigns": "Chiến dịch",
+    "whereItGoesHeading": "Khoản quyên góp của bạn được dùng vào đâu",
+    "whereItGoesBody": "Mỗi đô la bạn quyên góp đều ở lại trường chúng tôi. Khoản đóng góp của bạn tài trợ cho các chương trình mà học khu không chi trả: đồ dùng lớp học, nhạc cụ, bộ dụng cụ khoa học, học bổng đi dã ngoại, và nhiều hơn nữa. Hội của chúng tôi là tổ chức 501(c)(3) đã đăng ký — khoản quyên góp của bạn được khấu trừ thuế.",
+    "employerMatchBody": "Nhiều nhà tuyển dụng sẽ khớp khoản quyên góp của bạn. Gửi email cho chúng tôi tại địa chỉ bên dưới nếu bạn cần hỗ trợ về thủ tục khớp quỹ."
+  },
+  "home": {
+    "heroCta": "Tìm hiểu thêm",
+    "announcementsTitle": "Thông báo",
+    "upcomingEventsTitle": "Sự kiện sắp tới",
+    "latestNewsTitle": "Tin tức mới nhất",
+    "donateBannerTitle": "Ủng hộ trường chúng ta",
+    "donateBannerCta": "Quyên góp"
+  },
+  "about": {
+    "title": "Về trường chúng tôi",
+    "founded": "Thành lập năm {year}",
+    "grades": "Khối {grades}",
+    "enrollment": "{count} học sinh"
+  },
+  "contact": {
+    "title": "Liên hệ với chúng tôi",
+    "description": "Kết nối với cộng đồng trường chúng tôi.",
+    "form": {
+      "name": "Tên của bạn",
+      "email": "Email",
+      "subject": "Chủ đề",
+      "message": "Tin nhắn",
+      "send": "Gửi tin nhắn",
+      "thanks": "Cảm ơn — chúng tôi sẽ sớm liên hệ."
+    }
+  },
+  "lunch": {
+    "title": "Thực đơn bữa trưa",
+    "description": "Thực đơn hàng tuần, chất gây dị ứng và thông tin về bữa trưa miễn phí hoặc giảm giá.",
+    "thisWeek": "Tuần này",
+    "upcoming": "Các tuần tới",
+    "allergens": "Chất gây dị ứng",
+    "freeReduced": "Bữa trưa miễn phí và giảm giá",
+    "freeReducedDescription": "Tất cả học sinh đều đủ điều kiện bất kể thu nhập gia đình. Hỏi văn phòng để biết chi tiết.",
+    "noMenu": "Chưa có thực đơn. Hãy quay lại sau.",
+    "weekdays": {
+      "monday": "Thứ hai",
+      "tuesday": "Thứ ba",
+      "wednesday": "Thứ tư",
+      "thursday": "Thứ năm",
+      "friday": "Thứ sáu"
+    }
+  },
+  "transportation": {
+    "title": "Vận chuyển",
+    "description": "Tuyến xe buýt, lịch trình và nguồn lực đi chung xe của gia đình.",
+    "routes": "Tuyến xe buýt",
+    "route": "Tuyến",
+    "driver": "Tài xế",
+    "morningArrival": "Đến vào buổi sáng",
+    "afternoonDeparture": "Khởi hành buổi chiều",
+    "stops": "Điểm dừng",
+    "notes": "Ghi chú",
+    "noRoutes": "Các tuyến xe buýt sẽ được đăng trước khi năm học bắt đầu."
+  },
+  "community": {
+    "title": "Bảng tin cộng đồng",
+    "description": "Rao vặt, đi chung xe, chia sẻ kỹ năng và các doanh nghiệp địa phương ủng hộ trường chúng ta.",
+    "listings": "Danh sách",
+    "posted": "Đã đăng",
+    "neighborhood": "Khu phố",
+    "contact": "Liên hệ",
+    "noListings": "Chưa có mục nào. Hãy quay lại sau.",
+    "categories": {
+      "classified": "Rao vặt",
+      "carpool": "Đi chung xe",
+      "skill-share": "Chia sẻ kỹ năng",
+      "business": "Doanh nghiệp địa phương",
+      "new-family": "Gia đình mới",
+      "other": "Khác"
+    }
+  },
+  "classroom": {
+    "title": "Trang lớp học",
+    "description": "Gặp gỡ giáo viên của chúng tôi và xem các lớp cần gì.",
+    "teachers": "Giáo viên",
+    "wishlist": "Danh sách mong muốn của lớp",
+    "readingList": "Danh sách đọc",
+    "grade": "Khối",
+    "subject": "Môn học",
+    "emailTeacher": "Email giáo viên",
+    "noTeachers": "Trang giáo viên sẽ được thêm sớm."
+  },
+  "district": {
+    "title": "Học khu",
+    "description": "Các trường trong học khu của chúng ta.",
+    "schools": "Các trường",
+    "visitSchool": "Xem trường",
+    "noSchools": "Chưa cấu hình trường nào."
+  },
+  "resources": {
+    "title": "Tài nguyên cộng đồng",
+    "description": "Các nguồn lực địa phương đáng tin cậy cho gia đình.",
+    "callToAction": "Tài nguyên về thực phẩm, nhà ở, sức khỏe, hỗ trợ pháp lý và sức khỏe tinh thần.",
+    "languages": "Ngôn ngữ",
+    "visitWebsite": "Xem trang web",
+    "noResources": "Chưa có tài nguyên nào.",
+    "categories": {
+      "food": "Thực phẩm",
+      "health": "Sức khỏe",
+      "housing": "Nhà ở",
+      "legal": "Pháp lý",
+      "mental-health": "Sức khỏe tinh thần",
+      "other": "Khác"
+    }
+  },
+  "transparency": {
+    "title": "Minh bạch",
+    "description": "Ngân sách công khai, phân bổ quỹ và chi tiêu qua các năm.",
+    "budgetYear": "Năm ngân sách",
+    "totalRaised": "Tổng đã quyên góp",
+    "totalSpent": "Tổng đã chi",
+    "categories": "Danh mục",
+    "summary": "Tóm tắt",
+    "noBudgets": "Thông tin ngân sách sẽ được công bố sớm."
+  },
+  "errors": {
+    "notFound": "Không tìm thấy trang",
+    "notFoundDescription": "Trang bạn đang tìm không tồn tại.",
+    "goHome": "Về trang chủ"
   }
 }
