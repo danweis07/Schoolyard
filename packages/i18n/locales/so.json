@@ -1,27 +1,126 @@
 {
   "common": {
     "welcome": "Soo dhawoow",
-    "loading": "Soo dejinaya",
+    "welcomeName": "Soo dhawoow, {name}!",
+    "loading": "Soo dejinaya…",
     "search": "Raadi",
+    "searchPlaceholder": "Raadi bogga…",
     "menu": "Liiska",
     "close": "Xir",
+    "open": "Fur",
     "readMore": "Akhri wax badan",
     "learnMore": "Wax badan baro",
     "viewAll": "Arag dhammaan",
-    "skipToContent": "U bood nuxurka",
+    "skipToContent": "U bood nuxurka ugu muhiimsan",
     "language": "Luqadda",
     "selectLanguage": "Dooro luqadda",
     "primaryNavigation": "Hagitaanka aasaasiga",
-    "dismiss": "Iska xir"
+    "dismiss": "Iska xir",
+    "back": "Dib u noqo",
+    "next": "Xiga",
+    "previous": "Kii hore",
+    "today": "Maanta",
+    "tomorrow": "Berri",
+    "yesterday": "Shalay",
+    "contact": "Xiriir",
+    "schoolLabel": "Dugsi",
+    "moreTitle": "Wax badan",
+    "appIntroTitle": "Ku soo dhawoow {school}"
   },
   "nav": {
     "home": "Bogga hore",
     "events": "Dhacdooyinka",
     "news": "Wararka",
     "pta": "PTA",
-    "volunteer": "Tabaruc waqti",
+    "volunteer": "Tabaruc",
     "donate": "Ku deeq",
+    "fundraising": "Ururinta lacagta",
     "about": "Ku saabsan",
-    "contact": "Nala soo xiriir"
+    "contact": "Nala soo xiriir",
+    "community": "Bulshada",
+    "lunch": "Qadada",
+    "transportation": "Gaadiid",
+    "classroom": "Fasalka",
+    "district": "Degmada",
+    "resources": "Ilaha",
+    "transparency": "Hufnaanta",
+    "more": "Wax badan"
+  },
+  "footer": {
+    "address": "Cinwaanka",
+    "phone": "Telefoon",
+    "email": "Iimayl",
+    "rights": "© {year} {school}. Dhammaan xuquuqdu way xifdisan tahay.",
+    "builtWith": "Waxaa lagu dhisay",
+    "openSourceFor": "il furan dugsi kasta"
+  },
+  "events": {
+    "title": "Dhacdooyinka Dugsiga",
+    "description": "Dhacdooyinka soo socda ee bulshadayada dugsiga",
+    "upcoming": "Dhacdooyinka soo socda",
+    "past": "Dhacdooyinka hore",
+    "noEvents": "Ma jiraan dhacdooyin soo socda. Dib u soo noqo!",
+    "rsvp": "Xaqiiji",
+    "location": "Goobta"
+  },
+  "news": {
+    "title": "Wararka Dugsiga",
+    "description": "Wararka ugu dambeeyay ee dugsigeena",
+    "latest": "Wararka ugu dambeeyay",
+    "by": "waxaa qoray"
+  },
+  "pta": {
+    "title": "Ururka Waalidiinta iyo Macallimiinta",
+    "overview": "PTA-kayagu wuxuu isu keenaa waalidiinta, macallimiinta, iyo xubnaha bulshada si loo taageero dugsigayaga."
+  },
+  "volunteer": {
+    "title": "Nala tabaruc",
+    "description": "Waqtiga waalid kasta waa muhiim."
+  },
+  "fundraising": {
+    "title": "Taageero Dugsigayaga",
+    "description": "Deeqdaadu waxay si toos ah u maalgelisaa barnaamijyada ardayda.",
+    "donate": "Hadda ku deeq",
+    "thankYou": "Mahadsanid taageeradaada!"
+  },
+  "home": {
+    "heroCta": "Wax badan baro",
+    "upcomingEventsTitle": "Dhacdooyinka soo socda",
+    "latestNewsTitle": "Wararka ugu dambeeyay",
+    "donateBannerTitle": "Taageero dugsigayaga",
+    "donateBannerCta": "Bixi deeq"
+  },
+  "about": {
+    "title": "Ku saabsan Dugsigayaga"
+  },
+  "contact": {
+    "title": "Nala Soo Xiriir",
+    "description": "La xiriir bulshadayada dugsiga."
+  },
+  "lunch": {
+    "title": "Liiska Qadada"
+  },
+  "transportation": {
+    "title": "Gaadiid"
+  },
+  "community": {
+    "title": "Looxa Bulshada"
+  },
+  "classroom": {
+    "title": "Bogagga Fasalka"
+  },
+  "district": {
+    "title": "Degmada"
+  },
+  "resources": {
+    "title": "Ilaha Bulshada"
+  },
+  "transparency": {
+    "title": "Hufnaanta"
+  },
+  "errors": {
+    "notFound": "Bogga lama helin",
+    "notFoundDescription": "Bogga aad raadinaysay ma jiro.",
+    "goHome": "Aad bogga hore"
   }
 }

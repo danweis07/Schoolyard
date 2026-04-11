@@ -1,0 +1,71 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { getCollection } from 'astro:content'
+import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
+
+export const getStaticPaths = localeStaticPaths
+
+if (!isModuleEnabled(siteConfig, 'lunch')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+
+const allMenus = await getCollection('lunchMenus')
+const now = new Date()
+// Menus with weekStart in the current week or future, sorted ascending
+const menus = allMenus
+  .filter((m) => m.data.weekStart >= new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7))
+  .sort((a, b) => a.data.weekStart.getTime() - b.data.weekStart.getTime())
+
+const dateFormatter = new Intl.DateTimeFormat(locale, {
+  month: 'long',
+  day: 'numeric',
+})
+---
+
+<BaseLayout title={t('lunch.title')} description={t('lunch.description')}>
+  <section class="mx-auto max-w-4xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{t('lunch.title')}</h1>
+    <p class="mt-2 text-lg text-muted">{t('lunch.description')}</p>
+
+    {
+      menus.length === 0 ? (
+        <p class="mt-8 text-muted">{t('lunch.noMenu')}</p>
+      ) : (
+        <div class="mt-10 space-y-8">
+          {menus.map((menu, idx) => (
+            <article class="rounded-card border border-border bg-surface p-card shadow-sm">
+              <h2 class="text-xl font-bold">
+                {idx === 0 ? t('lunch.thisWeek') : dateFormatter.format(menu.data.weekStart)}
+              </h2>
+              <dl class="mt-4 grid gap-3 sm:grid-cols-5">
+                {(['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const).map((day) => (
+                  <div>
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-muted">
+                      {t(`lunch.weekdays.${day}`)}
+                    </dt>
+                    <dd class="mt-1 text-sm">{menu.data[day] || '—'}</dd>
+                  </div>
+                ))}
+              </dl>
+              {menu.data.allergens.length > 0 && (
+                <p class="mt-4 text-sm text-muted">
+                  <strong>{t('lunch.allergens')}:</strong> {menu.data.allergens.join(', ')}
+                </p>
+              )}
+            </article>
+          ))}
+        </div>
+      )
+    }
+
+    <div class="mt-12 rounded-card border border-primary/20 bg-primary/5 p-card">
+      <h2 class="text-lg font-bold">{t('lunch.freeReduced')}</h2>
+      <p class="mt-2 text-base">{t('lunch.freeReducedDescription')}</p>
+    </div>
+  </section>
+</BaseLayout>

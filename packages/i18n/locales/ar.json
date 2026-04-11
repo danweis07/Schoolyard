@@ -1,10 +1,13 @@
 {
   "common": {
     "welcome": "مرحباً",
-    "loading": "جارٍ التحميل",
+    "welcomeName": "مرحباً، {name}!",
+    "loading": "جارٍ التحميل…",
     "search": "بحث",
+    "searchPlaceholder": "البحث في الموقع…",
     "menu": "القائمة",
     "close": "إغلاق",
+    "open": "فتح",
     "readMore": "اقرأ المزيد",
     "learnMore": "اعرف المزيد",
     "viewAll": "عرض الكل",
@@ -12,16 +15,259 @@
     "language": "اللغة",
     "selectLanguage": "اختر اللغة",
     "primaryNavigation": "التنقل الرئيسي",
-    "dismiss": "تجاهل"
+    "dismiss": "تجاهل",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "today": "اليوم",
+    "tomorrow": "غداً",
+    "yesterday": "أمس",
+    "open24": "مفتوح",
+    "closed": "مغلق",
+    "contact": "اتصل",
+    "schoolLabel": "المدرسة",
+    "languagesEnabledLabel": "اللغات المتاحة",
+    "moreTitle": "المزيد",
+    "appIntroTitle": "مرحباً بكم في {school}",
+    "appIntroMessage": "ابق على اطلاع بأحداث المدرسة وفرص التطوع والأخبار — كل ذلك في مكان واحد."
   },
   "nav": {
     "home": "الرئيسية",
     "events": "الفعاليات",
     "news": "الأخبار",
-    "pta": "PTA",
+    "pta": "جمعية الآباء والمعلمين",
     "volunteer": "تطوع",
     "donate": "تبرع",
+    "fundraising": "جمع التبرعات",
     "about": "من نحن",
-    "contact": "اتصل بنا"
+    "contact": "اتصل بنا",
+    "community": "المجتمع",
+    "lunch": "الغداء",
+    "transportation": "النقل",
+    "classroom": "الفصول الدراسية",
+    "district": "المنطقة",
+    "resources": "الموارد",
+    "transparency": "الشفافية",
+    "more": "المزيد"
+  },
+  "footer": {
+    "address": "العنوان",
+    "phone": "الهاتف",
+    "email": "البريد الإلكتروني",
+    "rights": "© {year} {school}. جميع الحقوق محفوظة.",
+    "builtWith": "بُني باستخدام",
+    "openSourceFor": "مفتوح المصدر لكل مدرسة"
+  },
+  "events": {
+    "title": "فعاليات المدرسة",
+    "description": "الفعاليات القادمة لمجتمع مدرستنا",
+    "upcoming": "الفعاليات القادمة",
+    "past": "الفعاليات السابقة",
+    "featured": "فعالية مميزة",
+    "noEvents": "لا توجد فعاليات قادمة. عد قريباً!",
+    "addToCalendar": "إضافة إلى التقويم",
+    "register": "سجّل",
+    "rsvp": "تأكيد الحضور",
+    "location": "المكان",
+    "when": "متى",
+    "category": "الفئة",
+    "categories": {
+      "fundraiser": "جمع تبرعات",
+      "social": "اجتماعي",
+      "academic": "أكاديمي",
+      "volunteer": "تطوع",
+      "other": "أخرى"
+    },
+    "cancelled": "ملغى"
+  },
+  "news": {
+    "title": "أخبار المدرسة",
+    "description": "آخر التحديثات من مدرستنا",
+    "latest": "أحدث الأخبار",
+    "featured": "قصة مميزة",
+    "by": "بقلم",
+    "publishedOn": "نُشر في",
+    "tags": "الوسوم",
+    "readingTime": "{minutes} دقيقة قراءة",
+    "noPosts": "لا توجد منشورات بعد."
+  },
+  "pta": {
+    "title": "جمعية الآباء والمعلمين",
+    "overview": "تجمع جمعية الآباء والمعلمين لدينا الآباء والمعلمين وأفراد المجتمع لدعم مدرستنا.",
+    "board": "أعضاء المجلس",
+    "boardDescription": "تعرّف على المتطوعين الذين يديرون جمعيتنا هذا العام.",
+    "membership": "كن عضواً",
+    "membershipFee": "رسوم العضوية: ${fee}",
+    "joinNow": "انضم الآن",
+    "meetings": "الاجتماعات",
+    "meetingsDescription": "اجتماعات الجمعية مفتوحة لجميع الآباء وأولياء الأمور.",
+    "meetingsWhenHeading": "متى نجتمع",
+    "meetingsNoSchedule": "سيتم نشر جدول الاجتماعات قريباً.",
+    "meetingsArchive": "محاضر الاجتماعات السابقة محفوظة ومتاحة بناءً على طلب من أمين الجمعية.",
+    "term": "المدة: {start} – {end}",
+    "committees": "اللجان",
+    "committeesDescription": "تركز لجان الجمعية على مجالات محددة لدعم مجتمع المدرسة. انضم إلى لجنة تتناسب مع اهتماماتك.",
+    "committeesJoin": "مهتم؟ راسلنا للانضمام.",
+    "committeesMeets": "تجتمع",
+    "committeesSize": "العدد",
+    "newsletters": "النشرات الإخبارية",
+    "newslettersDescription": "ابق على اطلاع من خلال نشراتنا الشهرية.",
+    "newslettersCurrent": "النشرة الحالية",
+    "newslettersArchive": "أرشيف النشرات",
+    "newslettersSignup": "اشترك لتلقي النشرات عبر البريد الإلكتروني.",
+    "enrichment": "برامج الإثراء",
+    "enrichmentDescription": "برامج تموّلها الجمعية تمنح كل طالب وصولاً إلى الفنون والعلوم والمزيد — بما يتجاوز ما توفره المنطقة التعليمية.",
+    "enrichmentFundedBy": "تموّل من تبرعاتك للصندوق السنوي والحفل السنوي.",
+    "enrichmentGrades": "الصفوف",
+    "enrichmentSchedule": "الجدول",
+    "enrichmentCost": "التكلفة السنوية",
+    "enrichmentTotalHeading": "إجمالي ميزانية الإثراء السنوية",
+    "enrichmentTotalBody": "كل دولار يأتي من تبرعات العائلات. لا يموّل أي مال من دافعي الضرائب هذه البرامج — فهي موجودة لأن العائلات تستثمر في تعليم أبنائها."
+  },
+  "volunteer": {
+    "title": "تطوع معنا",
+    "description": "وقت كل ولي أمر مهم. ابحث عن دور يناسب جدولك.",
+    "openRoles": "الأدوار المتاحة",
+    "filled": "مُشغل",
+    "commitment": "الالتزام",
+    "contact": "اتصل",
+    "signUp": "سجّل",
+    "noRoles": "لا توجد أدوار تطوعية متاحة الآن."
+  },
+  "fundraising": {
+    "title": "ادعم مدرستنا",
+    "description": "يموّل تبرعك البرامج مباشرة لطلابنا.",
+    "donate": "تبرع الآن",
+    "annualGoal": "الهدف السنوي",
+    "raised": "المُجمع",
+    "of": "من",
+    "ofGoal": "من هدف {goal}",
+    "percentRaised": "{percent}% من الهدف",
+    "thankYou": "شكراً لدعمكم!",
+    "campaigns": "الحملات",
+    "whereItGoesHeading": "أين يذهب تبرعك",
+    "whereItGoesBody": "كل دولار تتبرع به يبقى في مدرستنا. تموّل مساهمتك البرامج التي لا تغطيها المنطقة التعليمية: مستلزمات الفصول، الآلات الموسيقية، مجموعات العلوم، منح الرحلات الميدانية، وأكثر. جمعيتنا مسجلة تحت 501(c)(3) — تبرعك قابل للخصم الضريبي.",
+    "employerMatchBody": "كثير من أصحاب العمل يضاعفون تبرعك دولاراً بدولار. راسلنا على العنوان أدناه إذا احتجت مساعدة في أوراق المضاعفة."
+  },
+  "home": {
+    "heroCta": "اعرف المزيد",
+    "announcementsTitle": "الإعلانات",
+    "upcomingEventsTitle": "الفعاليات القادمة",
+    "latestNewsTitle": "آخر الأخبار",
+    "donateBannerTitle": "ادعم مدرستنا",
+    "donateBannerCta": "قدّم تبرعاً"
+  },
+  "about": {
+    "title": "عن مدرستنا",
+    "founded": "تأسست عام {year}",
+    "grades": "الصفوف {grades}",
+    "enrollment": "{count} طالب"
+  },
+  "contact": {
+    "title": "اتصل بنا",
+    "description": "تواصل مع مجتمع مدرستنا.",
+    "form": {
+      "name": "اسمك",
+      "email": "البريد الإلكتروني",
+      "subject": "الموضوع",
+      "message": "الرسالة",
+      "send": "إرسال الرسالة",
+      "thanks": "شكراً — سنتواصل معك."
+    }
+  },
+  "lunch": {
+    "title": "قائمة الغداء",
+    "description": "القائمة الأسبوعية، مسببات الحساسية، ومعلومات الغداء المجاني أو المخفض.",
+    "thisWeek": "هذا الأسبوع",
+    "upcoming": "الأسابيع القادمة",
+    "allergens": "مسببات الحساسية",
+    "freeReduced": "الغداء المجاني والمخفض",
+    "freeReducedDescription": "جميع الطلاب مؤهلون بغض النظر عن دخل الأسرة. اسأل المكتب لمعرفة التفاصيل.",
+    "noMenu": "لم تُنشر قائمة بعد. عد قريباً.",
+    "weekdays": {
+      "monday": "الاثنين",
+      "tuesday": "الثلاثاء",
+      "wednesday": "الأربعاء",
+      "thursday": "الخميس",
+      "friday": "الجمعة"
+    }
+  },
+  "transportation": {
+    "title": "النقل",
+    "description": "خطوط الحافلات، الجداول، وموارد المشاركة في الركوب للعائلات.",
+    "routes": "خطوط الحافلات",
+    "route": "الخط",
+    "driver": "السائق",
+    "morningArrival": "الوصول صباحاً",
+    "afternoonDeparture": "المغادرة بعد الظهر",
+    "stops": "المحطات",
+    "notes": "ملاحظات",
+    "noRoutes": "ستُنشر خطوط الحافلات قبل بدء العام الدراسي."
+  },
+  "community": {
+    "title": "لوحة المجتمع",
+    "description": "إعلانات مبوبة، مشاركة ركوب، تبادل مهارات، والأعمال المحلية التي تدعم مدرستنا.",
+    "listings": "القوائم",
+    "posted": "نُشر",
+    "neighborhood": "الحي",
+    "contact": "اتصل",
+    "noListings": "لا توجد قوائم بعد. عد قريباً.",
+    "categories": {
+      "classified": "إعلانات مبوبة",
+      "carpool": "مشاركة الركوب",
+      "skill-share": "تبادل المهارات",
+      "business": "أعمال محلية",
+      "new-family": "عائلة جديدة",
+      "other": "أخرى"
+    }
+  },
+  "classroom": {
+    "title": "صفحات الفصول",
+    "description": "تعرّف على معلمينا واكتشف ما تحتاجه فصولهم.",
+    "teachers": "المعلمون",
+    "wishlist": "قائمة أمنيات الفصل",
+    "readingList": "قائمة القراءة",
+    "grade": "الصف",
+    "subject": "المادة",
+    "emailTeacher": "راسل المعلم",
+    "noTeachers": "ستُضاف صفحات المعلمين قريباً."
+  },
+  "district": {
+    "title": "المنطقة التعليمية",
+    "description": "مدارس منطقتنا.",
+    "schools": "المدارس",
+    "visitSchool": "زر المدرسة",
+    "noSchools": "لم يتم إعداد أي مدارس بعد."
+  },
+  "resources": {
+    "title": "موارد المجتمع",
+    "description": "موارد محلية موثوقة للعائلات.",
+    "callToAction": "موارد للطعام والسكن والصحة والمساعدة القانونية ودعم الصحة النفسية.",
+    "languages": "اللغات",
+    "visitWebsite": "زر الموقع",
+    "noResources": "لا توجد موارد مُدرجة بعد.",
+    "categories": {
+      "food": "الطعام",
+      "health": "الصحة",
+      "housing": "السكن",
+      "legal": "قانوني",
+      "mental-health": "الصحة النفسية",
+      "other": "أخرى"
+    }
+  },
+  "transparency": {
+    "title": "الشفافية",
+    "description": "ميزانيتنا العامة، توزيع الأموال، والإنفاق عاماً بعد عام.",
+    "budgetYear": "السنة المالية",
+    "totalRaised": "إجمالي المُجمع",
+    "totalSpent": "إجمالي المُنفق",
+    "categories": "الفئات",
+    "summary": "الملخص",
+    "noBudgets": "ستُنشر معلومات الميزانية قريباً."
+  },
+  "errors": {
+    "notFound": "الصفحة غير موجودة",
+    "notFoundDescription": "الصفحة التي تبحث عنها غير موجودة.",
+    "goHome": "العودة إلى الرئيسية"
   }
 }

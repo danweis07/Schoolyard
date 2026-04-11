@@ -1,10 +1,13 @@
 {
   "common": {
     "welcome": "Mabuhay",
+    "welcomeName": "Mabuhay, {name}!",
     "loading": "Nag-lo-load…",
     "search": "Hanapin",
+    "searchPlaceholder": "Maghanap sa site…",
     "menu": "Menu",
     "close": "Isara",
+    "open": "Buksan",
     "readMore": "Magbasa pa",
     "learnMore": "Matuto pa",
     "viewAll": "Tingnan lahat",
@@ -12,7 +15,21 @@
     "language": "Wika",
     "selectLanguage": "Pumili ng wika",
     "primaryNavigation": "Pangunahing nabigasyon",
-    "dismiss": "Isara"
+    "dismiss": "Isara",
+    "back": "Bumalik",
+    "next": "Susunod",
+    "previous": "Nakaraan",
+    "today": "Ngayon",
+    "tomorrow": "Bukas",
+    "yesterday": "Kahapon",
+    "open24": "Bukas",
+    "closed": "Sarado",
+    "contact": "Kontak",
+    "schoolLabel": "Paaralan",
+    "languagesEnabledLabel": "Mga available na wika",
+    "moreTitle": "Higit pa",
+    "appIntroTitle": "Maligayang pagdating sa {school}",
+    "appIntroMessage": "Manatiling konektado sa mga kaganapan sa paaralan, pagkakataon sa boluntaryo, at balita — lahat sa isang lugar."
   },
   "nav": {
     "home": "Bahay",
@@ -21,28 +38,236 @@
     "pta": "PTA",
     "volunteer": "Boluntaryo",
     "donate": "Mag-donate",
+    "fundraising": "Pangongolekta ng Pondo",
     "about": "Tungkol Sa",
-    "contact": "Kontakin Kami"
+    "contact": "Kontakin Kami",
+    "community": "Komunidad",
+    "lunch": "Tanghalian",
+    "transportation": "Transportasyon",
+    "classroom": "Silid-Aralan",
+    "district": "Distrito",
+    "resources": "Mga Mapagkukunan",
+    "transparency": "Transparency",
+    "more": "Higit pa"
   },
   "footer": {
     "address": "Address",
     "phone": "Telepono",
-    "email": "Email"
+    "email": "Email",
+    "rights": "© {year} {school}. Nakalaan ang lahat ng karapatan.",
+    "builtWith": "Ginawa gamit ang",
+    "openSourceFor": "open source para sa bawat paaralan"
   },
   "events": {
     "title": "Mga Kaganapan sa Paaralan",
+    "description": "Mga paparating na kaganapan para sa ating komunidad ng paaralan",
     "upcoming": "Mga Paparating na Kaganapan",
-    "noEvents": "Walang paparating na kaganapan.",
+    "past": "Mga Nakaraang Kaganapan",
+    "featured": "Itinatampok na Kaganapan",
+    "noEvents": "Walang paparating na kaganapan. Bumalik muli sa susunod!",
+    "addToCalendar": "Idagdag sa kalendaryo",
+    "register": "Magpatala",
     "rsvp": "Magpa-RSVP",
-    "location": "Lokasyon"
+    "location": "Lokasyon",
+    "when": "Kailan",
+    "category": "Kategorya",
+    "categories": {
+      "fundraiser": "Pangongolekta ng Pondo",
+      "social": "Panlipunan",
+      "academic": "Akademiko",
+      "volunteer": "Boluntaryo",
+      "other": "Iba pa"
+    },
+    "cancelled": "Kinansela"
   },
   "news": {
     "title": "Balita ng Paaralan",
+    "description": "Mga pinakabagong update mula sa ating paaralan",
     "latest": "Pinakabagong Balita",
-    "by": "ni"
+    "featured": "Itinatampok na Kuwento",
+    "by": "ni",
+    "publishedOn": "Inilathala noong",
+    "tags": "Mga tag",
+    "readingTime": "{minutes} min na pagbabasa",
+    "noPosts": "Wala pang mga post."
+  },
+  "pta": {
+    "title": "Parent Teacher Association",
+    "overview": "Pinagsasama-sama ng ating PTA ang mga magulang, guro, at miyembro ng komunidad upang suportahan ang ating paaralan.",
+    "board": "Mga Miyembro ng Board",
+    "boardDescription": "Kilalanin ang mga boluntaryong namamahala sa ating PTA ngayong taon.",
+    "membership": "Maging Miyembro",
+    "membershipFee": "Membership: ${fee}",
+    "joinNow": "Sumali ngayon",
+    "meetings": "Mga Pagpupulong",
+    "meetingsDescription": "Ang mga pagpupulong ng PTA ay bukas sa lahat ng mga magulang at tagapag-alaga.",
+    "meetingsWhenHeading": "Kailan kami nagpupulong",
+    "meetingsNoSchedule": "Ang iskedyul ng pagpupulong ay mai-post sa lalong madaling panahon.",
+    "meetingsArchive": "Ang mga minuto ng nakaraang pagpupulong ay naka-archive at maaaring hilingin sa sekretarya ng PTA.",
+    "term": "Termino: {start} – {end}",
+    "committees": "Mga Komite",
+    "committeesDescription": "Ang aming mga komite ng PTA ay nakatuon sa mga tiyak na lugar upang suportahan ang ating komunidad ng paaralan. Sumali sa isang komite na tumutugma sa iyong mga interes.",
+    "committeesJoin": "Interesado? Mag-email sa amin upang sumali.",
+    "committeesMeets": "Nagpupulong",
+    "committeesSize": "Laki",
+    "newsletters": "Mga Newsletter",
+    "newslettersDescription": "Manatiling updated sa aming buwanang PTA newsletter.",
+    "newslettersCurrent": "Kasalukuyang Newsletter",
+    "newslettersArchive": "Archive ng Newsletter",
+    "newslettersSignup": "Mag-subscribe upang makatanggap ng mga newsletter sa email.",
+    "enrichment": "Mga Programa ng Enrichment",
+    "enrichmentDescription": "Mga programang pinopondohan ng PTA na nagbibigay sa bawat estudyante ng access sa sining, agham, at higit pa — higit sa ibinibigay ng distrito.",
+    "enrichmentFundedBy": "Pinopondohan ng iyong mga donasyon sa Annual Fund at Gala.",
+    "enrichmentGrades": "Mga Grado",
+    "enrichmentSchedule": "Iskedyul",
+    "enrichmentCost": "Taunang gastos",
+    "enrichmentTotalHeading": "Kabuuang taunang badyet ng enrichment",
+    "enrichmentTotalBody": "Ang bawat dolyar ay nagmumula sa mga donasyon ng pamilya. Walang pera ng nagbabayad ng buwis ang pumopondo sa mga programang ito — umiiral ang mga ito dahil namumuhunan ang mga pamilya sa edukasyon ng kanilang mga anak."
+  },
+  "volunteer": {
+    "title": "Mag-boluntaryo sa Amin",
+    "description": "Mahalaga ang oras ng bawat magulang. Maghanap ng papel na angkop sa iyong iskedyul.",
+    "openRoles": "Mga Bukas na Papel",
+    "filled": "Napunan",
+    "commitment": "Pangako",
+    "contact": "Kontak",
+    "signUp": "Mag-sign up",
+    "noRoles": "Walang bukas na mga papel ng boluntaryo ngayon."
   },
   "fundraising": {
+    "title": "Suportahan ang Ating Paaralan",
+    "description": "Ang iyong donasyon ay direktang pumopondo sa mga programa para sa ating mga mag-aaral.",
     "donate": "Mag-donate ngayon",
-    "thankYou": "Salamat sa iyong suporta!"
+    "annualGoal": "Taunang Layunin",
+    "raised": "Nalikom",
+    "of": "sa",
+    "ofGoal": "sa {goal} na layunin",
+    "percentRaised": "{percent}% ng layunin",
+    "thankYou": "Salamat sa iyong suporta!",
+    "campaigns": "Mga Kampanya",
+    "whereItGoesHeading": "Saan napupunta ang iyong donasyon",
+    "whereItGoesBody": "Ang bawat dolyar na ibinibigay mo ay nananatili sa ating paaralan. Ang iyong kontribusyon ay pumopondo sa mga programa na hindi binabayaran ng distrito: mga gamit sa silid-aralan, mga instrumento sa musika, mga kit ng agham, mga iskolarship sa field trip, at higit pa. Ang aming PTA ay isang rehistradong 501(c)(3) — ang iyong regalo ay maaaring ibawas sa buwis.",
+    "employerMatchBody": "Maraming mga employer ang tutugma sa iyong regalo. Mag-email sa amin sa address sa ibaba kung nais mo ng tulong sa mga papeles sa pagtutugma."
+  },
+  "home": {
+    "heroCta": "Matuto pa",
+    "announcementsTitle": "Mga Anunsyo",
+    "upcomingEventsTitle": "Mga Paparating na Kaganapan",
+    "latestNewsTitle": "Pinakabagong Balita",
+    "donateBannerTitle": "Suportahan ang ating paaralan",
+    "donateBannerCta": "Gumawa ng donasyon"
+  },
+  "about": {
+    "title": "Tungkol sa Ating Paaralan",
+    "founded": "Itinatag noong {year}",
+    "grades": "Mga Grado {grades}",
+    "enrollment": "{count} na mag-aaral"
+  },
+  "contact": {
+    "title": "Kontakin Kami",
+    "description": "Makipag-ugnayan sa ating komunidad ng paaralan.",
+    "form": {
+      "name": "Iyong pangalan",
+      "email": "Email",
+      "subject": "Paksa",
+      "message": "Mensahe",
+      "send": "Ipadala ang mensahe",
+      "thanks": "Salamat — makikipag-ugnayan kami sa iyo."
+    }
+  },
+  "lunch": {
+    "title": "Menu ng Tanghalian",
+    "description": "Lingguhang menu, mga allergen, at impormasyon sa libre at reduced na tanghalian.",
+    "thisWeek": "Ngayong Linggo",
+    "upcoming": "Mga Paparating na Linggo",
+    "allergens": "Mga Allergen",
+    "freeReduced": "Libre at Reduced na Tanghalian",
+    "freeReducedDescription": "Lahat ng mga mag-aaral ay kwalipikado anuman ang kita ng pamilya. Magtanong sa tanggapan para sa mga detalye.",
+    "noMenu": "Wala pang na-post na menu. Bumalik muli sa susunod.",
+    "weekdays": {
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miyerkules",
+      "thursday": "Huwebes",
+      "friday": "Biyernes"
+    }
+  },
+  "transportation": {
+    "title": "Transportasyon",
+    "description": "Mga ruta ng bus, iskedyul, at mga mapagkukunan ng carpool ng pamilya.",
+    "routes": "Mga Ruta ng Bus",
+    "route": "Ruta",
+    "driver": "Drayber",
+    "morningArrival": "Pagdating sa umaga",
+    "afternoonDeparture": "Pag-alis sa hapon",
+    "stops": "Mga Hintuan",
+    "notes": "Mga Tala",
+    "noRoutes": "Ang mga ruta ng bus ay mai-post bago magsimula ang taong pampaaralan."
+  },
+  "community": {
+    "title": "Community Board",
+    "description": "Mga classified, alok ng carpool, skill share, at mga lokal na negosyong sumusuporta sa ating paaralan.",
+    "listings": "Mga Listahan",
+    "posted": "Na-post",
+    "neighborhood": "Kapitbahayan",
+    "contact": "Kontak",
+    "noListings": "Wala pang mga listahan. Bumalik muli sa susunod.",
+    "categories": {
+      "classified": "Mga Classified",
+      "carpool": "Carpool",
+      "skill-share": "Skill Share",
+      "business": "Mga Lokal na Negosyo",
+      "new-family": "Bagong Pamilya",
+      "other": "Iba pa"
+    }
+  },
+  "classroom": {
+    "title": "Mga Pahina ng Silid-Aralan",
+    "description": "Kilalanin ang aming mga guro at tingnan kung ano ang kailangan ng kanilang mga silid-aralan.",
+    "teachers": "Mga Guro",
+    "wishlist": "Wishlist ng Silid-Aralan",
+    "readingList": "Listahan ng Pagbabasa",
+    "grade": "Grado",
+    "subject": "Asignatura",
+    "emailTeacher": "I-email ang guro",
+    "noTeachers": "Ang mga pahina ng guro ay idadagdag sa lalong madaling panahon."
+  },
+  "district": {
+    "title": "Distrito",
+    "description": "Mga paaralan sa ating distrito.",
+    "schools": "Mga Paaralan",
+    "visitSchool": "Bisitahin ang paaralan",
+    "noSchools": "Wala pang mga paaralan na nakakonfigure."
+  },
+  "resources": {
+    "title": "Mga Mapagkukunan ng Komunidad",
+    "description": "Mga mapagkakatiwalaang lokal na mapagkukunan para sa mga pamilya.",
+    "callToAction": "Mga mapagkukunan para sa pagkain, pabahay, kalusugan, legal na tulong, at suporta sa kalusugan ng pag-iisip.",
+    "languages": "Mga Wika",
+    "visitWebsite": "Bisitahin ang website",
+    "noResources": "Wala pang nakalistang mga mapagkukunan.",
+    "categories": {
+      "food": "Pagkain",
+      "health": "Kalusugan",
+      "housing": "Pabahay",
+      "legal": "Legal",
+      "mental-health": "Kalusugan ng Pag-iisip",
+      "other": "Iba pa"
+    }
+  },
+  "transparency": {
+    "title": "Transparency",
+    "description": "Ang aming pampublikong badyet, paglalaan ng pondo, at paggastos taon-taon.",
+    "budgetYear": "Taon ng Badyet",
+    "totalRaised": "Kabuuang Nalikom",
+    "totalSpent": "Kabuuang Nagastos",
+    "categories": "Mga Kategorya",
+    "summary": "Buod",
+    "noBudgets": "Ang impormasyon sa badyet ay ilalathala sa lalong madaling panahon."
+  },
+  "errors": {
+    "notFound": "Hindi natagpuan ang pahina",
+    "notFoundDescription": "Hindi umiiral ang pahinang iyong hinahanap.",
+    "goHome": "Pumunta sa bahay"
   }
 }

@@ -7,7 +7,10 @@ describe('t()', () => {
   })
 
   it('falls back to English when key missing in target locale', () => {
-    expect(t('common.next', 'es')).toBe('Next')
+    // `_test.englishOnlyFallback` is intentionally present only in en.json
+    // (the fallback test fixture), so any other locale must fall through.
+    expect(t('_test.englishOnlyFallback', 'es')).toBe('English-only fallback fixture')
+    expect(t('_test.englishOnlyFallback', 'vi')).toBe('English-only fallback fixture')
   })
 
   it('returns translated string when present in target locale', () => {
@@ -22,15 +25,18 @@ describe('t()', () => {
     expect(t('common.welcomeName', 'en', { name: 'Maria' })).toBe('Welcome, Maria!')
   })
 
-  it('returns stub locale translations for common/nav keys', () => {
+  it('returns translations for common/nav keys across locales', () => {
     expect(t('nav.home', 'fr')).toBe('Accueil')
     expect(t('nav.home', 'ko')).toBe('홈')
     expect(t('common.search', 'ar')).toBe('بحث')
   })
 
-  it('falls back to English for keys missing in stub locales', () => {
-    // Stub locales only have common.* and nav.* — deeper keys fall back
-    expect(t('events.title', 'fr')).toBe('School Events')
+  it('falls back to English for keys missing in any locale', () => {
+    // `_test.englishOnlyFallback` is intentionally present only in en.json,
+    // so every other locale (both fully-translated and essentials-only)
+    // must fall through to English for this key.
+    expect(t('_test.englishOnlyFallback', 'fr')).toBe('English-only fallback fixture')
+    expect(t('_test.englishOnlyFallback', 'ht')).toBe('English-only fallback fixture')
   })
 })
 

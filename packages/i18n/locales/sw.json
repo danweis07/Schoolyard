@@ -1,18 +1,31 @@
 {
   "common": {
     "welcome": "Karibu",
-    "loading": "Inapakia",
+    "welcomeName": "Karibu, {name}!",
+    "loading": "Inapakia…",
     "search": "Tafuta",
+    "searchPlaceholder": "Tafuta tovuti…",
     "menu": "Menyu",
     "close": "Funga",
+    "open": "Fungua",
     "readMore": "Soma zaidi",
     "learnMore": "Jifunze zaidi",
     "viewAll": "Tazama yote",
-    "skipToContent": "Ruka hadi maudhui",
+    "skipToContent": "Ruka hadi maudhui makuu",
     "language": "Lugha",
     "selectLanguage": "Chagua lugha",
     "primaryNavigation": "Urambazaji mkuu",
-    "dismiss": "Ondoa"
+    "dismiss": "Ondoa",
+    "back": "Rudi",
+    "next": "Inayofuata",
+    "previous": "Iliyopita",
+    "today": "Leo",
+    "tomorrow": "Kesho",
+    "yesterday": "Jana",
+    "contact": "Wasiliana",
+    "schoolLabel": "Shule",
+    "moreTitle": "Zaidi",
+    "appIntroTitle": "Karibu {school}"
   },
   "nav": {
     "home": "Nyumbani",
@@ -21,7 +34,93 @@
     "pta": "PTA",
     "volunteer": "Kujitolea",
     "donate": "Changia",
+    "fundraising": "Ukusanyaji wa fedha",
     "about": "Kuhusu",
-    "contact": "Wasiliana"
+    "contact": "Wasiliana",
+    "community": "Jamii",
+    "lunch": "Chakula cha mchana",
+    "transportation": "Usafiri",
+    "classroom": "Darasa",
+    "district": "Wilaya",
+    "resources": "Rasilimali",
+    "transparency": "Uwazi",
+    "more": "Zaidi"
+  },
+  "footer": {
+    "address": "Anwani",
+    "phone": "Simu",
+    "email": "Barua pepe",
+    "rights": "© {year} {school}. Haki zote zimehifadhiwa.",
+    "builtWith": "Imejengwa kwa",
+    "openSourceFor": "chanzo huria kwa kila shule"
+  },
+  "events": {
+    "title": "Matukio ya Shule",
+    "description": "Matukio yanayokuja kwa jumuiya yetu ya shule",
+    "upcoming": "Matukio yanayokuja",
+    "past": "Matukio yaliyopita",
+    "noEvents": "Hakuna matukio yanayokuja. Rudi hivi karibuni!",
+    "rsvp": "Thibitisha",
+    "location": "Mahali"
+  },
+  "news": {
+    "title": "Habari za Shule",
+    "description": "Habari za hivi karibuni kutoka shule yetu",
+    "latest": "Habari za hivi karibuni",
+    "by": "na"
+  },
+  "pta": {
+    "title": "Chama cha Wazazi na Walimu",
+    "overview": "PTA yetu inawaleta pamoja wazazi, walimu, na wanajamii kusaidia shule yetu."
+  },
+  "volunteer": {
+    "title": "Jitolee Nasi",
+    "description": "Muda wa kila mzazi ni muhimu."
+  },
+  "fundraising": {
+    "title": "Saidia Shule Yetu",
+    "description": "Mchango wako unafadhili moja kwa moja programu kwa wanafunzi wetu.",
+    "donate": "Changia sasa",
+    "thankYou": "Asante kwa msaada wako!"
+  },
+  "home": {
+    "heroCta": "Jifunze zaidi",
+    "upcomingEventsTitle": "Matukio yanayokuja",
+    "latestNewsTitle": "Habari za hivi karibuni",
+    "donateBannerTitle": "Saidia shule yetu",
+    "donateBannerCta": "Toa mchango"
+  },
+  "about": {
+    "title": "Kuhusu Shule Yetu"
+  },
+  "contact": {
+    "title": "Wasiliana Nasi",
+    "description": "Unganishwa na jumuiya yetu ya shule."
+  },
+  "lunch": {
+    "title": "Menyu ya Chakula cha Mchana"
+  },
+  "transportation": {
+    "title": "Usafiri"
+  },
+  "community": {
+    "title": "Bao la Jamii"
+  },
+  "classroom": {
+    "title": "Kurasa za Darasa"
+  },
+  "district": {
+    "title": "Wilaya"
+  },
+  "resources": {
+    "title": "Rasilimali za Jamii"
+  },
+  "transparency": {
+    "title": "Uwazi"
+  },
+  "errors": {
+    "notFound": "Ukurasa haukupatikana",
+    "notFoundDescription": "Ukurasa unaoutafuta haupo.",
+    "goHome": "Nenda nyumbani"
   }
 }

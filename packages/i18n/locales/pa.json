@@ -1,18 +1,31 @@
 {
   "common": {
     "welcome": "ਜੀ ਆਇਆਂ ਨੂੰ",
-    "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ",
+    "welcomeName": "ਜੀ ਆਇਆਂ ਨੂੰ, {name}!",
+    "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ…",
     "search": "ਖੋਜੋ",
+    "searchPlaceholder": "ਸਾਈਟ ਖੋਜੋ…",
     "menu": "ਮੀਨੂ",
     "close": "ਬੰਦ ਕਰੋ",
+    "open": "ਖੋਲ੍ਹੋ",
     "readMore": "ਹੋਰ ਪੜ੍ਹੋ",
     "learnMore": "ਹੋਰ ਜਾਣੋ",
     "viewAll": "ਸਭ ਦੇਖੋ",
-    "skipToContent": "ਸਮੱਗਰੀ ਤੇ ਜਾਓ",
+    "skipToContent": "ਮੁੱਖ ਸਮੱਗਰੀ ਤੇ ਜਾਓ",
     "language": "ਭਾਸ਼ਾ",
     "selectLanguage": "ਭਾਸ਼ਾ ਚੁਣੋ",
     "primaryNavigation": "ਮੁੱਖ ਨੈਵੀਗੇਸ਼ਨ",
-    "dismiss": "ਖਾਰਜ ਕਰੋ"
+    "dismiss": "ਖਾਰਜ ਕਰੋ",
+    "back": "ਵਾਪਸ",
+    "next": "ਅਗਲਾ",
+    "previous": "ਪਿਛਲਾ",
+    "today": "ਅੱਜ",
+    "tomorrow": "ਕੱਲ੍ਹ",
+    "yesterday": "ਬੀਤਿਆ ਕੱਲ੍ਹ",
+    "contact": "ਸੰਪਰਕ",
+    "schoolLabel": "ਸਕੂਲ",
+    "moreTitle": "ਹੋਰ",
+    "appIntroTitle": "{school} ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ"
   },
   "nav": {
     "home": "ਹੋਮ",
@@ -21,7 +34,93 @@
     "pta": "PTA",
     "volunteer": "ਸਵੈਸੇਵੀ",
     "donate": "ਦਾਨ ਕਰੋ",
+    "fundraising": "ਫੰਡ ਇਕੱਠਾ ਕਰਨਾ",
     "about": "ਸਾਡੇ ਬਾਰੇ",
-    "contact": "ਸੰਪਰਕ"
+    "contact": "ਸੰਪਰਕ",
+    "community": "ਭਾਈਚਾਰਾ",
+    "lunch": "ਦੁਪਹਿਰ ਦਾ ਖਾਣਾ",
+    "transportation": "ਆਵਾਜਾਈ",
+    "classroom": "ਕਲਾਸਰੂਮ",
+    "district": "ਜ਼ਿਲ੍ਹਾ",
+    "resources": "ਸਰੋਤ",
+    "transparency": "ਪਾਰਦਰਸ਼ਤਾ",
+    "more": "ਹੋਰ"
+  },
+  "footer": {
+    "address": "ਪਤਾ",
+    "phone": "ਫ਼ੋਨ",
+    "email": "ਈਮੇਲ",
+    "rights": "© {year} {school}. ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ।",
+    "builtWith": "ਨਾਲ ਬਣਾਇਆ ਗਿਆ",
+    "openSourceFor": "ਹਰ ਸਕੂਲ ਲਈ ਓਪਨ ਸੋਰਸ"
+  },
+  "events": {
+    "title": "ਸਕੂਲ ਦੇ ਸਮਾਗਮ",
+    "description": "ਸਾਡੇ ਸਕੂਲ ਭਾਈਚਾਰੇ ਲਈ ਆਉਣ ਵਾਲੇ ਸਮਾਗਮ",
+    "upcoming": "ਆਉਣ ਵਾਲੇ ਸਮਾਗਮ",
+    "past": "ਪਿਛਲੇ ਸਮਾਗਮ",
+    "noEvents": "ਕੋਈ ਆਉਣ ਵਾਲੇ ਸਮਾਗਮ ਨਹੀਂ। ਜਲਦੀ ਦੁਬਾਰਾ ਆਓ!",
+    "rsvp": "ਪੁਸ਼ਟੀ ਕਰੋ",
+    "location": "ਸਥਾਨ"
+  },
+  "news": {
+    "title": "ਸਕੂਲ ਦੀਆਂ ਖ਼ਬਰਾਂ",
+    "description": "ਸਾਡੇ ਸਕੂਲ ਤੋਂ ਤਾਜ਼ਾ ਅੱਪਡੇਟ",
+    "latest": "ਤਾਜ਼ਾ ਖ਼ਬਰਾਂ",
+    "by": "ਦੁਆਰਾ"
+  },
+  "pta": {
+    "title": "ਮਾਪੇ ਅਧਿਆਪਕ ਸੰਘ",
+    "overview": "ਸਾਡਾ PTA ਮਾਪਿਆਂ, ਅਧਿਆਪਕਾਂ ਅਤੇ ਭਾਈਚਾਰੇ ਦੇ ਮੈਂਬਰਾਂ ਨੂੰ ਸਾਡੇ ਸਕੂਲ ਦੀ ਮਦਦ ਲਈ ਇਕੱਠਾ ਕਰਦਾ ਹੈ।"
+  },
+  "volunteer": {
+    "title": "ਸਾਡੇ ਨਾਲ ਸਵੈਸੇਵੀ ਬਣੋ",
+    "description": "ਹਰ ਮਾਪੇ ਦਾ ਸਮਾਂ ਮਹੱਤਵਪੂਰਨ ਹੈ।"
+  },
+  "fundraising": {
+    "title": "ਸਾਡੇ ਸਕੂਲ ਦੀ ਮਦਦ ਕਰੋ",
+    "description": "ਤੁਹਾਡਾ ਦਾਨ ਸਿੱਧੇ ਸਾਡੇ ਵਿਦਿਆਰਥੀਆਂ ਲਈ ਪ੍ਰੋਗਰਾਮਾਂ ਨੂੰ ਫੰਡ ਦਿੰਦਾ ਹੈ।",
+    "donate": "ਹੁਣੇ ਦਾਨ ਕਰੋ",
+    "thankYou": "ਤੁਹਾਡੇ ਸਹਿਯੋਗ ਲਈ ਧੰਨਵਾਦ!"
+  },
+  "home": {
+    "heroCta": "ਹੋਰ ਜਾਣੋ",
+    "upcomingEventsTitle": "ਆਉਣ ਵਾਲੇ ਸਮਾਗਮ",
+    "latestNewsTitle": "ਤਾਜ਼ਾ ਖ਼ਬਰਾਂ",
+    "donateBannerTitle": "ਸਾਡੇ ਸਕੂਲ ਦੀ ਮਦਦ ਕਰੋ",
+    "donateBannerCta": "ਦਾਨ ਕਰੋ"
+  },
+  "about": {
+    "title": "ਸਾਡੇ ਸਕੂਲ ਬਾਰੇ"
+  },
+  "contact": {
+    "title": "ਸਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰੋ",
+    "description": "ਸਾਡੇ ਸਕੂਲ ਭਾਈਚਾਰੇ ਨਾਲ ਜੁੜੋ।"
+  },
+  "lunch": {
+    "title": "ਦੁਪਹਿਰ ਦੇ ਖਾਣੇ ਦਾ ਮੀਨੂ"
+  },
+  "transportation": {
+    "title": "ਆਵਾਜਾਈ"
+  },
+  "community": {
+    "title": "ਭਾਈਚਾਰਾ ਬੋਰਡ"
+  },
+  "classroom": {
+    "title": "ਕਲਾਸਰੂਮ ਪੰਨੇ"
+  },
+  "district": {
+    "title": "ਜ਼ਿਲ੍ਹਾ"
+  },
+  "resources": {
+    "title": "ਭਾਈਚਾਰਾ ਸਰੋਤ"
+  },
+  "transparency": {
+    "title": "ਪਾਰਦਰਸ਼ਤਾ"
+  },
+  "errors": {
+    "notFound": "ਪੰਨਾ ਨਹੀਂ ਮਿਲਿਆ",
+    "notFoundDescription": "ਜੋ ਪੰਨਾ ਤੁਸੀਂ ਲੱਭ ਰਹੇ ਹੋ ਉਹ ਮੌਜੂਦ ਨਹੀਂ ਹੈ।",
+    "goHome": "ਹੋਮ ਜਾਓ"
   }
 }

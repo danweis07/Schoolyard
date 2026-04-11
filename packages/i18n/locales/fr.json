@@ -1,18 +1,35 @@
 {
   "common": {
     "welcome": "Bienvenue",
-    "loading": "Chargement",
+    "welcomeName": "Bienvenue, {name} !",
+    "loading": "Chargement…",
     "search": "Rechercher",
+    "searchPlaceholder": "Rechercher sur le site…",
     "menu": "Menu",
     "close": "Fermer",
+    "open": "Ouvrir",
     "readMore": "Lire la suite",
     "learnMore": "En savoir plus",
     "viewAll": "Tout voir",
-    "skipToContent": "Aller au contenu",
+    "skipToContent": "Aller au contenu principal",
     "language": "Langue",
     "selectLanguage": "Choisir la langue",
     "primaryNavigation": "Navigation principale",
-    "dismiss": "Fermer"
+    "dismiss": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain",
+    "yesterday": "Hier",
+    "open24": "Ouvert",
+    "closed": "Fermé",
+    "contact": "Contact",
+    "schoolLabel": "École",
+    "languagesEnabledLabel": "Langues disponibles",
+    "moreTitle": "Plus",
+    "appIntroTitle": "Bienvenue à {school}",
+    "appIntroMessage": "Restez connecté aux événements de l'école, aux opportunités de bénévolat et aux actualités — tout au même endroit."
   },
   "nav": {
     "home": "Accueil",
@@ -21,7 +38,236 @@
     "pta": "PTA",
     "volunteer": "Bénévolat",
     "donate": "Faire un don",
+    "fundraising": "Collecte de fonds",
     "about": "À propos",
-    "contact": "Contact"
+    "contact": "Contact",
+    "community": "Communauté",
+    "lunch": "Cantine",
+    "transportation": "Transport",
+    "classroom": "Classes",
+    "district": "District",
+    "resources": "Ressources",
+    "transparency": "Transparence",
+    "more": "Plus"
+  },
+  "footer": {
+    "address": "Adresse",
+    "phone": "Téléphone",
+    "email": "Courriel",
+    "rights": "© {year} {school}. Tous droits réservés.",
+    "builtWith": "Construit avec",
+    "openSourceFor": "open source pour chaque école"
+  },
+  "events": {
+    "title": "Événements Scolaires",
+    "description": "Événements à venir pour notre communauté scolaire",
+    "upcoming": "Événements à venir",
+    "past": "Événements passés",
+    "featured": "Événement à la une",
+    "noEvents": "Aucun événement à venir. Revenez bientôt !",
+    "addToCalendar": "Ajouter au calendrier",
+    "register": "S'inscrire",
+    "rsvp": "Confirmer",
+    "location": "Lieu",
+    "when": "Quand",
+    "category": "Catégorie",
+    "categories": {
+      "fundraiser": "Collecte de fonds",
+      "social": "Social",
+      "academic": "Académique",
+      "volunteer": "Bénévolat",
+      "other": "Autre"
+    },
+    "cancelled": "Annulé"
+  },
+  "news": {
+    "title": "Actualités de l'École",
+    "description": "Dernières nouvelles de notre école",
+    "latest": "Dernières actualités",
+    "featured": "À la une",
+    "by": "par",
+    "publishedOn": "Publié le",
+    "tags": "Étiquettes",
+    "readingTime": "{minutes} min de lecture",
+    "noPosts": "Aucune publication pour le moment."
+  },
+  "pta": {
+    "title": "Association Parents-Enseignants",
+    "overview": "Notre association parents-enseignants rassemble parents, enseignants et membres de la communauté pour soutenir notre école.",
+    "board": "Membres du conseil",
+    "boardDescription": "Découvrez les bénévoles qui dirigent notre association cette année.",
+    "membership": "Devenir membre",
+    "membershipFee": "Cotisation : {fee} $",
+    "joinNow": "Adhérer",
+    "meetings": "Réunions",
+    "meetingsDescription": "Les réunions de l'association sont ouvertes à tous les parents et tuteurs.",
+    "meetingsWhenHeading": "Quand nous nous réunissons",
+    "meetingsNoSchedule": "Le calendrier des réunions sera publié bientôt.",
+    "meetingsArchive": "Les procès-verbaux des réunions passées sont archivés et disponibles sur demande auprès du secrétariat de l'association.",
+    "term": "Mandat : {start} – {end}",
+    "committees": "Comités",
+    "committeesDescription": "Nos comités se concentrent sur des domaines spécifiques pour soutenir notre communauté scolaire. Rejoignez un comité qui correspond à vos intérêts.",
+    "committeesJoin": "Intéressé(e) ? Écrivez-nous pour nous rejoindre.",
+    "committeesMeets": "Se réunit",
+    "committeesSize": "Taille",
+    "newsletters": "Bulletins",
+    "newslettersDescription": "Restez informé grâce à nos bulletins mensuels.",
+    "newslettersCurrent": "Bulletin actuel",
+    "newslettersArchive": "Archives des bulletins",
+    "newslettersSignup": "Abonnez-vous pour recevoir les bulletins par courriel.",
+    "enrichment": "Programmes d'enrichissement",
+    "enrichmentDescription": "Programmes financés par l'association qui donnent à chaque élève accès à l'art, aux sciences et plus — au-delà de ce que le district fournit.",
+    "enrichmentFundedBy": "Financé par vos dons au Fonds annuel et au Gala.",
+    "enrichmentGrades": "Niveaux",
+    "enrichmentSchedule": "Horaire",
+    "enrichmentCost": "Coût annuel",
+    "enrichmentTotalHeading": "Budget annuel total des programmes d'enrichissement",
+    "enrichmentTotalBody": "Chaque dollar provient des dons des familles. Aucun argent des contribuables ne finance ces programmes — ils existent parce que les familles investissent dans l'éducation de leurs enfants."
+  },
+  "volunteer": {
+    "title": "Bénévolat",
+    "description": "Le temps de chaque parent compte. Trouvez un rôle qui convient à votre emploi du temps.",
+    "openRoles": "Rôles disponibles",
+    "filled": "Pourvu",
+    "commitment": "Engagement",
+    "contact": "Contact",
+    "signUp": "S'inscrire",
+    "noRoles": "Aucun rôle bénévole disponible pour le moment."
+  },
+  "fundraising": {
+    "title": "Soutenez notre école",
+    "description": "Votre don finance directement les programmes pour nos élèves.",
+    "donate": "Faire un don",
+    "annualGoal": "Objectif annuel",
+    "raised": "Collecté",
+    "of": "sur",
+    "ofGoal": "sur l'objectif de {goal}",
+    "percentRaised": "{percent}% de l'objectif",
+    "thankYou": "Merci pour votre soutien !",
+    "campaigns": "Campagnes",
+    "whereItGoesHeading": "Où va votre don",
+    "whereItGoesBody": "Chaque dollar que vous donnez reste dans notre école. Votre contribution finance des programmes que le district ne paie pas : fournitures scolaires, instruments de musique, kits scientifiques, bourses pour sorties scolaires, et plus encore. Notre association est une organisation 501(c)(3) enregistrée — votre don est déductible d'impôts.",
+    "employerMatchBody": "De nombreux employeurs doubleront votre don. Écrivez-nous à l'adresse ci-dessous si vous souhaitez de l'aide pour les démarches."
+  },
+  "home": {
+    "heroCta": "En savoir plus",
+    "announcementsTitle": "Annonces",
+    "upcomingEventsTitle": "Événements à venir",
+    "latestNewsTitle": "Dernières actualités",
+    "donateBannerTitle": "Soutenez notre école",
+    "donateBannerCta": "Faire un don"
+  },
+  "about": {
+    "title": "À propos de notre école",
+    "founded": "Fondée en {year}",
+    "grades": "Niveaux {grades}",
+    "enrollment": "{count} élèves"
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "description": "Entrez en contact avec notre communauté scolaire.",
+    "form": {
+      "name": "Votre nom",
+      "email": "Courriel",
+      "subject": "Sujet",
+      "message": "Message",
+      "send": "Envoyer le message",
+      "thanks": "Merci — nous vous contacterons bientôt."
+    }
+  },
+  "lunch": {
+    "title": "Menu de la cantine",
+    "description": "Menu hebdomadaire, allergènes et informations sur les repas gratuits ou à prix réduit.",
+    "thisWeek": "Cette semaine",
+    "upcoming": "Semaines à venir",
+    "allergens": "Allergènes",
+    "freeReduced": "Repas gratuits et à prix réduit",
+    "freeReducedDescription": "Tous les élèves sont admissibles, quel que soit le revenu familial. Demandez au secrétariat pour plus de détails.",
+    "noMenu": "Aucun menu publié pour l'instant. Revenez bientôt.",
+    "weekdays": {
+      "monday": "Lundi",
+      "tuesday": "Mardi",
+      "wednesday": "Mercredi",
+      "thursday": "Jeudi",
+      "friday": "Vendredi"
+    }
+  },
+  "transportation": {
+    "title": "Transport",
+    "description": "Itinéraires de bus, horaires et ressources de covoiturage familial.",
+    "routes": "Itinéraires de bus",
+    "route": "Itinéraire",
+    "driver": "Conducteur",
+    "morningArrival": "Arrivée du matin",
+    "afternoonDeparture": "Départ de l'après-midi",
+    "stops": "Arrêts",
+    "notes": "Remarques",
+    "noRoutes": "Les itinéraires de bus seront publiés avant le début de l'année scolaire."
+  },
+  "community": {
+    "title": "Tableau communautaire",
+    "description": "Petites annonces, covoiturage, partage de compétences et entreprises locales qui soutiennent notre école.",
+    "listings": "Annonces",
+    "posted": "Publié",
+    "neighborhood": "Quartier",
+    "contact": "Contact",
+    "noListings": "Aucune annonce pour le moment. Revenez bientôt.",
+    "categories": {
+      "classified": "Petites annonces",
+      "carpool": "Covoiturage",
+      "skill-share": "Partage de compétences",
+      "business": "Entreprises locales",
+      "new-family": "Nouvelle famille",
+      "other": "Autre"
+    }
+  },
+  "classroom": {
+    "title": "Pages des classes",
+    "description": "Découvrez nos enseignants et ce dont leurs classes ont besoin.",
+    "teachers": "Enseignants",
+    "wishlist": "Liste de souhaits de la classe",
+    "readingList": "Liste de lecture",
+    "grade": "Niveau",
+    "subject": "Matière",
+    "emailTeacher": "Écrire à l'enseignant",
+    "noTeachers": "Les pages des enseignants seront ajoutées bientôt."
+  },
+  "district": {
+    "title": "District",
+    "description": "Écoles de notre district.",
+    "schools": "Écoles",
+    "visitSchool": "Visiter l'école",
+    "noSchools": "Aucune école configurée pour le moment."
+  },
+  "resources": {
+    "title": "Ressources communautaires",
+    "description": "Ressources locales de confiance pour les familles.",
+    "callToAction": "Ressources pour l'alimentation, le logement, la santé, l'aide juridique et le soutien en santé mentale.",
+    "languages": "Langues",
+    "visitWebsite": "Visiter le site",
+    "noResources": "Aucune ressource répertoriée pour le moment.",
+    "categories": {
+      "food": "Alimentation",
+      "health": "Santé",
+      "housing": "Logement",
+      "legal": "Juridique",
+      "mental-health": "Santé mentale",
+      "other": "Autre"
+    }
+  },
+  "transparency": {
+    "title": "Transparence",
+    "description": "Notre budget public, l'affectation des fonds et les dépenses d'une année à l'autre.",
+    "budgetYear": "Année budgétaire",
+    "totalRaised": "Total collecté",
+    "totalSpent": "Total dépensé",
+    "categories": "Catégories",
+    "summary": "Résumé",
+    "noBudgets": "Les informations budgétaires seront publiées bientôt."
+  },
+  "errors": {
+    "notFound": "Page introuvable",
+    "notFoundDescription": "La page que vous recherchez n'existe pas.",
+    "goHome": "Retour à l'accueil"
   }
 }

@@ -1,18 +1,31 @@
 {
   "common": {
     "welcome": "እንኳን ደህና መጡ",
-    "loading": "በመጫን ላይ",
+    "welcomeName": "እንኳን ደህና መጡ, {name}!",
+    "loading": "በመጫን ላይ…",
     "search": "ፈልግ",
+    "searchPlaceholder": "ጣቢያውን ፈልግ…",
     "menu": "ምናሌ",
     "close": "ዝጋ",
+    "open": "ክፈት",
     "readMore": "ተጨማሪ ያንብቡ",
     "learnMore": "ተጨማሪ ይወቁ",
     "viewAll": "ሁሉንም ይመልከቱ",
-    "skipToContent": "ወደ ይዘት ዝለል",
+    "skipToContent": "ወደ ዋና ይዘት ዝለል",
     "language": "ቋንቋ",
     "selectLanguage": "ቋንቋ ይምረጡ",
     "primaryNavigation": "ዋና ዳሰሳ",
-    "dismiss": "አሰናብት"
+    "dismiss": "አሰናብት",
+    "back": "ተመለስ",
+    "next": "ቀጣይ",
+    "previous": "ቀዳሚ",
+    "today": "ዛሬ",
+    "tomorrow": "ነገ",
+    "yesterday": "ትናንት",
+    "contact": "አግኙን",
+    "schoolLabel": "ትምህርት ቤት",
+    "moreTitle": "ተጨማሪ",
+    "appIntroTitle": "ወደ {school} እንኳን ደህና መጡ"
   },
   "nav": {
     "home": "መነሻ",
@@ -21,7 +34,93 @@
     "pta": "PTA",
     "volunteer": "በጎ ፈቃደኛ",
     "donate": "ለግስ",
+    "fundraising": "ገቢ ማሰባሰብ",
     "about": "ስለ እኛ",
-    "contact": "ያግኙን"
+    "contact": "ያግኙን",
+    "community": "ማህበረሰብ",
+    "lunch": "ምሳ",
+    "transportation": "መጓጓዣ",
+    "classroom": "ክፍል",
+    "district": "ዲስትሪክት",
+    "resources": "መርጃዎች",
+    "transparency": "ግልጽነት",
+    "more": "ተጨማሪ"
+  },
+  "footer": {
+    "address": "አድራሻ",
+    "phone": "ስልክ",
+    "email": "ኢሜይል",
+    "rights": "© {year} {school}. መብቱ በሕግ የተጠበቀ ነው።",
+    "builtWith": "የተገነባው በ",
+    "openSourceFor": "ለእያንዳንዱ ትምህርት ቤት ክፍት ምንጭ"
+  },
+  "events": {
+    "title": "የትምህርት ቤት ክስተቶች",
+    "description": "የትምህርት ቤታችን ማህበረሰብ መጪ ክስተቶች",
+    "upcoming": "መጪ ክስተቶች",
+    "past": "ያለፉ ክስተቶች",
+    "noEvents": "መጪ ክስተቶች የሉም። በቅርቡ ይመለሱ!",
+    "rsvp": "ማረጋገጥ",
+    "location": "ቦታ"
+  },
+  "news": {
+    "title": "የትምህርት ቤት ዜና",
+    "description": "ከትምህርት ቤታችን የቅርብ ዝማኔዎች",
+    "latest": "የቅርብ ዜና",
+    "by": "በ"
+  },
+  "pta": {
+    "title": "የወላጅ መምህር ማህበር",
+    "overview": "PTA-ችን ወላጆችን፣ መምህራንን እና የማህበረሰብ አባላትን ትምህርት ቤታችንን ለመደገፍ ያሰባስባል።"
+  },
+  "volunteer": {
+    "title": "ከእኛ ጋር በፈቃደኝነት ይስሩ",
+    "description": "የእያንዳንዱ ወላጅ ጊዜ ዋጋ ያለው ነው።"
+  },
+  "fundraising": {
+    "title": "ትምህርት ቤታችንን ይደግፉ",
+    "description": "ልገሳዎ በቀጥታ ለተማሪዎቻችን ፕሮግራሞችን ይደግፋል።",
+    "donate": "አሁኑኑ ይለግሱ",
+    "thankYou": "ስለ ድጋፍዎ እናመሰግናለን!"
+  },
+  "home": {
+    "heroCta": "ተጨማሪ ይወቁ",
+    "upcomingEventsTitle": "መጪ ክስተቶች",
+    "latestNewsTitle": "የቅርብ ዜና",
+    "donateBannerTitle": "ትምህርት ቤታችንን ይደግፉ",
+    "donateBannerCta": "ለግስ ያድርጉ"
+  },
+  "about": {
+    "title": "ስለ ትምህርት ቤታችን"
+  },
+  "contact": {
+    "title": "ያግኙን",
+    "description": "ከትምህርት ቤታችን ማህበረሰብ ጋር ይገናኙ።"
+  },
+  "lunch": {
+    "title": "የምሳ ምናሌ"
+  },
+  "transportation": {
+    "title": "መጓጓዣ"
+  },
+  "community": {
+    "title": "የማህበረሰብ ቦርድ"
+  },
+  "classroom": {
+    "title": "የክፍል ገፆች"
+  },
+  "district": {
+    "title": "ዲስትሪክት"
+  },
+  "resources": {
+    "title": "የማህበረሰብ መርጃዎች"
+  },
+  "transparency": {
+    "title": "ግልጽነት"
+  },
+  "errors": {
+    "notFound": "ገጽ አልተገኘም",
+    "notFoundDescription": "የሚፈልጉት ገጽ የለም።",
+    "goHome": "ወደ መነሻ ይሂዱ"
   }
 }

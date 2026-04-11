@@ -269,5 +269,8 @@
     "notFound": "Page not found",
     "notFoundDescription": "The page you're looking for doesn't exist.",
     "goHome": "Go home"
+  },
+  "_test": {
+    "englishOnlyFallback": "English-only fallback fixture"
   }
 }

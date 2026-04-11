@@ -7,8 +7,11 @@ describe('i18n integration in web app', () => {
     expect(t('nav.home', 'es')).toBe('Inicio')
   })
 
-  it('falls back to English for missing keys in es', () => {
-    expect(t('common.next', 'es')).toBe('Next')
+  it('falls back to English for missing keys in any locale', () => {
+    // `_test.englishOnlyFallback` is intentionally present only in en.json,
+    // so every other locale must fall through to English for this key.
+    expect(t('_test.englishOnlyFallback', 'es')).toBe('English-only fallback fixture')
+    expect(t('_test.englishOnlyFallback', 'ht')).toBe('English-only fallback fixture')
   })
 
   it('reports populated locales correctly', () => {

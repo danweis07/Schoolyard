@@ -42,3 +42,21 @@ export function localizedPath(path: string, locale: Locale): string {
   if (locale === defaultLocale) return clean
   return `/${locale}${clean}`
 }
+
+/**
+ * Return one getStaticPaths entry per supported locale.
+ *
+ * Pages living under `src/pages/[...locale]/...` use this to render once per
+ * locale. The default locale returns `{ locale: undefined }` so Astro's
+ * `[...locale]` rest-parameter matches zero path segments and the page emits
+ * at its bare path (e.g. `/events`), while non-default locales emit at
+ * `/<locale>/events`.
+ *
+ * Pages with their own dynamic params (like `[slug].astro`) should call this
+ * and spread the entries into a flatMap over their own getStaticPaths result.
+ */
+export function localeStaticPaths(): Array<{ params: { locale: string | undefined } }> {
+  return supportedLocales.map((code) => ({
+    params: { locale: code === defaultLocale ? undefined : code },
+  }))
+}

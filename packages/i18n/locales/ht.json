@@ -1,18 +1,31 @@
 {
   "common": {
     "welcome": "Byenveni",
-    "loading": "Chajman",
+    "welcomeName": "Byenveni, {name}!",
+    "loading": "Chajman…",
     "search": "Rechèch",
+    "searchPlaceholder": "Chèche nan sit la…",
     "menu": "Meni",
     "close": "Fèmen",
+    "open": "Ouvri",
     "readMore": "Li plis",
     "learnMore": "Aprann plis",
     "viewAll": "Wè tout",
-    "skipToContent": "Ale nan kontni",
+    "skipToContent": "Ale nan kontni prensipal",
     "language": "Lang",
     "selectLanguage": "Chwazi lang",
     "primaryNavigation": "Navigasyon prensipal",
-    "dismiss": "Rejte"
+    "dismiss": "Rejte",
+    "back": "Retounen",
+    "next": "Swivan",
+    "previous": "Anvan",
+    "today": "Jodi a",
+    "tomorrow": "Demen",
+    "yesterday": "Yè",
+    "contact": "Kontak",
+    "schoolLabel": "Lekòl",
+    "moreTitle": "Plis",
+    "appIntroTitle": "Byenveni nan {school}"
   },
   "nav": {
     "home": "Akèy",
@@ -21,7 +34,93 @@
     "pta": "PTA",
     "volunteer": "Volontè",
     "donate": "Fè don",
+    "fundraising": "Ranmase fon",
     "about": "Konsènan",
-    "contact": "Kontak"
+    "contact": "Kontak",
+    "community": "Kominote",
+    "lunch": "Manje midi",
+    "transportation": "Transpòtasyon",
+    "classroom": "Salklas",
+    "district": "Distri",
+    "resources": "Resous",
+    "transparency": "Transparans",
+    "more": "Plis"
+  },
+  "footer": {
+    "address": "Adrès",
+    "phone": "Telefòn",
+    "email": "Imèl",
+    "rights": "© {year} {school}. Tout dwa rezève.",
+    "builtWith": "Konstwi avèk",
+    "openSourceFor": "sous louvri pou chak lekòl"
+  },
+  "events": {
+    "title": "Evènman Lekòl",
+    "description": "Evènman kap vini pou kominote lekòl nou an",
+    "upcoming": "Evènman kap vini",
+    "past": "Evènman ki pase",
+    "noEvents": "Pa gen evènman kap vini. Tounen pita!",
+    "rsvp": "Konfime",
+    "location": "Kote"
+  },
+  "news": {
+    "title": "Nouvèl Lekòl",
+    "description": "Dènye nouvèl nan lekòl nou an",
+    "latest": "Dènye nouvèl",
+    "by": "pa"
+  },
+  "pta": {
+    "title": "Asosyasyon Paran ak Pwofesè",
+    "overview": "PTA nou an rasanble paran, pwofesè ak manm kominote pou sipòte lekòl nou an."
+  },
+  "volunteer": {
+    "title": "Fè Volontè avèk Nou",
+    "description": "Tan chak paran enpòtan."
+  },
+  "fundraising": {
+    "title": "Sipòte Lekòl Nou an",
+    "description": "Don ou a finanse pwogram pou elèv nou yo dirèkteman.",
+    "donate": "Fè don kounye a",
+    "thankYou": "Mèsi pou sipò ou!"
+  },
+  "home": {
+    "heroCta": "Aprann plis",
+    "upcomingEventsTitle": "Evènman kap vini",
+    "latestNewsTitle": "Dènye nouvèl",
+    "donateBannerTitle": "Sipòte lekòl nou an",
+    "donateBannerCta": "Fè yon don"
+  },
+  "about": {
+    "title": "Konsènan Lekòl Nou an"
+  },
+  "contact": {
+    "title": "Kontakte Nou",
+    "description": "Konekte avèk kominote lekòl nou an."
+  },
+  "lunch": {
+    "title": "Meni Manje Midi"
+  },
+  "transportation": {
+    "title": "Transpòtasyon"
+  },
+  "community": {
+    "title": "Panno Kominote"
+  },
+  "classroom": {
+    "title": "Paj Salklas"
+  },
+  "district": {
+    "title": "Distri"
+  },
+  "resources": {
+    "title": "Resous Kominote"
+  },
+  "transparency": {
+    "title": "Transparans"
+  },
+  "errors": {
+    "notFound": "Paj pa jwenn",
+    "notFoundDescription": "Paj w ap chèche a pa egziste.",
+    "goHome": "Ale nan akèy"
   }
 }

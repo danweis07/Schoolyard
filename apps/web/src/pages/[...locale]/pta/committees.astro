@@ -1,0 +1,70 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { getCollection } from 'astro:content'
+import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
+
+export const getStaticPaths = localeStaticPaths
+
+if (!isModuleEnabled(siteConfig, 'pta')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+
+const committees = (await getCollection('committees')).sort((a, b) => a.data.order - b.data.order)
+---
+
+<BaseLayout title={t('pta.committees')}>
+  <section class="mx-auto max-w-4xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{t('pta.committees')}</h1>
+    <p class="mt-4 text-lg text-muted">{t('pta.committeesDescription')}</p>
+
+    <div class="mt-10 grid gap-6">
+      {
+        committees.map((committee) => (
+          <article class="rounded-card border border-border bg-surface p-card shadow-sm">
+            <div class="flex items-start gap-4">
+              {committee.data.icon && (
+                <span class="text-3xl" aria-hidden="true">
+                  {committee.data.icon}
+                </span>
+              )}
+              <div class="flex-1">
+                <h2 class="text-xl font-bold">{committee.data.name}</h2>
+                <p class="mt-2 text-base">{committee.data.description}</p>
+                <div class="mt-4 flex flex-wrap gap-4 text-sm text-muted">
+                  {committee.data.meets && (
+                    <span>
+                      <strong>{t('pta.committeesMeets')}:</strong> {committee.data.meets}
+                    </span>
+                  )}
+                  {committee.data.members && (
+                    <span>
+                      <strong>{t('pta.committeesSize')}:</strong> {committee.data.members}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    <div class="mt-10 rounded-card border border-primary/20 bg-primary/5 p-card">
+      <p class="text-base font-medium">{t('pta.committeesJoin')}</p>
+      {
+        siteConfig.school.email && (
+          <p class="mt-2">
+            <a href={`mailto:${siteConfig.school.email}`} class="font-semibold text-primary">
+              {siteConfig.school.email}
+            </a>
+          </p>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>
