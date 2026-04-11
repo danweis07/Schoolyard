@@ -1,0 +1,26 @@
+---
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  name: string
+  locale: Locale
+  /** Number of schools in the district, for the subtitle. Omit to hide. */
+  schoolCount?: number
+}
+
+const { name, locale, schoolCount } = Astro.props
+const t = useTranslate(locale)
+---
+
+<header class="border-b border-border pb-6">
+  <h1 class="text-4xl font-bold">{name}</h1>
+  <p class="mt-2 text-lg text-muted">{t('district.description')}</p>
+  {
+    typeof schoolCount === 'number' && schoolCount > 0 && (
+      <p class="mt-1 text-sm text-muted">
+        {schoolCount} {t('district.schools').toLowerCase()}
+      </p>
+    )
+  }
+</header>

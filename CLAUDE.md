@@ -17,11 +17,15 @@ Schoolyard is not a website template. It is a **modular platform** — a digital
 
 The SF school PTA community is the reference demo implementation. The architecture serves every American school — and eventually every school globally.
 
+### Maintenance model (post-Supabase pivot)
+
+Schoolyard now assumes a **technical maintainer** — a district IT team, a tech-savvy PTO, a community org, or a state DoE — stands up and operates the backend. The "non-technical PTA parent edits markdown" path still works via the legacy `static` backend, but the default path uses Supabase for real dynamic features (live donations, RSVPs, auth, push notifications, community moderation). See `BACKEND.md` for the schema reference and `DEPLOYMENT.md` for the setup runbook.
+
 ---
 
 ## Platform Architecture Overview
 
-Schoolyard has three layers:
+Schoolyard has four layers:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -37,9 +41,20 @@ Schoolyard has three layers:
 │  District · Resources · Transparency                 │
 ├─────────────────────────────────────────────────────┤
 │  SURFACES                                            │
-│  Web (Astro) · Mobile App (React Native / Expo)      │
+│  Web (Astro, hybrid SSG/SSR) · Mobile (Expo)         │
+├─────────────────────────────────────────────────────┤
+│  BACKEND (shared multi-tenant)                       │
+│  Supabase: Postgres + RLS + Auth + Edge Functions    │
+│  Districts group schools · `school_id` isolates data │
 └─────────────────────────────────────────────────────┘
 ```
+
+### Backend modes
+
+Two modes controlled by `SCHOOLYARD_BACKEND` env var:
+
+- **`supabase`** (new default) — shared multi-tenant Supabase project. All content lives in Postgres; RLS enforces tenant isolation on `school_id`; districts can aggregate across schools via `district_id`. Dynamic features (RSVPs, donations, contact forms, volunteer hours, community flags, push notifications) live here.
+- **`static`** (legacy) — `scripts/generate-manifest.ts` writes JSON files that web and mobile consume over HTTP. No database, no auth, no dynamic state. Retained for small-school deployments that don't want a backend — but new features target `supabase` first.
 
 ---
 
@@ -47,44 +62,56 @@ Schoolyard has three layers:
 
 ### Web Platform
 
-| Layer     | Choice                           | Reason                                            |
-| --------- | -------------------------------- | ------------------------------------------------- |
-| Framework | Astro                            | Fast, static-first, no database, non-dev friendly |
-| Styling   | Tailwind CSS + Design Tokens     | Consistent theming, school-level customization    |
-| CMS       | Decap CMS (formerly Netlify CMS) | Git-based, no backend, works anywhere             |
-| Hosting   | Vercel or Netlify (free tier)    | One-click deploy, free, reliable                  |
-| Content   | Markdown + JSON config           | Human-editable, version controlled                |
-| i18n      | Astro i18n + JSON locale files   | 20+ languages, community-contributed              |
-| Icons     | Astro Icon + Heroicons           | Lightweight, accessible                           |
-| Forms     | Netlify Forms or Formspree       | No backend required                               |
-| Fonts     | Inter (body) + system fallbacks  | Fast, readable, accessible                        |
-| Search    | Pagefind                         | Static, no server, fast                           |
+| Layer     | Choice                            | Reason                                                     |
+| --------- | --------------------------------- | ---------------------------------------------------------- |
+| Framework | Astro (hybrid SSG + SSR)          | Fast static pages + per-request dynamic reads              |
+| Styling   | Tailwind CSS + Design Tokens      | Consistent theming, school-level customization             |
+| CMS       | Decap CMS (static mode) / backend | Decap retained for static mode; admin UI for Supabase mode |
+| Hosting   | Vercel, Netlify, Node (SSR)       | Hybrid mode requires a Node adapter for dynamic routes     |
+| Content   | Supabase Postgres (default)       | Replaces Markdown as source of truth in supabase mode      |
+| Content   | Markdown (legacy `static` mode)   | Still supported via `scripts/generate-manifest.ts`         |
+| i18n      | Astro i18n + JSON locale files    | 20 languages, community-contributed                        |
+| Icons     | Astro Icon + Heroicons            | Lightweight, accessible                                    |
+| Forms     | Supabase edge function            | `contact-submit` with honeypot + rate limiting             |
+| Fonts     | Inter (body) + system fallbacks   | Fast, readable, accessible                                 |
+| Search    | Pagefind                          | Static, no server, fast                                    |
 
 ### Mobile App
 
-| Layer              | Choice                        | Reason                                      |
-| ------------------ | ----------------------------- | ------------------------------------------- |
-| Framework          | React Native + Expo           | Cross-platform iOS/Android, large community |
-| Navigation         | Expo Router                   | File-based routing, web-familiar            |
-| Styling            | NativeWind (Tailwind for RN)  | Shared design token system with web         |
-| State              | Zustand                       | Lightweight, simple                         |
-| Data               | React Query + school JSON API | Pulls from same content as web              |
-| Push Notifications | Expo Notifications            | Cross-platform, free                        |
-| Offline            | Expo SQLite + background sync | Works on poor connections                   |
-| Auth               | Clerk or Supabase Auth        | Simple, free tier                           |
-| Analytics          | PostHog (self-hostable)       | Privacy-respecting, open source             |
+| Layer              | Choice                                   | Reason                                      |
+| ------------------ | ---------------------------------------- | ------------------------------------------- |
+| Framework          | React Native + Expo                      | Cross-platform iOS/Android, large community |
+| Navigation         | Expo Router                              | File-based routing, web-familiar            |
+| Styling            | NativeWind (Tailwind for RN)             | Shared design token system with web         |
+| State              | React Query                              | Query caching + background refetch          |
+| Data               | `@schoolyard/content-api` (auto-routed)  | Same types for static + supabase backends   |
+| Push Notifications | Expo Notifications + `push_tokens` table | Cross-platform, stored per-school           |
+| Offline            | React Query + Expo SQLite                | Works on poor connections                   |
+| Auth               | Supabase Auth (magic link)               | Guest mode default; auth for write actions  |
+| Analytics          | PostHog (self-hostable)                  | Privacy-respecting, open source             |
+
+### Backend
+
+| Layer          | Choice                                          | Reason                                         |
+| -------------- | ----------------------------------------------- | ---------------------------------------------- |
+| Database       | Supabase (Postgres)                             | Open source, self-hostable, free tier          |
+| Multi-tenancy  | `school_id` + RLS                               | Shared project; RLS isolates schools           |
+| Districts      | `district_id` FK on `schools`                   | Cross-school aggregation for district admins   |
+| Auth           | Supabase Auth (magic link)                      | 4 roles: member, editor, admin, district_admin |
+| Edge functions | `contact-submit`, `donate`, `stripe-webhook`, … | Trusted writes with service-role key           |
+| Storage        | Supabase Storage (future)                       | PDFs, newsletters, opt-in photos               |
 
 ### Shared
 
-| Layer           | Choice                                                             |
-| --------------- | ------------------------------------------------------------------ |
-| Design Tokens   | Style Dictionary — single source generates web CSS vars + RN theme |
-| Content API     | School config + Markdown → JSON API consumed by both web and app   |
-| Monorepo        | Turborepo — web, app, shared packages in one repo                  |
-| Package Manager | pnpm                                                               |
-| TypeScript      | Everywhere                                                         |
-| Linting         | ESLint + Prettier                                                  |
-| Testing         | Vitest (web) + Jest (app)                                          |
+| Layer           | Choice                                                              |
+| --------------- | ------------------------------------------------------------------- |
+| Design Tokens   | Style Dictionary — single source generates web CSS vars + RN theme  |
+| Content API     | `@schoolyard/content-api` → adapter router (`static` \| `supabase`) |
+| Monorepo        | Turborepo — web, app, shared packages in one repo                   |
+| Package Manager | pnpm                                                                |
+| TypeScript      | Everywhere                                                          |
+| Linting         | ESLint + Prettier                                                   |
+| Testing         | Vitest (web) + Jest (app) + RLS policy matrix (`supabase/tests/`)   |
 
 ---
 
@@ -127,15 +154,28 @@ schoolyard/
 │   ├── config/                      # school.config.json loader + validator
 │   ├── tokens/                      # Design tokens — single source of truth
 │   ├── i18n/                        # Shared translation system
-│   ├── content-api/                 # Shared content layer
+│   ├── content-api/                 # Shared content layer (adapter router)
+│   │   └── src/adapters/            # `static` and `supabase` adapters
+│   ├── supabase/                    # Typed Supabase client factories
 │   └── ui/                          # Shared React components (mobile)
 │
+├── supabase/
+│   ├── config.toml                  # Supabase CLI config for `supabase start`
+│   ├── migrations/                  # 0001–0006 SQL migrations (DDL + RLS + fns)
+│   ├── seed/                        # Seed data for local dev
+│   ├── tests/                       # RLS policy matrix tests (release-blocking)
+│   └── functions/                   # Edge functions (contact-submit, donate, …)
+│
 ├── cms/
-│   └── config.yml                   # Decap CMS configuration
+│   └── config.yml                   # Decap CMS configuration (static mode)
 │
 └── scripts/
-    ├── setup.js                     # Interactive first-time setup wizard
-    └── validate-config.js           # Validates school.config.json before build
+    ├── setup.ts                     # Interactive first-time setup wizard
+    ├── validate-config.ts           # Validates school.config.json before build
+    ├── build-school.ts              # Multi-tenant build driver
+    ├── generate-manifest.ts         # Legacy static manifest writer
+    ├── migrate-to-supabase.ts       # Markdown → Postgres seeder
+    └── lib/normalizers.ts           # Shared Markdown → normalized-object pipeline
 ```
 
 ---
@@ -350,14 +390,14 @@ Document these in ROADMAP.md. Do not build in v1:
 
 ## Guiding Principles
 
-1. **Non-technical users first.** Can a PTA parent with no coding experience maintain this?
+1. **Technical maintainer first, non-technical editor second.** The platform assumes a district, IT team, or tech-savvy PTO stands up Supabase and operates the backend. The non-technical path (edit markdown, push to git) still works via the `static` backend mode but is no longer the default.
 2. **Simple over clever.** Boring readable code over elegant abstractions.
-3. **Config over code.** Everything a school changes lives in `school.config.json` or markdown.
-4. **Performance for everyone.** Rural users on slow mobile are primary users — ship lean.
+3. **Config + DB over code.** A school's configuration lives in `school.config.json` (branding, modules, locales) and its content lives in Postgres (or Markdown in static mode). No app code changes to add content.
+4. **Performance for everyone.** Rural users on slow mobile are primary users — ship lean. Public pages stay prerendered even in hybrid mode.
 5. **Inclusive by default.** Multilingual, accessible, small-screen-ready from day one.
 6. **Modules are independent.** Enabling or disabling a module never breaks anything else.
-7. **Privacy by design.** No tracking, no ads, no data harvesting — in the architecture, not just policy.
-8. **Community maintained.** Code must be approachable enough for volunteer contributors.
+7. **Privacy by design.** No tracking, no ads, no data harvesting — in the architecture, not just policy. RLS on every table; service-role keys only in trusted edge functions.
+8. **Tenant isolation is release-blocking.** Every new table adds an entry to `supabase/tests/rls.spec.ts` and the matrix must be green before merge.
 
 ---
 

@@ -16,11 +16,23 @@ export {
   localeSchema,
   tenantSchoolSchema,
   districtSchema,
+  supabaseSchema,
+  backendModeSchema,
   SUPPORTED_LOCALES,
   MODULE_NAMES,
+  BACKEND_MODES,
 } from './schema.js'
 
-export type { SchoolConfig, Modules, Locale, ModuleName, TenantSchool, District } from './schema.js'
+export type {
+  SchoolConfig,
+  Modules,
+  Locale,
+  ModuleName,
+  TenantSchool,
+  District,
+  BackendMode,
+  SupabaseConnection,
+} from './schema.js'
 
 export { defaultConfig } from './defaults.js'
 

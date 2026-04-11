@@ -1,0 +1,4 @@
+# Supabase CLI local volumes
+/.branches
+/.temp
+/docker

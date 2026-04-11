@@ -1,0 +1,467 @@
+/**
+ * Supabase adapter — reads live data from Postgres via @schoolyard/supabase.
+ *
+ * Each method queries the relevant table scoped to the current school
+ * (resolved via the `Scope.schoolSlug` or the `defaultSchoolSlug` passed
+ * at construction time), then maps Postgres rows back to the same shapes
+ * the static adapter returns. Consumers that import types from
+ * `@schoolyard/content-api` don't need to change.
+ *
+ * School-slug → school-id resolution is cached for the lifetime of the
+ * adapter instance; a single weak map per client avoids refetching the
+ * same lookup across calls.
+ */
+import type { SupabaseClient, Database } from '@schoolyard/supabase'
+
+type Tables = Database['public']['Tables']
+type EventRow = Tables['events']['Row']
+type NewsRow = Tables['news']['Row']
+type BoardMemberRow = Tables['board_members']['Row']
+type VolunteerRoleRow = Tables['volunteer_roles']['Row']
+type ResourceRow = Tables['resources']['Row']
+type LunchMenuRow = Tables['lunch_menus']['Row']
+type TransportationRouteRow = Tables['transportation_routes']['Row']
+type CommunityListingRow = Tables['community_listings']['Row']
+type ClassroomTeacherRow = Tables['classroom_teachers']['Row']
+type BudgetYearRow = Tables['budget_years']['Row']
+type CommitteeRow = Tables['committees']['Row']
+type ProgramRow = Tables['programs']['Row']
+type PtaNewsletterRow = Tables['pta_newsletters']['Row']
+import type { ContentAdapter, FetchOptions, Scope } from './types.js'
+import type {
+  LunchMenu,
+  TransportationRoute,
+  CommunityListing,
+  ClassroomTeacher,
+  BudgetYear,
+  Committee,
+  Program,
+  PtaNewsletter,
+  BudgetLineItem,
+} from '../types.js'
+import type {
+  ManifestEvent,
+  ManifestNewsPost,
+  ManifestBoardMember,
+  ManifestVolunteerRole,
+  ManifestResource,
+  ManifestIndex,
+  ManifestConfig,
+} from '../manifest.js'
+
+export interface SupabaseAdapterOptions {
+  /** Typed Supabase client. Pass either the browser or server variant. */
+  client: SupabaseClient<Database>
+  /**
+   * Slug used when `Scope.schoolSlug` is omitted. In single-tenant
+   * deployments this is the only school; in multi-tenant deployments it
+   * defaults to whatever Astro middleware resolved from the request.
+   */
+  defaultSchoolSlug?: string
+}
+
+type SchoolLookupRow = Pick<
+  Database['public']['Tables']['schools']['Row'],
+  'id' | 'slug' | 'name' | 'short_name' | 'branding' | 'languages' | 'modules' | 'district_id'
+>
+
+export function createSupabaseAdapter(options: SupabaseAdapterOptions): ContentAdapter {
+  const { client, defaultSchoolSlug } = options
+  const schoolCache = new Map<string, SchoolLookupRow>()
+
+  async function resolveSchool(scope?: Scope): Promise<SchoolLookupRow> {
+    const slug = scope?.schoolSlug ?? defaultSchoolSlug
+    if (!slug) {
+      throw new Error('[supabase-adapter] no school slug provided and no defaultSchoolSlug was set')
+    }
+    const cached = schoolCache.get(slug)
+    if (cached) return cached
+
+    const { data, error } = await client
+      .from('schools')
+      .select('id, slug, name, short_name, branding, languages, modules, district_id')
+      .eq('slug', slug)
+      .maybeSingle()
+
+    if (error) throw error
+    if (!data) throw new Error(`[supabase-adapter] school not found: ${slug}`)
+    schoolCache.set(slug, data)
+    return data
+  }
+
+  return {
+    async fetchManifest(scope, fetchOptions): Promise<ManifestIndex> {
+      const school = await resolveSchool(scope)
+      const languages = (school.languages ?? {}) as { supported?: string[] }
+      const modules = (school.modules ?? {}) as Record<string, boolean>
+
+      const counts = await loadCounts(client, school.id, fetchOptions)
+
+      return {
+        version: 1,
+        generatedAt: new Date().toISOString(),
+        tenantMode: school.district_id ? 'district' : 'single',
+        tenantSlug: school.district_id ? school.slug : '',
+        school: {
+          name: school.name,
+          shortName: school.short_name ?? school.name,
+          mascot: '',
+          tagline: '',
+          district: '',
+          timezone: '',
+        },
+        locales: languages.supported ?? ['en'],
+        enabledModules: Object.entries(modules)
+          .filter(([, v]) => v === true)
+          .map(([k]) => k),
+        counts,
+      }
+    },
+
+    async fetchConfig(scope): Promise<ManifestConfig> {
+      const school = await resolveSchool(scope)
+      return {
+        school: { name: school.name, shortName: school.short_name ?? school.name },
+        branding: school.branding,
+        languages: school.languages,
+        modules: school.modules,
+      }
+    },
+
+    async fetchEvents(scope, fetchOptions): Promise<ManifestEvent[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('events')
+        .select('*')
+        .eq('school_id', school.id)
+        .eq('published', true)
+        .order('starts_at', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as EventRow[]).map((row) => ({
+        slug: row.slug,
+        title: row.title,
+        date: row.starts_at,
+        endDate: row.ends_at ?? undefined,
+        time: undefined,
+        location: row.location ?? undefined,
+        description: row.description ?? '',
+        category:
+          (row.category as ManifestEvent['category'] | null) ??
+          ('other' as ManifestEvent['category']),
+        registrationUrl: undefined,
+        featured: row.featured,
+        cancelled: row.cancelled,
+        htmlBody: row.body_html ?? '',
+      }))
+    },
+
+    async fetchNews(scope, fetchOptions): Promise<ManifestNewsPost[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('news')
+        .select('*')
+        .eq('school_id', school.id)
+        .eq('published', true)
+        .order('published_at', { ascending: false })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as NewsRow[]).map((row) => ({
+        slug: row.slug,
+        title: row.title,
+        publishDate: row.published_at,
+        author: row.author ?? undefined,
+        summary: row.excerpt ?? '',
+        tags: row.tags ?? [],
+        featured: row.featured,
+        image: row.image ?? undefined,
+        imageAlt: row.image_alt ?? undefined,
+        htmlBody: row.body_html ?? '',
+      }))
+    },
+
+    async fetchBoard(scope, fetchOptions): Promise<ManifestBoardMember[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('board_members')
+        .select('*')
+        .eq('school_id', school.id)
+        .order('sort_order', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as BoardMemberRow[]).map((row) => ({
+        slug: row.slug,
+        name: row.name,
+        role: row.role,
+        email: row.email ?? undefined,
+        photo: row.photo_url ?? undefined,
+        bio: row.bio_md ?? undefined,
+        termStart: row.term_start ?? undefined,
+        termEnd: row.term_end ?? undefined,
+        order: row.sort_order,
+        htmlBody: row.bio_html ?? '',
+      }))
+    },
+
+    async fetchVolunteers(scope, fetchOptions): Promise<ManifestVolunteerRole[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('volunteer_roles')
+        .select('*')
+        .eq('school_id', school.id)
+        .order('sort_order', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as VolunteerRoleRow[]).map((row) => ({
+        slug: row.slug,
+        title: row.title,
+        description: row.description_md ?? '',
+        commitment: row.commitment ?? '',
+        contact: row.contact_email ?? undefined,
+        filled: row.capacity !== null && row.filled >= row.capacity,
+        order: row.sort_order,
+        htmlBody: row.description_html ?? '',
+      }))
+    },
+
+    async fetchResources(scope, fetchOptions): Promise<ManifestResource[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('resources')
+        .select('*')
+        .eq('school_id', school.id)
+        .order('name', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as ResourceRow[]).map((row) => ({
+        slug: row.slug,
+        name: row.name,
+        category: row.category as ManifestResource['category'],
+        description: row.description ?? '',
+        address: row.address ?? undefined,
+        phone: row.phone ?? undefined,
+        url: row.url ?? undefined,
+        languages: row.languages ?? [],
+        htmlBody: '',
+      }))
+    },
+
+    async fetchLunchMenus(scope, fetchOptions): Promise<LunchMenu[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('lunch_menus')
+        .select('*')
+        .eq('school_id', school.id)
+        .order('week_of', { ascending: false })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as LunchMenuRow[]).map((row) => ({
+        slug: row.slug,
+        weekOf: row.week_of,
+        weekEnd: row.week_end ?? undefined,
+        meals: (row.meals as Record<string, unknown>) ?? {},
+        allergens: row.allergens ?? [],
+        freeReducedNote: row.free_reduced_note ?? undefined,
+        pdfUrl: row.pdf_url ?? undefined,
+      }))
+    },
+
+    async fetchTransportationRoutes(scope, fetchOptions): Promise<TransportationRoute[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('transportation_routes')
+        .select('*')
+        .eq('school_id', school.id)
+        .order('sort_order', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as TransportationRouteRow[]).map((row) => ({
+        slug: row.slug,
+        routeNumber: row.route_number,
+        routeName: row.route_name,
+        driver: row.driver ?? undefined,
+        morningArrival: row.morning_arrival ?? undefined,
+        afternoonDeparture: row.afternoon_departure ?? undefined,
+        stops: (row.stops as Array<Record<string, unknown>>) ?? [],
+        notes: row.notes ?? undefined,
+        order: row.sort_order,
+      }))
+    },
+
+    async fetchCommunityListings(scope, fetchOptions): Promise<CommunityListing[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('community_listings')
+        .select('*')
+        .eq('school_id', school.id)
+        .eq('hidden', false)
+        .order('sort_order', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as CommunityListingRow[]).map((row) => ({
+        slug: row.slug,
+        title: row.title,
+        category: row.category as CommunityListing['category'],
+        description: row.description ?? '',
+        contact: row.contact ?? undefined,
+        neighborhood: row.neighborhood ?? undefined,
+        postedDate: row.posted_date ?? undefined,
+        expiresDate: row.expires_date ?? undefined,
+        url: row.url ?? undefined,
+        flaggedCount: row.flagged_count,
+        hidden: row.hidden,
+        order: row.sort_order,
+      }))
+    },
+
+    async fetchClassroomTeachers(scope, fetchOptions): Promise<ClassroomTeacher[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('classroom_teachers')
+        .select('*')
+        .eq('school_id', school.id)
+        .order('sort_order', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as ClassroomTeacherRow[]).map((row) => ({
+        slug: row.slug,
+        name: row.name,
+        grade: row.grade,
+        subject: row.subject ?? undefined,
+        email: row.email ?? undefined,
+        photo: row.photo_url ?? undefined,
+        bio: row.bio_md ?? undefined,
+        wishlist: (row.wishlist as Array<Record<string, unknown>>) ?? [],
+        readingList: (row.reading_list as Array<Record<string, unknown>>) ?? [],
+        order: row.sort_order,
+      }))
+    },
+
+    async fetchBudgetYears(scope, fetchOptions): Promise<BudgetYear[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('budget_years')
+        .select('*')
+        .eq('school_id', school.id)
+        .order('year', { ascending: false })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as BudgetYearRow[]).map((row) => ({
+        slug: row.slug,
+        year: row.year,
+        totalRaised: Number(row.total_raised),
+        totalSpent: Number(row.total_spent),
+        categories: (row.categories as unknown as BudgetLineItem[]) ?? [],
+        summary: row.summary ?? undefined,
+        order: row.sort_order,
+      }))
+    },
+
+    async fetchCommittees(scope, fetchOptions): Promise<Committee[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('committees')
+        .select('*')
+        .eq('school_id', school.id)
+        .order('sort_order', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as CommitteeRow[]).map((row) => ({
+        slug: row.slug,
+        name: row.name,
+        icon: row.icon ?? undefined,
+        description: row.description_md ?? undefined,
+        meets: row.meets ?? undefined,
+        members: (row.members as Array<Record<string, unknown>>) ?? [],
+        order: row.sort_order,
+      }))
+    },
+
+    async fetchPrograms(scope, fetchOptions): Promise<Program[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('programs')
+        .select('*')
+        .eq('school_id', school.id)
+        .order('sort_order', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as ProgramRow[]).map((row) => ({
+        slug: row.slug,
+        name: row.name,
+        grades: row.grades ?? undefined,
+        schedule: row.schedule ?? undefined,
+        description: row.description_md ?? undefined,
+        funding: row.funding ?? undefined,
+        partner: row.partner ?? undefined,
+        goalCents: row.goal_cents ?? undefined,
+        raisedCents: row.raised_cents,
+        order: row.sort_order,
+      }))
+    },
+
+    async fetchPtaNewsletters(scope, fetchOptions): Promise<PtaNewsletter[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('pta_newsletters')
+        .select('*')
+        .eq('school_id', school.id)
+        .order('published_at', { ascending: false })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as PtaNewsletterRow[]).map((row) => ({
+        slug: row.slug,
+        title: row.title,
+        pdfUrl: row.pdf_url ?? undefined,
+        publishedAt: row.published_at,
+      }))
+    },
+  }
+}
+
+async function loadCounts(
+  client: SupabaseClient<Database>,
+  schoolId: string,
+  _options?: FetchOptions,
+): Promise<{
+  events: number
+  news: number
+  board: number
+  volunteers: number
+  resources: number
+}> {
+  const tables = ['events', 'news', 'board_members', 'volunteer_roles', 'resources'] as const
+  const results = await Promise.all(
+    tables.map((t) =>
+      client.from(t).select('id', { count: 'exact', head: true }).eq('school_id', schoolId),
+    ),
+  )
+  const [events, news, board, volunteers, resources] = results.map((r) => r.count ?? 0)
+  return { events, news, board, volunteers, resources }
+}

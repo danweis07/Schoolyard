@@ -6,6 +6,16 @@ export type {
   VolunteerRole,
   ResourceCategory,
   SchoolResource,
+  LunchMenu,
+  TransportationRoute,
+  CommunityCategory,
+  CommunityListing,
+  ClassroomTeacher,
+  BudgetLineItem,
+  BudgetYear,
+  Committee,
+  Program,
+  PtaNewsletter,
 } from './types.js'
 
 export {
@@ -21,7 +31,7 @@ export { sortNewsDesc, getFeaturedNews, getNewsBySlug, filterByTag } from './new
 export { sortBoard } from './board.js'
 
 // ─────────────────────────────────────────────
-// Manifest types + fetch helpers (easy backend)
+// Manifest types + legacy (static) fetch helpers
 // ─────────────────────────────────────────────
 export type {
   WithHtmlBody,
@@ -50,3 +60,14 @@ export {
   fetchTenantEvents,
   fetchTenantNews,
 } from './manifest.js'
+
+// ─────────────────────────────────────────────
+// New adapter router (use this for anything new)
+// ─────────────────────────────────────────────
+export { createContentClient } from './client.js'
+export type { ContentBackend, ContentClientOptions } from './client.js'
+export type { ContentAdapter, FetchOptions, Scope } from './adapters/types.js'
+export { createStaticAdapter } from './adapters/static.js'
+export type { StaticAdapterOptions } from './adapters/static.js'
+export { createSupabaseAdapter } from './adapters/supabase.js'
+export type { SupabaseAdapterOptions } from './adapters/supabase.js'

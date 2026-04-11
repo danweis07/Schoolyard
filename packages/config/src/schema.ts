@@ -140,6 +140,32 @@ export const deploymentSchema = z.object({
   analyticsId: z.string().default(''),
 })
 
+/**
+ * Supabase connection block. Optional — only required when
+ * `backend === 'supabase'`. The anon key is safe to expose in client
+ * bundles (RLS is the real guard); the service role key NEVER appears
+ * here and is loaded from env exclusively by trusted Node scripts.
+ */
+export const supabaseSchema = z.object({
+  url: z.string().url().or(z.literal('')).default(''),
+  anonKey: z.string().default(''),
+  projectRef: z.string().default(''),
+})
+
+/**
+ * Backend mode.
+ *
+ * - `static` — legacy path. `scripts/generate-manifest.ts` writes JSON
+ *   files to `apps/web/dist/api/`; `@schoolyard/content-api` reads them
+ *   via `fetch()`. Zero backend; still supported during the pivot.
+ * - `supabase` — live Postgres behind `@schoolyard/content-api`'s
+ *   Supabase adapter. Required for dynamic features (RSVPs, donations,
+ *   auth, push, community moderation).
+ */
+export const BACKEND_MODES = ['static', 'supabase'] as const
+export type BackendMode = (typeof BACKEND_MODES)[number]
+export const backendModeSchema = z.enum(BACKEND_MODES)
+
 export const announcementSchema = z.object({
   text: z.string().min(1),
   url: z.string().default(''),
@@ -204,9 +230,24 @@ export const schoolConfigSchema = z.object({
    * Multi-tenant district block. Omit for single-school deployments.
    */
   district: districtSchema,
+  /**
+   * Which data source the content-api reads from. Defaults to `static`
+   * so existing config files and builds keep working during the pivot.
+   * Set to `supabase` once migrations have been applied and the seed
+   * script has populated tables for this school.
+   */
+  backend: backendModeSchema.default('static'),
+  /**
+   * Supabase connection info — only consulted when `backend === 'supabase'`.
+   * Fields may be left empty and sourced from env vars at runtime
+   * (`SUPABASE_URL`, `SUPABASE_ANON_KEY`) so the same config.json can
+   * target different Supabase projects per environment.
+   */
+  supabase: supabaseSchema.default({}),
 })
 
 export type SchoolConfig = z.infer<typeof schoolConfigSchema>
 export type Modules = z.infer<typeof modulesSchema>
 export type TenantSchool = z.infer<typeof tenantSchoolSchema>
 export type District = NonNullable<z.infer<typeof districtSchema>>
+export type SupabaseConnection = z.infer<typeof supabaseSchema>

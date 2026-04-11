@@ -3,6 +3,8 @@ import BaseLayout from '@/layouts/BaseLayout.astro'
 import { siteConfig } from '@/lib/site'
 import { isModuleEnabled, isDistrictMode, getTenantSlugs, findTenant } from '@schoolyard/config'
 import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
+import DistrictHeader from '@/modules/district/components/DistrictHeader.astro'
+import SchoolCard from '@/modules/district/components/SchoolCard.astro'
 
 export const getStaticPaths = localeStaticPaths
 
@@ -18,14 +20,13 @@ const slugs = getTenantSlugs(siteConfig)
 const schools = slugs
   .map((slug) => findTenant(siteConfig, slug))
   .filter((s): s is NonNullable<typeof s> => s !== undefined)
+
+const districtName = siteConfig.district?.name ?? siteConfig.school.district ?? t('district.title')
 ---
 
 <BaseLayout title={t('district.title')} description={t('district.description')}>
   <section class="mx-auto max-w-4xl px-4 py-12">
-    <h1 class="text-4xl font-bold">
-      {siteConfig.district?.name ?? siteConfig.school.district ?? t('district.title')}
-    </h1>
-    <p class="mt-2 text-lg text-muted">{t('district.description')}</p>
+    <DistrictHeader name={districtName} locale={locale} schoolCount={schools.length} />
 
     <h2 class="mt-12 text-2xl font-bold">{t('district.schools')}</h2>
     {
@@ -34,16 +35,7 @@ const schools = slugs
       ) : (
         <div class="mt-6 grid gap-4 md:grid-cols-2">
           {schools.map((school) => (
-            <article class="rounded-card border border-border bg-surface p-card shadow-sm">
-              <h3 class="text-xl font-bold">{school.name}</h3>
-              <p class="mt-2 text-sm text-muted">{school.shortName}</p>
-              <a
-                href={`/schools/${school.slug}`}
-                class="mt-4 inline-block text-sm font-semibold text-primary"
-              >
-                {t('district.visitSchool')} →
-              </a>
-            </article>
+            <SchoolCard school={school} locale={locale} />
           ))}
         </div>
       )

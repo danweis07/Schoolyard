@@ -1,0 +1,23 @@
+---
+interface Stop {
+  name: string
+  time?: string
+}
+
+interface Props {
+  stops: Stop[]
+}
+
+const { stops } = Astro.props
+---
+
+<ul class="mt-2 space-y-1 text-sm">
+  {
+    stops.map((stop) => (
+      <li class="flex justify-between border-b border-border/50 py-1 last:border-0">
+        <span>{stop.name}</span>
+        {stop.time && <span class="text-muted">{stop.time}</span>}
+      </li>
+    ))
+  }
+</ul>
