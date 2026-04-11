@@ -1,10 +1,13 @@
 {
   "common": {
     "welcome": "欢迎",
+    "welcomeName": "欢迎,{name}!",
     "loading": "加载中…",
     "search": "搜索",
+    "searchPlaceholder": "搜索网站…",
     "menu": "菜单",
     "close": "关闭",
+    "open": "打开",
     "readMore": "阅读更多",
     "learnMore": "了解更多",
     "viewAll": "查看全部",
@@ -12,7 +15,21 @@
     "language": "语言",
     "selectLanguage": "选择语言",
     "primaryNavigation": "主导航",
-    "dismiss": "关闭"
+    "dismiss": "关闭",
+    "back": "返回",
+    "next": "下一个",
+    "previous": "上一个",
+    "today": "今天",
+    "tomorrow": "明天",
+    "yesterday": "昨天",
+    "open24": "开放",
+    "closed": "关闭",
+    "contact": "联系",
+    "schoolLabel": "学校",
+    "languagesEnabledLabel": "已启用的语言",
+    "moreTitle": "更多",
+    "appIntroTitle": "欢迎来到{school}",
+    "appIntroMessage": "随时了解学校活动、志愿者机会和新闻——一站式掌握。"
   },
   "nav": {
     "home": "首页",
@@ -21,29 +38,236 @@
     "pta": "家长教师协会",
     "volunteer": "志愿者",
     "donate": "捐款",
+    "fundraising": "筹款",
     "about": "关于",
-    "contact": "联系我们"
+    "contact": "联系我们",
+    "community": "社区",
+    "lunch": "午餐",
+    "transportation": "交通",
+    "classroom": "课堂",
+    "district": "学区",
+    "resources": "资源",
+    "transparency": "公开透明",
+    "more": "更多"
   },
   "footer": {
     "address": "地址",
     "phone": "电话",
     "email": "电子邮件",
-    "builtWith": "由"
+    "rights": "© {year} {school}。版权所有。",
+    "builtWith": "由",
+    "openSourceFor": "为每所学校提供的开源项目"
   },
   "events": {
     "title": "学校活动",
+    "description": "我们学校社区即将举行的活动",
     "upcoming": "即将举行的活动",
-    "noEvents": "目前没有即将举行的活动。",
-    "rsvp": "回复",
-    "location": "地点"
+    "past": "过往活动",
+    "featured": "精选活动",
+    "noEvents": "目前没有即将举行的活动。请稍后再来查看!",
+    "addToCalendar": "添加到日历",
+    "register": "报名",
+    "rsvp": "回复确认",
+    "location": "地点",
+    "when": "时间",
+    "category": "类别",
+    "categories": {
+      "fundraiser": "筹款活动",
+      "social": "社交活动",
+      "academic": "学术活动",
+      "volunteer": "志愿活动",
+      "other": "其他"
+    },
+    "cancelled": "已取消"
   },
   "news": {
     "title": "学校新闻",
+    "description": "我们学校的最新动态",
     "latest": "最新新闻",
-    "by": "作者"
+    "featured": "精选报道",
+    "by": "作者",
+    "publishedOn": "发布于",
+    "tags": "标签",
+    "readingTime": "阅读约{minutes}分钟",
+    "noPosts": "暂无新闻。"
+  },
+  "pta": {
+    "title": "家长教师协会",
+    "overview": "我们的家长教师协会汇集了家长、教师和社区成员,共同支持我们的学校。",
+    "board": "董事会成员",
+    "boardDescription": "认识今年管理家长教师协会的志愿者们。",
+    "membership": "成为会员",
+    "membershipFee": "会费:${fee}",
+    "joinNow": "立即加入",
+    "meetings": "会议",
+    "meetingsDescription": "家长教师协会的会议对所有家长和监护人开放。",
+    "meetingsWhenHeading": "会议时间",
+    "meetingsNoSchedule": "会议时间表即将公布。",
+    "meetingsArchive": "过往会议纪要已归档,可向家长教师协会秘书索取。",
+    "term": "任期:{start} – {end}",
+    "committees": "委员会",
+    "committeesDescription": "我们的家长教师协会委员会专注于支持学校社区的特定领域。加入一个符合您兴趣的委员会。",
+    "committeesJoin": "感兴趣吗?请发邮件给我们加入。",
+    "committeesMeets": "会议时间",
+    "committeesSize": "规模",
+    "newsletters": "通讯",
+    "newslettersDescription": "通过我们每月的家长教师协会通讯了解最新动态。",
+    "newslettersCurrent": "当前通讯",
+    "newslettersArchive": "通讯存档",
+    "newslettersSignup": "订阅以通过电子邮件接收通讯。",
+    "enrichment": "课外充实项目",
+    "enrichmentDescription": "家长教师协会资助的项目,让每位学生都能接触艺术、科学等内容——超越学区提供的范围。",
+    "enrichmentFundedBy": "由您对年度基金和晚会的捐款资助。",
+    "enrichmentGrades": "年级",
+    "enrichmentSchedule": "时间表",
+    "enrichmentCost": "年度费用",
+    "enrichmentTotalHeading": "年度充实项目总预算",
+    "enrichmentTotalBody": "每一分钱都来自家庭的捐款。没有纳税人的钱资助这些项目——它们的存在是因为家庭愿意投资于孩子的教育。"
+  },
+  "volunteer": {
+    "title": "加入我们的志愿者",
+    "description": "每位家长的时间都很宝贵。找到适合您日程的角色。",
+    "openRoles": "开放的职位",
+    "filled": "已满",
+    "commitment": "承诺时间",
+    "contact": "联系",
+    "signUp": "报名",
+    "noRoles": "目前没有开放的志愿者职位。"
   },
   "fundraising": {
+    "title": "支持我们的学校",
+    "description": "您的捐款直接用于资助学生们的项目。",
     "donate": "立即捐款",
-    "thankYou": "感谢您的支持！"
+    "annualGoal": "年度目标",
+    "raised": "已筹集",
+    "of": "占",
+    "ofGoal": "占 {goal} 目标",
+    "percentRaised": "已达成目标的 {percent}%",
+    "thankYou": "感谢您的支持!",
+    "campaigns": "活动",
+    "whereItGoesHeading": "您的捐款用途",
+    "whereItGoesBody": "您捐的每一分钱都留在我们学校。您的贡献资助了学区不负担的项目:课堂用品、乐器、科学套装、实地考察奖学金等等。我们的家长教师协会是一个注册的 501(c)(3) 非营利组织——您的捐款可以抵税。",
+    "employerMatchBody": "许多雇主会按一比一的比例匹配您的捐款。如果您需要帮助办理匹配手续,请发邮件到下方的地址。"
+  },
+  "home": {
+    "heroCta": "了解更多",
+    "announcementsTitle": "公告",
+    "upcomingEventsTitle": "即将举行的活动",
+    "latestNewsTitle": "最新新闻",
+    "donateBannerTitle": "支持我们的学校",
+    "donateBannerCta": "立即捐款"
+  },
+  "about": {
+    "title": "关于我们的学校",
+    "founded": "创立于 {year} 年",
+    "grades": "{grades} 年级",
+    "enrollment": "{count} 名学生"
+  },
+  "contact": {
+    "title": "联系我们",
+    "description": "与我们的学校社区取得联系。",
+    "form": {
+      "name": "您的姓名",
+      "email": "电子邮件",
+      "subject": "主题",
+      "message": "留言",
+      "send": "发送消息",
+      "thanks": "谢谢——我们会尽快与您联系。"
+    }
+  },
+  "lunch": {
+    "title": "午餐菜单",
+    "description": "每周菜单、过敏原信息,以及免费和减价午餐的相关信息。",
+    "thisWeek": "本周",
+    "upcoming": "未来几周",
+    "allergens": "过敏原",
+    "freeReduced": "免费和减价午餐",
+    "freeReducedDescription": "所有学生无论家庭收入都有资格。详情请咨询学校办公室。",
+    "noMenu": "尚未公布菜单。请稍后再来查看。",
+    "weekdays": {
+      "monday": "星期一",
+      "tuesday": "星期二",
+      "wednesday": "星期三",
+      "thursday": "星期四",
+      "friday": "星期五"
+    }
+  },
+  "transportation": {
+    "title": "交通",
+    "description": "校车路线、时刻表,以及家庭拼车资源。",
+    "routes": "校车路线",
+    "route": "路线",
+    "driver": "司机",
+    "morningArrival": "早晨到达",
+    "afternoonDeparture": "下午出发",
+    "stops": "站点",
+    "notes": "备注",
+    "noRoutes": "校车路线将在新学年开始前公布。"
+  },
+  "community": {
+    "title": "社区公告板",
+    "description": "分类信息、拼车、技能分享,以及支持我们学校的本地商家。",
+    "listings": "帖子",
+    "posted": "发布于",
+    "neighborhood": "社区",
+    "contact": "联系",
+    "noListings": "暂无帖子。请稍后再来查看。",
+    "categories": {
+      "classified": "分类信息",
+      "carpool": "拼车",
+      "skill-share": "技能分享",
+      "business": "本地商家",
+      "new-family": "新家庭",
+      "other": "其他"
+    }
+  },
+  "classroom": {
+    "title": "课堂页面",
+    "description": "认识我们的老师,了解他们的课堂需求。",
+    "teachers": "教师",
+    "wishlist": "课堂心愿单",
+    "readingList": "阅读清单",
+    "grade": "年级",
+    "subject": "科目",
+    "emailTeacher": "给老师发邮件",
+    "noTeachers": "教师页面即将添加。"
+  },
+  "district": {
+    "title": "学区",
+    "description": "我们学区内的学校。",
+    "schools": "学校",
+    "visitSchool": "访问学校",
+    "noSchools": "尚未配置学校。"
+  },
+  "resources": {
+    "title": "社区资源",
+    "description": "为家庭提供的可信赖的本地资源。",
+    "callToAction": "食物、住房、健康、法律援助和心理健康支持资源。",
+    "languages": "语言",
+    "visitWebsite": "访问网站",
+    "noResources": "暂无资源。",
+    "categories": {
+      "food": "食物",
+      "health": "健康",
+      "housing": "住房",
+      "legal": "法律",
+      "mental-health": "心理健康",
+      "other": "其他"
+    }
+  },
+  "transparency": {
+    "title": "公开透明",
+    "description": "我们的公开预算、资金分配,以及历年支出。",
+    "budgetYear": "预算年度",
+    "totalRaised": "筹集总额",
+    "totalSpent": "支出总额",
+    "categories": "类别",
+    "summary": "摘要",
+    "noBudgets": "预算信息即将公布。"
+  },
+  "errors": {
+    "notFound": "页面未找到",
+    "notFoundDescription": "您正在查找的页面不存在。",
+    "goHome": "返回首页"
   }
 }

@@ -1,10 +1,13 @@
 {
   "common": {
     "welcome": "Bienvenidos",
+    "welcomeName": "¡Bienvenido/a, {name}!",
     "loading": "Cargando…",
     "search": "Buscar",
+    "searchPlaceholder": "Buscar en el sitio…",
     "menu": "Menú",
     "close": "Cerrar",
+    "open": "Abrir",
     "readMore": "Leer más",
     "learnMore": "Más información",
     "viewAll": "Ver todo",
@@ -12,7 +15,21 @@
     "language": "Idioma",
     "selectLanguage": "Seleccionar idioma",
     "primaryNavigation": "Navegación principal",
-    "dismiss": "Descartar"
+    "dismiss": "Descartar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "yesterday": "Ayer",
+    "open24": "Abierto",
+    "closed": "Cerrado",
+    "contact": "Contacto",
+    "schoolLabel": "Escuela",
+    "languagesEnabledLabel": "Idiomas disponibles",
+    "moreTitle": "Más",
+    "appIntroTitle": "Bienvenido/a a {school}",
+    "appIntroMessage": "Mantente al día con los eventos, oportunidades de voluntariado y noticias de la escuela, todo en un solo lugar."
   },
   "nav": {
     "home": "Inicio",
@@ -21,8 +38,17 @@
     "pta": "PTA",
     "volunteer": "Voluntariado",
     "donate": "Donar",
+    "fundraising": "Recaudación",
     "about": "Acerca de",
-    "contact": "Contacto"
+    "contact": "Contacto",
+    "community": "Comunidad",
+    "lunch": "Almuerzo",
+    "transportation": "Transporte",
+    "classroom": "Aulas",
+    "district": "Distrito",
+    "resources": "Recursos",
+    "transparency": "Transparencia",
+    "more": "Más"
   },
   "footer": {
     "address": "Dirección",
@@ -34,25 +60,214 @@
   },
   "events": {
     "title": "Eventos Escolares",
+    "description": "Próximos eventos para nuestra comunidad escolar",
     "upcoming": "Próximos eventos",
+    "past": "Eventos pasados",
+    "featured": "Evento destacado",
     "noEvents": "No hay eventos próximos. ¡Vuelve pronto!",
     "addToCalendar": "Añadir al calendario",
+    "register": "Inscribirse",
     "rsvp": "Confirmar asistencia",
     "location": "Lugar",
-    "when": "Cuándo"
+    "when": "Cuándo",
+    "category": "Categoría",
+    "categories": {
+      "fundraiser": "Recaudación",
+      "social": "Social",
+      "academic": "Académico",
+      "volunteer": "Voluntariado",
+      "other": "Otro"
+    },
+    "cancelled": "Cancelado"
   },
   "news": {
     "title": "Noticias de la Escuela",
+    "description": "Últimas novedades de nuestra escuela",
     "latest": "Últimas noticias",
+    "featured": "Artículo destacado",
     "by": "por",
+    "publishedOn": "Publicado el",
+    "tags": "Etiquetas",
+    "readingTime": "{minutes} min de lectura",
     "noPosts": "Aún no hay publicaciones."
   },
+  "pta": {
+    "title": "Asociación de Padres y Maestros",
+    "overview": "Nuestra PTA reúne a padres, maestros y miembros de la comunidad para apoyar a nuestra escuela.",
+    "board": "Miembros de la junta",
+    "boardDescription": "Conoce a los voluntarios que dirigen nuestra PTA este año.",
+    "membership": "Hazte miembro",
+    "membershipFee": "Cuota de membresía: ${fee}",
+    "joinNow": "Únete ahora",
+    "meetings": "Reuniones",
+    "meetingsDescription": "Las reuniones de la PTA están abiertas a todos los padres y tutores.",
+    "meetingsWhenHeading": "Cuándo nos reunimos",
+    "meetingsNoSchedule": "El calendario de reuniones se publicará pronto.",
+    "meetingsArchive": "Las actas de las reuniones pasadas están archivadas y disponibles si las solicita a la secretaría de la PTA.",
+    "term": "Período: {start} – {end}",
+    "committees": "Comités",
+    "committeesDescription": "Nuestros comités de la PTA se enfocan en áreas específicas para apoyar a nuestra comunidad escolar. Únete a un comité que coincida con tus intereses.",
+    "committeesJoin": "¿Te interesa? Escríbenos para unirte.",
+    "committeesMeets": "Se reúne",
+    "committeesSize": "Tamaño",
+    "newsletters": "Boletines",
+    "newslettersDescription": "Mantente al día con nuestros boletines mensuales de la PTA.",
+    "newslettersCurrent": "Boletín actual",
+    "newslettersArchive": "Archivo de boletines",
+    "newslettersSignup": "Suscríbete para recibir los boletines por correo electrónico.",
+    "enrichment": "Programas de enriquecimiento",
+    "enrichmentDescription": "Programas financiados por la PTA que dan a cada estudiante acceso al arte, las ciencias y mucho más — más allá de lo que ofrece el distrito.",
+    "enrichmentFundedBy": "Financiado con tus donaciones al Fondo Anual y a la Gala.",
+    "enrichmentGrades": "Grados",
+    "enrichmentSchedule": "Horario",
+    "enrichmentCost": "Costo anual",
+    "enrichmentTotalHeading": "Presupuesto anual total de enriquecimiento",
+    "enrichmentTotalBody": "Cada dólar proviene de las donaciones de las familias. Ningún dinero de los contribuyentes financia estos programas — existen porque las familias invierten en la educación de sus hijos."
+  },
+  "volunteer": {
+    "title": "Ofrécete como voluntario/a",
+    "description": "El tiempo de cada padre cuenta. Encuentra un rol que se ajuste a tu horario.",
+    "openRoles": "Roles abiertos",
+    "filled": "Cubierto",
+    "commitment": "Compromiso",
+    "contact": "Contacto",
+    "signUp": "Inscribirse",
+    "noRoles": "No hay roles de voluntariado abiertos en este momento."
+  },
   "fundraising": {
+    "title": "Apoya nuestra escuela",
+    "description": "Tu donación financia directamente los programas para nuestros estudiantes.",
     "donate": "Donar ahora",
-    "thankYou": "¡Gracias por su apoyo!"
+    "annualGoal": "Meta anual",
+    "raised": "Recaudado",
+    "of": "de",
+    "ofGoal": "de la meta de {goal}",
+    "percentRaised": "{percent}% de la meta",
+    "thankYou": "¡Gracias por su apoyo!",
+    "campaigns": "Campañas",
+    "whereItGoesHeading": "Adónde va tu donación",
+    "whereItGoesBody": "Cada dólar que donas se queda en nuestra escuela. Tu contribución financia los programas que el distrito no paga: materiales para el aula, instrumentos musicales, kits de ciencias, becas para excursiones y mucho más. Nuestra PTA es una organización 501(c)(3) registrada — tu donación es deducible de impuestos.",
+    "employerMatchBody": "Muchos empleadores igualarán tu donación dólar por dólar. Escríbenos al correo electrónico que aparece abajo si necesitas ayuda con los trámites."
   },
   "home": {
     "heroCta": "Más información",
+    "announcementsTitle": "Anuncios",
+    "upcomingEventsTitle": "Próximos eventos",
+    "latestNewsTitle": "Últimas noticias",
+    "donateBannerTitle": "Apoya nuestra escuela",
     "donateBannerCta": "Hacer una donación"
+  },
+  "about": {
+    "title": "Acerca de nuestra escuela",
+    "founded": "Fundada en {year}",
+    "grades": "Grados {grades}",
+    "enrollment": "{count} estudiantes"
+  },
+  "contact": {
+    "title": "Contáctanos",
+    "description": "Ponte en contacto con nuestra comunidad escolar.",
+    "form": {
+      "name": "Tu nombre",
+      "email": "Correo electrónico",
+      "subject": "Asunto",
+      "message": "Mensaje",
+      "send": "Enviar mensaje",
+      "thanks": "Gracias — nos pondremos en contacto contigo."
+    }
+  },
+  "lunch": {
+    "title": "Menú del almuerzo",
+    "description": "Menú semanal, alérgenos e información sobre almuerzo gratis o a precio reducido.",
+    "thisWeek": "Esta semana",
+    "upcoming": "Próximas semanas",
+    "allergens": "Alérgenos",
+    "freeReduced": "Almuerzo gratis y a precio reducido",
+    "freeReducedDescription": "Todos los estudiantes califican sin importar los ingresos familiares. Pregunta en la oficina para más detalles.",
+    "noMenu": "Aún no se ha publicado el menú. Vuelve pronto.",
+    "weekdays": {
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes"
+    }
+  },
+  "transportation": {
+    "title": "Transporte",
+    "description": "Rutas de autobús, horarios y recursos de viaje compartido para familias.",
+    "routes": "Rutas de autobús",
+    "route": "Ruta",
+    "driver": "Conductor",
+    "morningArrival": "Llegada por la mañana",
+    "afternoonDeparture": "Salida por la tarde",
+    "stops": "Paradas",
+    "notes": "Notas",
+    "noRoutes": "Las rutas de autobús se publicarán antes del inicio del año escolar."
+  },
+  "community": {
+    "title": "Tablón comunitario",
+    "description": "Clasificados, viajes compartidos, intercambio de habilidades y negocios locales que apoyan a nuestra escuela.",
+    "listings": "Publicaciones",
+    "posted": "Publicado",
+    "neighborhood": "Vecindario",
+    "contact": "Contacto",
+    "noListings": "Aún no hay publicaciones. Vuelve pronto.",
+    "categories": {
+      "classified": "Clasificados",
+      "carpool": "Viaje compartido",
+      "skill-share": "Intercambio de habilidades",
+      "business": "Negocios locales",
+      "new-family": "Nuevas familias",
+      "other": "Otro"
+    }
+  },
+  "classroom": {
+    "title": "Páginas de las aulas",
+    "description": "Conoce a nuestros maestros y descubre lo que sus aulas necesitan.",
+    "teachers": "Maestros",
+    "wishlist": "Lista de deseos del aula",
+    "readingList": "Lista de lectura",
+    "grade": "Grado",
+    "subject": "Materia",
+    "emailTeacher": "Escribir al maestro",
+    "noTeachers": "Las páginas de los maestros se agregarán pronto."
+  },
+  "district": {
+    "title": "Distrito",
+    "description": "Escuelas de nuestro distrito.",
+    "schools": "Escuelas",
+    "visitSchool": "Visitar escuela",
+    "noSchools": "Aún no hay escuelas configuradas."
+  },
+  "resources": {
+    "title": "Recursos comunitarios",
+    "description": "Recursos locales confiables para las familias.",
+    "callToAction": "Recursos de alimentos, vivienda, salud, ayuda legal y apoyo de salud mental.",
+    "languages": "Idiomas",
+    "visitWebsite": "Visitar sitio web",
+    "noResources": "Aún no hay recursos en la lista.",
+    "categories": {
+      "food": "Alimentos",
+      "health": "Salud",
+      "housing": "Vivienda",
+      "legal": "Legal",
+      "mental-health": "Salud mental",
+      "other": "Otro"
+    }
+  },
+  "transparency": {
+    "title": "Transparencia",
+    "description": "Nuestro presupuesto público, asignación de fondos y gastos año tras año.",
+    "budgetYear": "Año fiscal",
+    "totalRaised": "Total recaudado",
+    "totalSpent": "Total gastado",
+    "categories": "Categorías",
+    "summary": "Resumen",
+    "noBudgets": "La información del presupuesto se publicará pronto."
+  },
+  "errors": {
+    "notFound": "Página no encontrada",
+    "notFoundDescription": "La página que buscas no existe.",
+    "goHome": "Ir al inicio"
   }
 }
