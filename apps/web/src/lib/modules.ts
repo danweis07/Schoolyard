@@ -5,7 +5,7 @@
  * the header can ask "which modules are enabled, in what order, with what
  * label?" without scanning the file system at runtime.
  */
-import type { ModuleName, SchoolConfig } from '@schoolyard/config'
+import type { ModuleName, PresetName, SchoolConfig } from '@schoolyard/config'
 import { getEnabledModules } from '@schoolyard/config'
 
 import events from '@/modules/events/index.js'
@@ -31,6 +31,11 @@ export interface ModuleManifest {
   route: string
   /** Whether this module is fully implemented in v1 (false = stub) */
   implemented: boolean
+  /**
+   * Smallest progressive-onboarding preset that includes this module.
+   * Keep in sync with `MODULE_TIERS` in `packages/config/src/presets.ts`.
+   */
+  tier: PresetName
 }
 
 const REGISTRY: Record<ModuleName, ModuleManifest> = {

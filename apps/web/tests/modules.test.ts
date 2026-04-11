@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { schoolConfigSchema } from '@schoolyard/config'
+import { schoolConfigSchema, MODULE_TIERS } from '@schoolyard/config'
+import { MODULE_NAMES } from '@schoolyard/config'
 import { getNavModules, getModuleManifest } from '../src/lib/modules'
 
 /**
@@ -88,5 +89,14 @@ describe('getModuleManifest', () => {
     const resources = getModuleManifest('resources')
     expect(resources.implemented).toBe(true)
     expect(resources.route).toBe('/resources')
+  })
+})
+
+describe('manifest tier consistency', () => {
+  it('every manifest tier matches MODULE_TIERS in @schoolyard/config', () => {
+    for (const name of MODULE_NAMES) {
+      const manifest = getModuleManifest(name)
+      expect(manifest.tier).toBe(MODULE_TIERS[name])
+    }
   })
 })

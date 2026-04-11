@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:chart-pie',
   route: '/transparency',
   implemented: true,
+  tier: 'district-wide',
 }
 
 export default manifest

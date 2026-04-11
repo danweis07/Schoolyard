@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:lifebuoy',
   route: '/resources',
   implemented: true,
+  tier: 'full-community-hub',
 }
 
 export default manifest

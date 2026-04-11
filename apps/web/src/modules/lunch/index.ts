@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:cake',
   route: '/lunch',
   implemented: true,
+  tier: 'full-community-hub',
 }
 
 export default manifest

@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:academic-cap',
   route: '/classroom',
   implemented: true,
+  tier: 'full-community-hub',
 }
 
 export default manifest

@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:hand-raised',
   route: '/volunteer',
   implemented: true,
+  tier: 'active-pta',
 }
 
 export default manifest

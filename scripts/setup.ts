@@ -1,7 +1,10 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 /**
  * Schoolyard interactive setup wizard.
- * Prompts a school for the basics and writes school.config.json.
+ *
+ * Walks a new school through picking a preset and filling in the basics,
+ * then writes school.config.json. Presets are the progressive onboarding
+ * on-ramp — pick one and you get a coherent module bundle out of the box.
  *
  * Usage: pnpm setup
  */
@@ -11,6 +14,12 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { createInterface } from 'node:readline/promises'
 import { stdin, stdout } from 'node:process'
+import {
+  PRESET_NAMES,
+  PRESET_DESCRIPTIONS,
+  resolvePreset,
+  type PresetName,
+} from '../packages/config/src/presets.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const repoRoot = join(__dirname, '..')
@@ -19,17 +28,38 @@ const targetPath = join(repoRoot, 'school.config.json')
 
 const rl = createInterface({ input: stdin, output: stdout })
 
-async function ask(question, defaultValue) {
+async function ask(question: string, defaultValue?: string): Promise<string> {
   const hint = defaultValue ? ` [${defaultValue}]` : ''
   const answer = (await rl.question(`${question}${hint}: `)).trim()
   return answer || defaultValue || ''
 }
 
-async function askBool(question, defaultValue) {
+async function askBool(question: string, defaultValue: boolean): Promise<boolean> {
   const hint = defaultValue ? 'Y/n' : 'y/N'
   const answer = (await rl.question(`${question} [${hint}]: `)).trim().toLowerCase()
   if (!answer) return defaultValue
   return answer === 'y' || answer === 'yes'
+}
+
+async function askPreset(): Promise<PresetName> {
+  console.warn('\n--- Pick a preset ---')
+  console.warn('Presets are pre-built bundles of modules for common school profiles.')
+  console.warn('You can toggle individual modules later in school.config.json.\n')
+
+  PRESET_NAMES.forEach((name, i) => {
+    console.warn(`  ${i + 1}. ${name}`)
+    console.warn(`     ${PRESET_DESCRIPTIONS[name]}\n`)
+  })
+
+  while (true) {
+    const answer = (await rl.question('Choose a preset [1-4, default 1]: ')).trim()
+    if (!answer) return PRESET_NAMES[0]!
+    const idx = Number.parseInt(answer, 10)
+    if (Number.isInteger(idx) && idx >= 1 && idx <= PRESET_NAMES.length) {
+      return PRESET_NAMES[idx - 1]!
+    }
+    console.warn(`  Please enter a number between 1 and ${PRESET_NAMES.length}.`)
+  }
 }
 
 async function main() {
@@ -57,16 +87,11 @@ async function main() {
   example.branding.primaryColor = await ask('Primary brand color (hex)', '#1a4f8a')
   example.branding.accentColor = await ask('Accent color (hex)', '#f5a623')
 
-  console.warn('\n--- Modules ---')
-  console.warn('Which modules do you want enabled? (press Enter for default)')
-  example.modules.events = await askBool('Enable Events', true)
-  example.modules.news = await askBool('Enable News', true)
-  example.modules.pta = await askBool('Enable PTA', true)
-  example.modules.volunteer = await askBool('Enable Volunteer', true)
-  example.modules.fundraising = await askBool('Enable Fundraising', true)
+  const preset = await askPreset()
+  example.modules = resolvePreset(preset)
 
   writeFileSync(targetPath, JSON.stringify(example, null, 2) + '\n', 'utf8')
-  console.warn(`\n✅ Wrote ${targetPath}`)
+  console.warn(`\n✅ Wrote ${targetPath} (preset: ${preset})`)
   console.warn('\nNext steps:')
   console.warn('  1. Replace demo content in apps/web/src/content/')
   console.warn('  2. Add your logo to apps/web/public/images/')

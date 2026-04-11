@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:calendar-days',
   route: '/events',
   implemented: true,
+  tier: 'just-getting-started',
 }
 
 export default manifest

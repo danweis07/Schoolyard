@@ -27,7 +27,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,cjs,json,md,astro}\"",
     "tokens:build": "pnpm --filter @schoolyard/tokens build",
     "validate-config": "tsx scripts/validate-config.ts",
-    "setup": "node scripts/setup.js",
+    "setup": "tsx scripts/setup.ts",
     "setup:fsk": "cd josh && bash setup.sh && cd ..",
     "clean": "turbo run clean && rimraf node_modules",
     "prepare": "husky"

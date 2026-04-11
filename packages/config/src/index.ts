@@ -34,6 +34,17 @@ export {
   getTenantContentSubdir,
 } from './tenant.js'
 
+export {
+  PRESET_NAMES,
+  PRESET_DESCRIPTIONS,
+  MODULE_TIERS,
+  resolvePreset,
+  getPresetModules,
+  inferPreset,
+} from './presets.js'
+
+export type { PresetName } from './presets.js'
+
 import { MODULE_NAMES } from './schema.js'
 import type { ModuleName, SchoolConfig } from './schema.js'
 

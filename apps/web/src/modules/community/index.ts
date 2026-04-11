@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:users',
   route: '/community',
   implemented: true,
+  tier: 'full-community-hub',
 }
 
 export default manifest
