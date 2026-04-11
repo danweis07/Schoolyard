@@ -71,12 +71,12 @@ That's it. You should see the FSK PTA site with red/navy branding, 7 events, and
 
 The repo includes `.vscode/settings.json` and `.vscode/extensions.json`. When you open the project, VS Code will prompt you to install recommended extensions:
 
-| Extension | What it does |
-|-----------|-------------|
-| Astro | Syntax highlighting, IntelliSense for `.astro` files |
-| Prettier | Auto-formats on save (matches `.prettierrc.json`) |
-| ESLint | Lints TypeScript and Astro files |
-| Tailwind CSS IntelliSense | Class autocomplete in templates |
+| Extension                 | What it does                                         |
+| ------------------------- | ---------------------------------------------------- |
+| Astro                     | Syntax highlighting, IntelliSense for `.astro` files |
+| Prettier                  | Auto-formats on save (matches `.prettierrc.json`)    |
+| ESLint                    | Lints TypeScript and Astro files                     |
+| Tailwind CSS IntelliSense | Class autocomplete in templates                      |
 
 After installing extensions, formatting and linting happen automatically on save.
 
@@ -108,13 +108,13 @@ pnpm validate-config   # Validate school.config.json
 
 All content lives in Markdown files under `apps/web/src/content/`. After running `setup.sh`, these contain FSK content. Edit them directly — the dev server hot-reloads.
 
-| Content type | Path | Frontmatter fields |
-|-------------|------|-------------------|
-| Board members | `apps/web/src/content/board/*.md` | name, role, email, bio, termStart, termEnd, order |
-| Events | `apps/web/src/content/events/*.md` | title, date, time, location, description, category, featured |
-| News | `apps/web/src/content/news/*.md` | title, publishDate, author, summary, tags, featured |
-| Volunteers | `apps/web/src/content/volunteers/*.md` | title, description, commitment, contact, filled, order |
-| Resources | `apps/web/src/content/resources/*.md` | name, category, description, address, phone, url, languages |
+| Content type  | Path                                   | Frontmatter fields                                           |
+| ------------- | -------------------------------------- | ------------------------------------------------------------ |
+| Board members | `apps/web/src/content/board/*.md`      | name, role, email, bio, termStart, termEnd, order            |
+| Events        | `apps/web/src/content/events/*.md`     | title, date, time, location, description, category, featured |
+| News          | `apps/web/src/content/news/*.md`       | title, publishDate, author, summary, tags, featured          |
+| Volunteers    | `apps/web/src/content/volunteers/*.md` | title, description, commitment, contact, filled, order       |
+| Resources     | `apps/web/src/content/resources/*.md`  | name, category, description, address, phone, url, languages  |
 
 ### Editing school config
 
@@ -124,17 +124,17 @@ All content lives in Markdown files under `apps/web/src/content/`. After running
 
 ## What's Different from Default Longfellow Demo
 
-| Feature | Longfellow (default) | FSK (this folder) |
-|---------|---------------------|-------------------|
-| School | Longfellow Elementary, 320 students | Francis Scott Key Elementary, 562 students |
-| Branding | Blue (#1a4f8a) + Gold (#f5a623) | Red (#b22234) + Navy (#3c3b6e) |
-| Languages | en, es, zh-hans, ru, tl | en, es, zh-hans, zh-hant, ru, tl |
-| Fundraising goal | $45,000 | $100,000 |
-| Board members | 6 | 7 (includes Enrichment Chair) |
-| Events | 6 generic | 7 FSK-specific (Gala, Lunar New Year, Passport Day) |
-| Modules enabled | 5 | 8 (adds lunch, community, resources, transparency) |
-| Social media | None | Instagram + Facebook |
-| Resources | Generic SF | Sunset District specific |
+| Feature          | Longfellow (default)                | FSK (this folder)                                   |
+| ---------------- | ----------------------------------- | --------------------------------------------------- |
+| School           | Longfellow Elementary, 320 students | Francis Scott Key Elementary, 562 students          |
+| Branding         | Blue (#1a4f8a) + Gold (#f5a623)     | Red (#b22234) + Navy (#3c3b6e)                      |
+| Languages        | en, es, zh-hans, ru, tl             | en, es, zh-hans, zh-hant, ru, tl                    |
+| Fundraising goal | $45,000                             | $100,000                                            |
+| Board members    | 6                                   | 7 (includes Enrichment Chair)                       |
+| Events           | 6 generic                           | 7 FSK-specific (Gala, Lunar New Year, Passport Day) |
+| Modules enabled  | 5                                   | 8 (adds lunch, community, resources, transparency)  |
+| Social media     | None                                | Instagram + Facebook                                |
+| Resources        | Generic SF                          | Sunset District specific                            |
 
 ---
 
@@ -143,14 +143,19 @@ All content lives in Markdown files under `apps/web/src/content/`. After running
 This branch adds three new PTA sub-pages to the platform (available to all schools, not just FSK):
 
 ### /pta/committees
+
 Six PTA committees with descriptions, meeting schedules, and join instructions:
+
 - Events, Fundraising, Communications, Enrichment, Volunteer Coordination, Community & Inclusion
 
 ### /pta/newsletters
+
 Monthly newsletter archive with current-issue badge. Email signup CTA.
 
 ### /pta/enrichment
+
 Five PTA-funded programs with budget breakdowns and donate CTA:
+
 - STEAM Residencies ($30K), Garden Program ($20K), After-School ($15K), Lunch & Recess ($15K), Books & Supplies ($15K)
 
 ---
@@ -181,7 +186,19 @@ Deploy `apps/web/dist/` to any static host. See [DEPLOYMENT.md](../DEPLOYMENT.md
 
 ## Creating Your Own School Deployment
 
-Use this folder as a template:
+The `josh/` folder is an example of the **overlay pattern** — a one-off template-switch that replaces the repo's default demo content with a specific school's content in place. Use it when:
+
+- You're running a single-tenant deployment and want to swap the demo for your school permanently
+- You're developing locally and want a known reference build
+
+### Two patterns, same substrate
+
+Schoolyard supports two ways to drive Core with an external config. Pick whichever fits your situation:
+
+1. **Overlay pattern (this folder).** Destructive: `setup.sh` copies files into `apps/web/src/content/` and replaces `school.config.json` at the repo root. Best for a single school that wants to own the checkout. Only one school can be "active" at a time.
+2. **External config pattern** (Phase 2 hardening, no destructive copies). Run `pnpm build:school <path-to-config.json>` — the build spawns with `SCHOOLYARD_CONFIG` set, so every `loadSchoolConfigSync()` call site picks up that config. The repo's own `school.config.json` is left untouched. Best for the Hub, for CI that builds many schools from one git tree, and for district deployments. Requires each school's content to live somewhere the Astro build can find it (either via content-directory overrides or a per-school checkout).
+
+### Using the overlay pattern for your own school
 
 1. Copy `josh/` to `your-school/`
 2. Edit `school.config.fsk.json` → rename to `school.config.yourschool.json`
@@ -189,17 +206,27 @@ Use this folder as a template:
 4. Update `setup.sh` to reference your new config filename
 5. Run `bash setup.sh` and `pnpm dev`
 
+### Using the external config pattern for your own school
+
+```bash
+# Validate your config first
+SCHOOLYARD_CONFIG=./path/to/your-school.config.json pnpm validate-config
+
+# Build without touching the repo's school.config.json
+pnpm build:school ./path/to/your-school.config.json
+```
+
 See [CONTRIBUTING.md](../CONTRIBUTING.md) for the full developer guide.
 
 ---
 
 ## Further Reading
 
-| Doc | What it covers |
-|-----|---------------|
-| [README.md](../README.md) | Project overview and quick start |
-| [CLAUDE.md](../CLAUDE.md) | Full platform spec — the authoritative reference |
-| [AI.md](../AI.md) | Architecture conventions for AI agents and developers |
-| [CONTRIBUTING.md](../CONTRIBUTING.md) | Developer setup, PR workflow, how to add features |
-| [DEPLOYMENT.md](../DEPLOYMENT.md) | Deploy to Netlify, Vercel, or GitHub Pages |
-| [ROADMAP.md](../ROADMAP.md) | What's planned and what's out of scope |
+| Doc                                   | What it covers                                        |
+| ------------------------------------- | ----------------------------------------------------- |
+| [README.md](../README.md)             | Project overview and quick start                      |
+| [CLAUDE.md](../CLAUDE.md)             | Full platform spec — the authoritative reference      |
+| [AI.md](../AI.md)                     | Architecture conventions for AI agents and developers |
+| [CONTRIBUTING.md](../CONTRIBUTING.md) | Developer setup, PR workflow, how to add features     |
+| [DEPLOYMENT.md](../DEPLOYMENT.md)     | Deploy to Netlify, Vercel, or GitHub Pages            |
+| [ROADMAP.md](../ROADMAP.md)           | What's planned and what's out of scope                |

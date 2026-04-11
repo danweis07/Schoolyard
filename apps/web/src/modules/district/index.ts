@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:building-library',
   route: '/district',
   implemented: true,
+  tier: 'district-wide',
 }
 
 export default manifest

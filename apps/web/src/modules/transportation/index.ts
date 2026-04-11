@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:truck',
   route: '/transportation',
   implemented: true,
+  tier: 'district-wide',
 }
 
 export default manifest

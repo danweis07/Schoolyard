@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:heart',
   route: '/donate',
   implemented: true,
+  tier: 'active-pta',
 }
 
 export default manifest

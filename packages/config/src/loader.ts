@@ -5,11 +5,30 @@ import { schoolConfigSchema } from './schema.js'
 import type { SchoolConfig } from './schema.js'
 
 /**
- * Walks up from the given start directory looking for school.config.json.
- * Falls back to repo root resolution from this package's location.
+ * Environment variable that, when set, overrides all other config discovery.
+ * Used by the Hub and by `pnpm build:school <path>` to build a specific
+ * school's config from a shared git tree without editing files in place.
+ */
+export const CONFIG_ENV_VAR = 'SCHOOLYARD_CONFIG'
+
+/**
+ * Resolves the config path using this priority order:
+ *   1. Explicit `start` argument (for tests and programmatic callers).
+ *   2. `SCHOOLYARD_CONFIG` environment variable (for the Hub / multi-tenant builds).
+ *   3. Walk up from `process.cwd()` looking for `school.config.json`.
+ *   4. Fall back to a path relative to this package (ESM-only).
  */
 function findConfigPath(start?: string): string {
   if (start && existsSync(start)) return start
+
+  const fromEnv = process.env[CONFIG_ENV_VAR]
+  if (fromEnv) {
+    const absolute = resolve(fromEnv)
+    if (!existsSync(absolute)) {
+      throw new Error(`${CONFIG_ENV_VAR} points to ${absolute} but that file does not exist.`)
+    }
+    return absolute
+  }
 
   // Walk up from cwd
   let dir = process.cwd()

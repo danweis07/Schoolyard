@@ -20,6 +20,7 @@
     "dev": "turbo run dev --filter=web",
     "dev:mobile": "turbo run dev --filter=mobile",
     "build": "turbo run build",
+    "build:school": "tsx scripts/build-school.ts",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
@@ -27,7 +28,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,cjs,json,md,astro}\"",
     "tokens:build": "pnpm --filter @schoolyard/tokens build",
     "validate-config": "tsx scripts/validate-config.ts",
-    "setup": "node scripts/setup.js",
+    "setup": "tsx scripts/setup.ts",
     "setup:fsk": "cd josh && bash setup.sh && cd ..",
     "clean": "turbo run clean && rimraf node_modules",
     "prepare": "husky"

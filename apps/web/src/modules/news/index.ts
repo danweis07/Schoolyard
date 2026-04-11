@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:newspaper',
   route: '/news',
   implemented: true,
+  tier: 'just-getting-started',
 }
 
 export default manifest

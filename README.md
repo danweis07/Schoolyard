@@ -12,6 +12,16 @@ Schoolyard is **open source digital infrastructure for every school community** 
 
 ---
 
+## Deploy in one click
+
+The fastest path to a live Schoolyard site: fork, then click one of these. Both hosts offer a free tier that covers a typical school site forever.
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/schoolyard-org/schoolyard) [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fschoolyard-org%2Fschoolyard)
+
+After the first deploy, edit `school.config.json` in your fork to customize. Changes auto-deploy on every push. See [DEPLOYMENT.md](./DEPLOYMENT.md) for domain setup and the optional `/admin` editor.
+
+---
+
 ## For PTA Parents and School Volunteers (No Coding Required)
 
 **Time required:** 30–60 minutes
@@ -93,15 +103,15 @@ schoolyard/
 
 ### Documentation guide
 
-| File | Audience | What it covers |
-|------|----------|----------------|
-| [README.md](./README.md) | Everyone | Quick start, what's in the box |
-| [CLAUDE.md](./CLAUDE.md) | AI agents + architects | Full platform spec, every design decision |
-| [AI.md](./AI.md) | AI agents + developers | Architecture conventions, code patterns |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Developers | IDE setup, dev workflow, PR checklist |
-| [DEPLOYMENT.md](./DEPLOYMENT.md) | PTA volunteers | Netlify / Vercel / GH Pages step-by-step |
-| [ROADMAP.md](./ROADMAP.md) | Everyone | What's planned, what's out of scope |
-| [josh/README.md](./josh/README.md) | Josh / FSK PTA | FSK-specific content and setup |
+| File                                 | Audience               | What it covers                            |
+| ------------------------------------ | ---------------------- | ----------------------------------------- |
+| [README.md](./README.md)             | Everyone               | Quick start, what's in the box            |
+| [CLAUDE.md](./CLAUDE.md)             | AI agents + architects | Full platform spec, every design decision |
+| [AI.md](./AI.md)                     | AI agents + developers | Architecture conventions, code patterns   |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Developers             | IDE setup, dev workflow, PR checklist     |
+| [DEPLOYMENT.md](./DEPLOYMENT.md)     | PTA volunteers         | Netlify / Vercel / GH Pages step-by-step  |
+| [ROADMAP.md](./ROADMAP.md)           | Everyone               | What's planned, what's out of scope       |
+| [josh/README.md](./josh/README.md)   | Josh / FSK PTA         | FSK-specific content and setup            |
 
 ---
 
@@ -110,7 +120,7 @@ schoolyard/
 **Always present (Core)**
 
 - School identity, branding, and contact
-- Multilingual support (20 languages, English populated, others community-translated)
+- Multilingual support (20 languages — English fully populated; Spanish, Russian, Tagalog, and Simplified Chinese partial; the remaining 15 have nav/common stubs awaiting community contributions)
 - Announcements
 - Staff and board directory
 - Auto-generated navigation
@@ -119,18 +129,18 @@ schoolyard/
 
 - 📅 **Events** — calendar, RSVP, iCal export
 - 📰 **News** — Markdown posts, tags, newsletters
-- 🏫 **PTA** — board, membership, meetings
+- 🏫 **PTA** — board, membership, meetings, committees, newsletters
 - 🙋 **Volunteer** — open roles, signups, hour tracking
 - 💰 **Fundraising** — annual fund progress, donate links
-- 👨‍👩‍👧 **Community** _(stub)_ — classifieds, carpool, skill share
-- 🍽️ **Lunch** _(stub)_ — menus, allergens
-- 🚌 **Transportation** _(stub)_ — bus routes, carpool
-- 📚 **Classroom** _(stub)_ — teacher pages, wishlists
-- 🏛️ **District** _(stub)_ — multi-school view
-- 🆘 **Resources** _(stub)_ — food banks, healthcare, legal aid
-- 📊 **Transparency** _(stub)_ — public budget, fund allocation
+- 👨‍👩‍👧 **Community** — classifieds, carpool, skill share
+- 🍽️ **Lunch** — weekly menus, allergens
+- 🚌 **Transportation** — bus routes, stops, schedules
+- 📚 **Classroom** — teacher pages, wishlists, reading lists
+- 🏛️ **District** — multi-school directory (multi-tenant)
+- 🆘 **Resources** — food banks, healthcare, legal aid
+- 📊 **Transparency** — public budget, fund allocation
 
-Modules marked _stub_ have folder structure and manifests but no pages yet — they're ready for community contributions. See [ROADMAP.md](./ROADMAP.md) for what's coming next.
+All 12 modules are functional. See [ROADMAP.md](./ROADMAP.md) for what's planned next.
 
 ---
 
@@ -138,10 +148,10 @@ Modules marked _stub_ have folder structure and manifests but no pages yet — t
 
 Schoolyard is community maintained. The smallest pull request — a typo fix, a missing translation, a new event — is welcome. We especially need:
 
-- **Translators** for the 19 non-English languages
+- **Translators** for the 19 non-English languages (English is fully populated; 4 locales are partial; 15 are nav/common stubs waiting on contributions)
 - **PTA volunteers** willing to road-test the platform at their school
 - **Designers** to make the demo theme even friendlier
-- **Engineers** to fill in the stubbed modules
+- **Engineers** to deepen the modules (more content types, richer filters, export formats)
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for full developer setup, PR checklist, and how to add features. See [AI.md](./AI.md) for architecture conventions.
 

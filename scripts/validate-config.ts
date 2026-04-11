@@ -8,17 +8,23 @@
 
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
-import { loadSchoolConfig } from '../packages/config/src/loader.js'
+import { dirname, join, resolve } from 'node:path'
+import { loadSchoolConfig, CONFIG_ENV_VAR } from '../packages/config/src/loader.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const repoRoot = join(__dirname, '..')
 
 async function main() {
-  const configPath = join(repoRoot, 'school.config.json')
+  // Priority: SCHOOLYARD_CONFIG env var → repo-root school.config.json.
+  // This lets the Hub and `pnpm build:school <path>` validate any config
+  // without touching the repo's default one.
+  const envPath = process.env[CONFIG_ENV_VAR]
+  const configPath = envPath ? resolve(envPath) : join(repoRoot, 'school.config.json')
+  const source = envPath ? `${CONFIG_ENV_VAR}` : 'repo root'
+
   if (!existsSync(configPath)) {
     console.error(
-      '❌ school.config.json not found at repo root.\n' +
+      `❌ Config not found at ${configPath} (source: ${source}).\n` +
         '   Run `pnpm setup` or copy school.config.example.json to school.config.json.',
     )
     process.exit(1)
@@ -26,9 +32,9 @@ async function main() {
 
   try {
     const config = await loadSchoolConfig(configPath)
-    console.warn(`✅ school.config.json is valid (${config.school.name})`)
+    console.warn(`✅ ${configPath} is valid (${config.school.name})`)
   } catch (err) {
-    console.error('❌ school.config.json failed validation:\n')
+    console.error(`❌ ${configPath} failed validation:\n`)
     console.error(err instanceof Error ? err.message : err)
     process.exit(1)
   }

@@ -6,6 +6,7 @@ const manifest: ModuleManifest = {
   icon: 'heroicons:user-group',
   route: '/pta',
   implemented: true,
+  tier: 'active-pta',
 }
 
 export default manifest
