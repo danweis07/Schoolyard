@@ -71,6 +71,9 @@ importers:
       '@schoolyard/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@schoolyard/supabase':
+        specifier: workspace:*
+        version: link:../../packages/supabase
       '@schoolyard/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -147,6 +150,9 @@ importers:
       '@schoolyard/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@schoolyard/supabase':
+        specifier: workspace:*
+        version: link:../../packages/supabase
       '@schoolyard/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens

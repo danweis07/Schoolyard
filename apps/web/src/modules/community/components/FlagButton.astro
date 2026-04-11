@@ -1,0 +1,110 @@
+---
+/**
+ * Report / flag a community listing.
+ *
+ * Authenticated users press the button, pick a reason, and the browser
+ * Supabase client writes a `community_flags` row and calls the
+ * `increment_listing_flag` RPC. Three flags auto-hide the listing via
+ * the function defined in 0006_functions.sql.
+ */
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  listingId: string
+  locale: Locale
+}
+
+const { listingId, locale } = Astro.props
+const t = useTranslate(locale)
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+---
+
+<details
+  class="mt-3 text-xs"
+  data-sy-flag
+  data-listing-id={listingId}
+  data-supabase-url={supabaseUrl}
+  data-supabase-anon={supabaseAnon}
+>
+  <summary class="cursor-pointer text-muted">{t('community.report')}</summary>
+  <form class="mt-2 flex flex-col gap-2" data-sy-flag-form>
+    <label class="flex flex-col gap-1">
+      <span class="sr-only">{t('community.reportReason')}</span>
+      <select
+        name="reason"
+        class="rounded-button border border-border bg-surface px-2 py-1"
+        required
+      >
+        <option value="">{t('community.reportReason')}…</option>
+        <option value="spam">{t('community.reportReasons.spam')}</option>
+        <option value="inappropriate">{t('community.reportReasons.inappropriate')}</option>
+        <option value="scam">{t('community.reportReasons.scam')}</option>
+        <option value="other">{t('community.reportReasons.other')}</option>
+      </select>
+    </label>
+    <button
+      type="submit"
+      class="self-start rounded-button bg-error/90 px-3 py-1 text-xs font-semibold text-inverse disabled:opacity-50"
+    >
+      {t('community.reportSubmit')}
+    </button>
+    <p class="text-xs" role="status" aria-live="polite" data-sy-flag-status></p>
+  </form>
+</details>
+
+<script>
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+
+  const roots = document.querySelectorAll<HTMLElement>('[data-sy-flag]')
+  roots.forEach((root) => {
+    const listingId = root.dataset.listingId ?? ''
+    const url = root.dataset.supabaseUrl ?? ''
+    const anon = root.dataset.supabaseAnon ?? ''
+    if (!listingId || !url || !anon) return
+
+    const form = root.querySelector<HTMLFormElement>('[data-sy-flag-form]')
+    const status = root.querySelector<HTMLElement>('[data-sy-flag-status]')
+    const supabase = createBrowserClient({ url, anonKey: anon })
+
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      if (!status) return
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        status.textContent = 'Sign in to report.'
+        return
+      }
+
+      const fd = new FormData(form)
+      const reason = String(fd.get('reason') ?? '')
+      if (!reason) return
+
+      const { error: insertError } = await (
+        supabase.from('community_flags') as unknown as {
+          insert: (row: Record<string, unknown>) => Promise<{ error: { message: string } | null }>
+        }
+      ).insert({
+        listing_id: listingId,
+        school_id: null,
+        reporter_id: user.id,
+        reason,
+      })
+      if (insertError) {
+        status.textContent = `Error: ${insertError.message}`
+        return
+      }
+
+      await (
+        supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<unknown>
+      )('increment_listing_flag', { p_listing: listingId })
+      status.textContent = 'Thanks — our moderators will review it.'
+      ;(form.querySelector('button[type=submit]') as HTMLButtonElement).disabled = true
+    })
+  })
+</script>

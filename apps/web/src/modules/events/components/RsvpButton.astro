@@ -1,0 +1,142 @@
+---
+/**
+ * RSVP button for an event detail page.
+ *
+ * Renders three buttons (going / maybe / can't make it). Requires the
+ * user to be signed in — unauthenticated visitors see a "Sign in to
+ * RSVP" prompt that deep-links to `/sign-in` with a return URL.
+ *
+ * Backend: upsert into `event_rsvps` via the browser Supabase client.
+ * RLS: `self write rsvps` policy matches on auth.uid().
+ */
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  eventId: string
+  eventSlug: string
+  schoolSlug: string
+  locale: Locale
+}
+
+const { eventId, eventSlug, schoolSlug, locale } = Astro.props
+const t = useTranslate(locale)
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+---
+
+<div
+  class="mt-6 rounded-card border border-border bg-surface p-card"
+  data-sy-rsvp
+  data-event-id={eventId}
+  data-event-slug={eventSlug}
+  data-school-slug={schoolSlug}
+  data-supabase-url={supabaseUrl}
+  data-supabase-anon={supabaseAnon}
+>
+  <h3 class="text-sm font-semibold uppercase tracking-wide text-muted">{t('events.rsvp')}</h3>
+  <div class="mt-3 flex flex-wrap gap-2" data-sy-rsvp-buttons>
+    <button
+      type="button"
+      data-status="going"
+      class="rounded-button bg-primary px-4 py-2 text-sm font-semibold text-inverse disabled:opacity-60"
+      disabled
+    >
+      {t('events.rsvpGoing')}
+    </button>
+    <button
+      type="button"
+      data-status="maybe"
+      class="rounded-button border border-border bg-surface px-4 py-2 text-sm font-semibold disabled:opacity-60"
+      disabled
+    >
+      {t('events.rsvpMaybe')}
+    </button>
+    <button
+      type="button"
+      data-status="canceled"
+      class="rounded-button border border-border bg-surface px-4 py-2 text-sm font-semibold disabled:opacity-60"
+      disabled
+    >
+      {t('events.rsvpCanceled')}
+    </button>
+  </div>
+  <p class="mt-3 text-xs text-muted" data-sy-rsvp-hint>{t('events.rsvpSigninHint')}</p>
+</div>
+
+<script>
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-rsvp]')
+  if (root) {
+    const url = root.dataset.supabaseUrl ?? ''
+    const anon = root.dataset.supabaseAnon ?? ''
+    const eventId = root.dataset.eventId ?? ''
+    const hint = root.querySelector<HTMLElement>('[data-sy-rsvp-hint]')
+    const buttons = Array.from(
+      root.querySelectorAll<HTMLButtonElement>('[data-sy-rsvp-buttons] button'),
+    )
+
+    if (url && anon && eventId) {
+      const supabase = createBrowserClient({ url, anonKey: anon })
+
+      async function refresh() {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (!user) {
+          hint!.textContent = hint!.textContent // keep default
+          buttons.forEach((b) => (b.disabled = true))
+          return
+        }
+        hint!.textContent = ''
+        buttons.forEach((b) => (b.disabled = false))
+
+        const { data: existing } = await supabase
+          .from('event_rsvps')
+          .select('status')
+          .eq('event_id', eventId)
+          .eq('user_id', user.id)
+          .maybeSingle<{ status: string }>()
+        if (existing) {
+          buttons.forEach((b) => {
+            const active = b.dataset.status === existing.status
+            b.setAttribute('aria-pressed', active ? 'true' : 'false')
+          })
+        }
+      }
+
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const status = btn.dataset.status as 'going' | 'maybe' | 'canceled'
+          const {
+            data: { user },
+          } = await supabase.auth.getUser()
+          if (!user) return
+          await (
+            supabase.from('event_rsvps') as unknown as {
+              upsert: (
+                row: Record<string, unknown>,
+                opts?: { onConflict?: string },
+              ) => Promise<unknown>
+            }
+          ).upsert(
+            {
+              event_id: eventId,
+              school_id: null, // populated by server-side default via trigger if set
+              user_id: user.id,
+              status,
+              guests: 0,
+            },
+            { onConflict: 'event_id,user_id' },
+          )
+          refresh()
+        })
+      })
+
+      refresh()
+      supabase.auth.onAuthStateChange(() => refresh())
+    }
+  }
+</script>

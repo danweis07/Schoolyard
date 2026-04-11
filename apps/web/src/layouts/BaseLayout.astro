@@ -3,7 +3,7 @@ import '@/styles/global.css'
 import AnnouncementBanner from '@/components/AnnouncementBanner.astro'
 import Header from '@/components/Header.astro'
 import Footer from '@/components/Footer.astro'
-import { siteConfig } from '@/lib/site'
+import { siteConfig, resolveRequestSchool } from '@/lib/site'
 import { getLocaleFromUrl, useTranslate } from '@/i18n/index'
 import { isRtl } from '@schoolyard/i18n'
 
@@ -17,7 +17,11 @@ const locale = getLocaleFromUrl(Astro.url)
 const t = useTranslate(locale)
 const dir = isRtl(locale) ? 'rtl' : 'ltr'
 
-const pageTitle = title ? `${title} · ${siteConfig.school.name}` : siteConfig.school.name
+// Prefer the per-request school populated by src/middleware.ts; falls
+// back to the build-time siteConfig in static mode.
+const requestSchool = resolveRequestSchool(Astro.locals)
+const schoolName = requestSchool.name
+const pageTitle = title ? `${title} · ${schoolName}` : schoolName
 const pageDescription = description ?? siteConfig.school.tagline
 
 // School branding colors override token defaults via inline custom properties

@@ -1,0 +1,157 @@
+---
+/**
+ * Contact form with honeypot + inline success/error states.
+ *
+ * Progressive enhancement:
+ *
+ *   - When JS is disabled: falls back to Netlify Forms (legacy static
+ *     mode). The `data-netlify` attribute stays on the form and Netlify
+ *     picks it up at build time.
+ *
+ *   - When JS is enabled: intercepts the submit, POSTs to the
+ *     `contact-submit` Supabase edge function, and renders inline
+ *     success/error messaging without reloading the page.
+ *
+ * The honeypot is a real input with CSS applied to hide it from humans
+ * and screen readers. Bots fill it anyway → the edge function rejects.
+ */
+import { resolveRequestSchool } from '@/lib/site'
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = useTranslate(locale)
+const school = resolveRequestSchool(Astro.locals)
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const contactEndpoint = supabaseUrl
+  ? `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/contact-submit`
+  : ''
+---
+
+<form
+  name="contact"
+  method="POST"
+  data-netlify="true"
+  data-sy-contact-form
+  data-endpoint={contactEndpoint}
+  data-school-slug={school.slug}
+  class="rounded-card border border-border bg-surface p-card"
+>
+  <input type="hidden" name="form-name" value="contact" />
+
+  <!-- Honeypot: hidden from humans, filled by bots. aria-hidden keeps
+       it invisible to screen readers too. -->
+  <div aria-hidden="true" class="sy-contact-honeypot" style="position:absolute;left:-9999px;">
+    <label>
+      Do not fill this field
+      <input type="text" name="honeypot" tabindex="-1" autocomplete="off" />
+    </label>
+  </div>
+
+  <label class="block">
+    <span class="text-sm font-semibold">{t('contact.form.name')}</span>
+    <input
+      type="text"
+      name="name"
+      required
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
+    />
+  </label>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('contact.form.email')}</span>
+    <input
+      type="email"
+      name="email"
+      required
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
+    />
+  </label>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('contact.form.subject')}</span>
+    <input
+      type="text"
+      name="subject"
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
+    />
+  </label>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('contact.form.message')}</span>
+    <textarea
+      name="message"
+      rows="4"
+      required
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"></textarea>
+  </label>
+
+  <button
+    type="submit"
+    class="mt-6 rounded-button bg-primary px-6 py-2.5 font-semibold text-inverse hover:opacity-90 disabled:opacity-60"
+  >
+    {t('contact.form.send')}
+  </button>
+
+  <p role="status" aria-live="polite" class="mt-4 hidden text-sm" data-sy-contact-status></p>
+</form>
+
+<script>
+  // Progressive enhancement — if JS fails to load, the form still
+  // submits via Netlify Forms (data-netlify="true").
+  const form = document.querySelector<HTMLFormElement>('[data-sy-contact-form]')
+  if (form && form.dataset.endpoint) {
+    const endpoint = form.dataset.endpoint
+    const schoolSlug = form.dataset.schoolSlug ?? ''
+    const status = form.querySelector<HTMLElement>('[data-sy-contact-status]')
+    const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')
+
+    form.addEventListener('submit', async (event) => {
+      if (!endpoint) return
+      event.preventDefault()
+      if (!status || !submit) return
+
+      const fd = new FormData(form)
+      const payload = {
+        school_slug: schoolSlug,
+        name: String(fd.get('name') ?? ''),
+        email: String(fd.get('email') ?? ''),
+        subject: String(fd.get('subject') ?? ''),
+        message: String(fd.get('message') ?? ''),
+        honeypot: String(fd.get('honeypot') ?? ''),
+      }
+
+      submit.disabled = true
+      status.classList.remove('hidden', 'text-error', 'text-success')
+      status.textContent = '…'
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (res.status === 204) {
+          status.classList.add('text-success')
+          status.textContent = 'Thanks — we got your message.'
+          form.reset()
+        } else if (res.status === 429) {
+          status.classList.add('text-error')
+          status.textContent = 'Too many submissions. Try again in a minute.'
+        } else {
+          status.classList.add('text-error')
+          status.textContent = `Submission failed (${res.status}). Please try again.`
+        }
+      } catch (err) {
+        status.classList.add('text-error')
+        status.textContent = 'Network error. Please try again.'
+      } finally {
+        submit.disabled = false
+      }
+    })
+  }
+</script>

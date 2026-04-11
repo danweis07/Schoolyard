@@ -24,6 +24,7 @@
     "@schoolyard/config": "workspace:*",
     "@schoolyard/content-api": "workspace:*",
     "@schoolyard/i18n": "workspace:*",
+    "@schoolyard/supabase": "workspace:*",
     "@schoolyard/tokens": "workspace:*",
     "astro": "^5.0.0",
     "astro-icon": "^1.1.5",
