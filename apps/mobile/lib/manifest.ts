@@ -34,10 +34,12 @@ export function hasBaseUrl(): boolean {
   return getBaseUrl().length > 0
 }
 
-function resolveBackend(): 'static' | 'supabase' {
+function resolveBackend(): 'static' | 'supabase' | 'gateway' {
   const override = process.env?.EXPO_PUBLIC_SCHOOLYARD_BACKEND
-  if (override === 'static' || override === 'supabase') return override
-  return getSupabase() ? 'supabase' : 'static'
+  if (override === 'static' || override === 'supabase' || override === 'gateway') return override
+  // Default to gateway when a Supabase URL is configured
+  const supabaseUrl = process.env?.EXPO_PUBLIC_SUPABASE_URL
+  return supabaseUrl ? 'gateway' : 'static'
 }
 
 function resolveSchoolSlug(): string {
@@ -51,7 +53,13 @@ let client: ContentAdapter | null = null
 function getClient(): ContentAdapter {
   if (client) return client
   const backend = resolveBackend()
-  if (backend === 'supabase') {
+  if (backend === 'gateway') {
+    client = createContentClient({
+      backend: 'gateway',
+      gatewayUrl: process.env.EXPO_PUBLIC_SUPABASE_URL!,
+      defaultSchoolSlug: resolveSchoolSlug(),
+    })
+  } else if (backend === 'supabase') {
     const supabase = getSupabase()!
     client = createContentClient({
       backend: 'supabase',

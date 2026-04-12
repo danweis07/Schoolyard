@@ -5,15 +5,16 @@
  * When `?id=<uuid>` is present, loads the existing event for editing.
  * Otherwise renders a blank form for creating a new event.
  *
- * All mutations happen client-side via the browser Supabase client.
- * RLS on the events table enforces that only editors/admins for the
- * matching school_id can insert or update rows.
+ * All mutations go through the gateway edge function.
+ * The Supabase client is only used for auth (sign-in/session).
  */
 import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
 const supabaseAnon =
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 ---
 
 <BaseLayout title="Admin - Edit Event" description="Create or edit an event">
@@ -22,6 +23,7 @@ const supabaseAnon =
     data-sy-admin
     data-supabase-url={supabaseUrl}
     data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
   >
     <!-- Auth gate -->
     <div id="admin-auth-gate" class="hidden py-16 text-center">
@@ -213,6 +215,7 @@ const supabaseAnon =
 <script>
   // @ts-nocheck
   import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
 
   const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
   const url = root.dataset.supabaseUrl ?? ''
@@ -292,33 +295,35 @@ const supabaseAnon =
   if (!url || !anon) {
     showView('auth')
   } else {
-    const supabase = createBrowserClient({ url, anonKey: anon })
+    // Auth-only client — NEVER used for data queries
+    const authClient = createBrowserClient({ url, anonKey: anon })
     const params = new URLSearchParams(window.location.search)
     const editId = params.get('id')
-    let schoolId = ''
+
+    let admin: ReturnType<typeof createAdminClient>
 
     async function init() {
       const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
         showView('auth')
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('school_id, role')
-        .eq('id', user.id)
-        .maybeSingle()
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
 
+      const { data: profile, error: profileErr } = await admin.getProfile()
       const allowed = ['editor', 'admin', 'district_admin']
-      if (!profile?.school_id || !allowed.includes(profile.role)) {
+      if (profileErr || !profile?.school_id || !allowed.includes(profile.role)) {
         showView('auth')
         return
       }
 
-      schoolId = profile.school_id
       showView('content')
 
       // If editing, load the event
@@ -328,29 +333,24 @@ const supabaseAnon =
         btnDelete.classList.remove('hidden')
         slugManuallyEdited = true // don't overwrite existing slug
 
-        const { data: ev, error } = await supabase
-          .from('events')
-          .select('*')
-          .eq('id', editId)
-          .eq('school_id', schoolId)
-          .maybeSingle()
+        const { data: ev, error } = await admin.get<Record<string, unknown>>('events', editId)
 
         if (error || !ev) {
-          showMsg(error?.message ?? 'Event not found', 'error')
+          showMsg(error ?? 'Event not found', 'error')
           return
         }
 
-        f.title.value = ev.title ?? ''
-        f.slug.value = ev.slug ?? ''
-        f.description.value = ev.description ?? ''
-        f.body.value = ev.body_md ?? ''
-        f.startsAt.value = isoToLocal(ev.starts_at)
-        f.endsAt.value = ev.ends_at ? isoToLocal(ev.ends_at) : ''
-        f.location.value = ev.location ?? ''
-        f.category.value = ev.category ?? ''
-        f.rsvp.checked = ev.rsvp_enabled ?? false
-        f.featured.checked = ev.featured ?? false
-        f.published.checked = ev.published ?? true
+        f.title.value = (ev.title as string) ?? ''
+        f.slug.value = (ev.slug as string) ?? ''
+        f.description.value = (ev.description as string) ?? ''
+        f.body.value = (ev.body_md as string) ?? ''
+        f.startsAt.value = isoToLocal(ev.starts_at as string)
+        f.endsAt.value = ev.ends_at ? isoToLocal(ev.ends_at as string) : ''
+        f.location.value = (ev.location as string) ?? ''
+        f.category.value = (ev.category as string) ?? ''
+        f.rsvp.checked = (ev.rsvp_enabled as boolean) ?? false
+        f.featured.checked = (ev.featured as boolean) ?? false
+        f.published.checked = (ev.published as boolean) ?? true
       }
     }
 
@@ -375,7 +375,6 @@ const supabaseAnon =
 
       const slug = f.slug.value.trim() || slugify(f.title.value)
       const row = {
-        school_id: schoolId,
         title: f.title.value.trim(),
         slug,
         description: f.description.value.trim() || null,
@@ -389,22 +388,18 @@ const supabaseAnon =
         published: f.published.checked,
       }
 
-      let result
+      let result: { data: { id?: string } | null; error: string | null }
       if (editId) {
-        result = await supabase
-          .from('events')
-          .update(row)
-          .eq('id', editId)
-          .eq('school_id', schoolId)
+        result = await admin.update('events', editId, row)
       } else {
-        result = await supabase.from('events').insert(row).select('id').single()
+        result = await admin.create('events', row)
       }
 
       btnSave.disabled = false
       btnSave.textContent = 'Save Event'
 
       if (result.error) {
-        showMsg(`Save failed: ${result.error.message}`, 'error')
+        showMsg(`Save failed: ${result.error}`, 'error')
         return
       }
 
@@ -426,14 +421,10 @@ const supabaseAnon =
       btnDelete.disabled = true
       btnDelete.textContent = 'Deleting...'
 
-      const { error } = await supabase
-        .from('events')
-        .delete()
-        .eq('id', editId)
-        .eq('school_id', schoolId)
+      const { error } = await admin.remove('events', editId)
 
       if (error) {
-        showMsg(`Delete failed: ${error.message}`, 'error')
+        showMsg(`Delete failed: ${error}`, 'error')
         btnDelete.disabled = false
         btnDelete.textContent = 'Delete'
         return

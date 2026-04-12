@@ -20,6 +20,7 @@
 import { defineMiddleware } from 'astro:middleware'
 import { siteConfig, type RequestSchool } from '@/lib/site'
 import { createRequestSupabase, type SchoolyardSupabase } from '@/lib/supabase'
+import { createContentClient, type ContentAdapter } from '@schoolyard/content-api'
 import {
   isDistrictMode,
   findTenant,
@@ -33,7 +34,10 @@ declare global {
   namespace App {
     interface Locals {
       school?: RequestSchool
+      /** @deprecated Use contentClient instead. Kept during migration. */
       supabase?: SchoolyardSupabase | null
+      /** Gateway-backed content client for data reads. */
+      contentClient?: ContentAdapter
     }
   }
 }
@@ -136,6 +140,17 @@ export const onRequest = defineMiddleware((context, next) => {
     cookies,
     headers: { 'x-school-slug': school.slug },
   })
+
+  // Gateway-backed content client for data reads.
+  // Uses the gateway edge function instead of direct Supabase queries.
+  const gatewayUrl = process.env.SUPABASE_URL
+  if (gatewayUrl) {
+    locals.contentClient = createContentClient({
+      backend: 'gateway',
+      gatewayUrl,
+      defaultSchoolSlug: school.slug,
+    })
+  }
 
   // When a request used a `/s/<slug>/...` prefix, the rest of the app
   // should see the path with the prefix stripped so locale routing
