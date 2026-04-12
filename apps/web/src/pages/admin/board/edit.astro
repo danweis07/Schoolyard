@@ -4,12 +4,17 @@
  *
  * When `?id=<uuid>` is present, loads the existing member for editing.
  * Otherwise renders a blank form for creating a new member.
+ *
+ * All mutations go through the gateway edge function.
+ * The Supabase client is only used for auth (sign-in/session).
  */
 import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
 const supabaseAnon =
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 ---
 
 <BaseLayout title="Admin - Edit Board Member" description="Create or edit a board member">
@@ -18,6 +23,7 @@ const supabaseAnon =
     data-sy-admin
     data-supabase-url={supabaseUrl}
     data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
   >
     <!-- Auth gate -->
     <div id="admin-auth-gate" class="hidden py-16 text-center">
@@ -188,6 +194,7 @@ const supabaseAnon =
 <script>
   // @ts-nocheck
   import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
 
   const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
   const url = root.dataset.supabaseUrl ?? ''
@@ -249,33 +256,40 @@ const supabaseAnon =
   if (!url || !anon) {
     showView('auth')
   } else {
-    const supabase = createBrowserClient({ url, anonKey: anon })
+    // Auth-only client — NEVER used for data queries
+    const authClient = createBrowserClient({ url, anonKey: anon })
     const params = new URLSearchParams(window.location.search)
     const editId = params.get('id')
-    let schoolId = ''
+
+    let admin: ReturnType<typeof createAdminClient>
 
     async function init() {
       const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
         showView('auth')
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('school_id, role')
-        .eq('id', user.id)
-        .maybeSingle()
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error } = await admin.getProfile()
+      if (error || !profile?.school_id) {
+        showView('auth')
+        return
+      }
 
       const allowed = ['editor', 'admin', 'district_admin']
-      if (!profile?.school_id || !allowed.includes(profile.role)) {
+      if (!allowed.includes(profile.role)) {
         showView('auth')
         return
       }
 
-      schoolId = profile.school_id
       showView('content')
 
       if (editId) {
@@ -284,15 +298,21 @@ const supabaseAnon =
         btnDelete.classList.remove('hidden')
         slugManuallyEdited = true
 
-        const { data: member, error } = await supabase
-          .from('board_members')
-          .select('*')
-          .eq('id', editId)
-          .eq('school_id', schoolId)
-          .maybeSingle()
+        const { data: member, error: loadErr } = await admin.get<{
+          id: string
+          name: string
+          slug: string
+          role: string
+          bio_md: string | null
+          email: string | null
+          photo_url: string | null
+          term_start: string | null
+          term_end: string | null
+          sort_order: number
+        }>('board', editId)
 
-        if (error || !member) {
-          showMsg(error?.message ?? 'Board member not found', 'error')
+        if (loadErr || !member) {
+          showMsg(loadErr ?? 'Board member not found', 'error')
           return
         }
 
@@ -327,7 +347,6 @@ const supabaseAnon =
 
       const slug = f.slug.value.trim() || slugify(f.name.value)
       const row = {
-        school_id: schoolId,
         name: f.name.value.trim(),
         slug,
         role: f.role.value.trim(),
@@ -341,20 +360,16 @@ const supabaseAnon =
 
       let result
       if (editId) {
-        result = await supabase
-          .from('board_members')
-          .update(row)
-          .eq('id', editId)
-          .eq('school_id', schoolId)
+        result = await admin.update('board', editId, row)
       } else {
-        result = await supabase.from('board_members').insert(row).select('id').single()
+        result = await admin.create<{ id: string }>('board', row)
       }
 
       btnSave.disabled = false
       btnSave.textContent = 'Save Member'
 
       if (result.error) {
-        showMsg(`Save failed: ${result.error.message}`, 'error')
+        showMsg(`Save failed: ${result.error}`, 'error')
         return
       }
 
@@ -374,14 +389,10 @@ const supabaseAnon =
       btnDelete.disabled = true
       btnDelete.textContent = 'Deleting...'
 
-      const { error } = await supabase
-        .from('board_members')
-        .delete()
-        .eq('id', editId)
-        .eq('school_id', schoolId)
+      const { error: delErr } = await admin.remove('board', editId)
 
-      if (error) {
-        showMsg(`Delete failed: ${error.message}`, 'error')
+      if (delErr) {
+        showMsg(`Delete failed: ${delErr}`, 'error')
         btnDelete.disabled = false
         btnDelete.textContent = 'Delete'
         return
