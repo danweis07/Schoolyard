@@ -1,16 +1,16 @@
 /**
- * Expo Notifications + Supabase push token registration.
+ * Expo Notifications + gateway push token registration.
  *
  * Call `registerForPushNotifications(schoolSlug)` once on app launch
  * (e.g. from `app/_layout.tsx` or the first authed tab). It:
  *
  *   1. Requests notification permission (idempotent).
  *   2. Pulls the Expo push token from the device.
- *   3. Upserts a row in `push_tokens` scoped to the current school.
+ *   3. Registers the token via the gateway edge function.
  *
- * Loads `expo-notifications` and `expo-device` lazily via a dynamic
- * import guarded by a try/catch — so typecheck succeeds whether or not
- * those packages are installed yet. Install them when you're ready:
+ * Loads `expo-notifications` lazily via a dynamic import guarded by a
+ * try/catch — so typecheck succeeds whether or not the package is
+ * installed yet. Install it when you're ready:
  *
  *   pnpm --filter mobile add expo-notifications expo-device
  */
@@ -69,33 +69,35 @@ export async function registerForPushNotifications(schoolSlug: string): Promise<
     }
   }
 
-  // Look up the school id — we store `school_id` on push_tokens rows
-  // so admins can scope announcements. A null user_id means the device
-  // opted in without signing in.
-  const { data: school } = await supabase
-    .from('schools')
-    .select('id')
-    .eq('slug', schoolSlug)
-    .maybeSingle<{ id: string }>()
-  if (!school) return { token: null, error: `unknown school: ${schoolSlug}` }
-
+  // Get the access token for authenticated gateway calls
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
+  const accessToken = session?.access_token
 
-  await (
-    supabase.from('push_tokens') as unknown as {
-      upsert: (row: Record<string, unknown>, opts?: { onConflict?: string }) => Promise<unknown>
-    }
-  ).upsert(
+  // Register push token via the gateway edge function
+  const gatewayUrl = process.env.EXPO_PUBLIC_SUPABASE_URL
+  if (!gatewayUrl) return { token: null, error: 'gateway URL not configured' }
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`
+
+  const res = await fetch(
+    `${gatewayUrl}/functions/v1/gateway/user/push-token?school=${encodeURIComponent(schoolSlug)}`,
     {
-      school_id: school.id,
-      user_id: user?.id ?? null,
-      expo_token: tokenInfo.data,
-      platform: Platform.OS === 'ios' ? 'ios' : 'android',
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        expo_token: tokenInfo.data,
+        platform: Platform.OS === 'ios' ? 'ios' : 'android',
+      }),
     },
-    { onConflict: 'expo_token' },
   )
+
+  if (!res.ok) {
+    const text = await res.text()
+    return { token: null, error: `registration failed (${res.status}): ${text}` }
+  }
 
   return { token: tokenInfo.data, error: null }
 }

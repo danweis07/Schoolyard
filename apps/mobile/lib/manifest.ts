@@ -1,11 +1,12 @@
 /**
  * Mobile-side content client — one shared instance per school slug that
- * routes reads to the configured backend (static JSON or Supabase).
+ * routes reads to the configured backend (gateway, direct Supabase, or
+ * static JSON).
  *
  * Backend selection order:
  *
  *   1. `EXPO_PUBLIC_SCHOOLYARD_BACKEND` env var, if set
- *   2. `supabase` when a Supabase URL + anon key are present
+ *   2. `gateway` when a Supabase URL is present (default)
  *   3. `static` otherwise (reads from the school's deployed JSON API)
  *
  * The exported `fetch*` helpers accept an optional school slug so that
@@ -33,10 +34,12 @@ export function hasBaseUrl(): boolean {
   return getBaseUrl().length > 0
 }
 
-function resolveBackend(): 'static' | 'supabase' {
+function resolveBackend(): 'static' | 'supabase' | 'gateway' {
   const override = process.env?.EXPO_PUBLIC_SCHOOLYARD_BACKEND
-  if (override === 'static' || override === 'supabase') return override
-  return getSupabase() ? 'supabase' : 'static'
+  if (override === 'static' || override === 'supabase' || override === 'gateway') return override
+  // Default to gateway when a Supabase URL is configured
+  const supabaseUrl = process.env?.EXPO_PUBLIC_SUPABASE_URL
+  return supabaseUrl ? 'gateway' : 'static'
 }
 
 // Cache clients by school slug so we don't recreate on every call
@@ -49,7 +52,13 @@ function getClient(schoolSlug?: string): ContentAdapter {
 
   const backend = resolveBackend()
   let client: ContentAdapter
-  if (backend === 'supabase') {
+  if (backend === 'gateway') {
+    client = createContentClient({
+      backend: 'gateway',
+      gatewayUrl: process.env.EXPO_PUBLIC_SUPABASE_URL!,
+      defaultSchoolSlug: schoolSlug,
+    })
+  } else if (backend === 'supabase') {
     const supabase = getSupabase()!
     client = createContentClient({
       backend: 'supabase',

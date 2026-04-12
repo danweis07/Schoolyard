@@ -1,6 +1,17 @@
 /**
- * Mobile-side Supabase client — one browser/anon client for reads and
- * auth, backed by AsyncStorage for persistent sessions across launches.
+ * Mobile-side Supabase client — used for Auth and direct writes.
+ *
+ * Auth operations:
+ *   - signInWithOtp / signOut / getSession / onAuthStateChange
+ *
+ * Write operations (RSVP, volunteer hours, community flags, etc.)
+ *   go through `.from()` directly since the gateway is read-only.
+ *
+ * Content reads go through the gateway edge function via the
+ * content-api gateway adapter (see `./manifest.ts`).
+ *
+ * Auth sessions are persisted via AsyncStorage so they survive
+ * app restarts.
  *
  * Env:
  *   EXPO_PUBLIC_SUPABASE_URL

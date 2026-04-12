@@ -2,16 +2,17 @@
 /**
  * Admin dashboard — auth-gated landing page for the in-app CMS.
  *
- * Shows links to each content section with live row counts. If the user
- * is not signed in, displays a sign-in prompt. The browser Supabase
- * client handles auth checks and data fetching client-side so the page
- * can be statically rendered.
+ * Shows links to each content section with live row counts. All data
+ * fetching goes through the gateway edge function; the Supabase client
+ * is only used for auth (sign-in/sign-out/getSession).
  */
 import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
 const supabaseAnon =
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 ---
 
 <BaseLayout title="Admin" description="Content management dashboard">
@@ -20,6 +21,7 @@ const supabaseAnon =
     data-sy-admin
     data-supabase-url={supabaseUrl}
     data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
   >
     <!-- Auth gate: shown when not signed in -->
     <div id="admin-auth-gate" class="hidden py-16 text-center">
@@ -233,8 +235,9 @@ const supabaseAnon =
 </BaseLayout>
 
 <script>
-  // @ts-nocheck — admin scripts use dynamic Supabase queries; typed client infers `never` for placeholder DB types
+  // @ts-nocheck
   import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
 
   const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
   const url = root.dataset.supabaseUrl ?? ''
@@ -256,25 +259,27 @@ const supabaseAnon =
   if (!url || !anon) {
     showView('auth')
   } else {
-    const supabase = createBrowserClient({ url, anonKey: anon })
+    // Auth-only client — NEVER used for data queries
+    const authClient = createBrowserClient({ url, anonKey: anon })
 
     async function init() {
       const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
         showView('auth')
         return
       }
 
-      // Resolve profile and school_id
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('school_id, role')
-        .eq('id', user.id)
-        .maybeSingle()
+      const admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
 
-      if (!profile || !profile.school_id) {
+      const { data: profile, error } = await admin.getProfile()
+
+      if (error || !profile || !profile.school_id) {
         showView('norole')
         return
       }
@@ -287,28 +292,18 @@ const supabaseAnon =
 
       showView('dashboard')
 
-      // Fetch counts for each content table
-      const tables = [
-        'events',
-        'news',
-        'board_members',
-        'volunteer_roles',
-        'resources',
-        'announcements',
-      ] as const
-      for (const table of tables) {
-        const { count } = await supabase
-          .from(table)
-          .select('id', { count: 'exact', head: true })
-          .eq('school_id', profile.school_id)
-
-        const el = document.querySelector<HTMLElement>(`[data-count="${table}"]`)
-        if (el) el.textContent = String(count ?? 0)
+      // Fetch counts via gateway
+      const { data: counts } = await admin.getCounts()
+      if (counts) {
+        for (const [table, count] of Object.entries(counts)) {
+          const el = document.querySelector<HTMLElement>(`[data-count="${table}"]`)
+          if (el) el.textContent = String(count)
+        }
       }
     }
 
     signoutBtn.addEventListener('click', async () => {
-      await supabase.auth.signOut()
+      await authClient.auth.signOut()
       showView('auth')
     })
 
