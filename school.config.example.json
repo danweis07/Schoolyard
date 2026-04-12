@@ -68,7 +68,15 @@
     "externalUrl": "",
     "opensAt": "",
     "closesAt": "",
-    "storeLabel": "Spirit Store"
+    "storeLabel": "Spirit Store",
+    "stripePublishableKey": "",
+    "squareApplicationId": "",
+    "squareLocationId": "",
+    "paypalClientId": "",
+    "shopifyDomain": "",
+    "shopifyStorefrontToken": "",
+    "printfulStoreId": "",
+    "externalLabel": "Visit Store"
   },
   "app": {
     "enabled": false,

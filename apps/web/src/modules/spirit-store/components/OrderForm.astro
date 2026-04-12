@@ -187,7 +187,37 @@ const orderEndpoint = supabaseUrl
           return
         }
 
-        // Success — clear cart
+        const result = (await res.json()) as {
+          order_id: string
+          adapter: string
+          action: 'redirect' | 'confirm' | 'complete'
+          redirect_url?: string
+          client_secret?: string
+          status?: string
+        }
+
+        // Handle adapter-specific checkout flows
+        if (result.action === 'redirect' && result.redirect_url) {
+          // Hosted checkout (Stripe, Square, PayPal, Shopify, External)
+          localStorage.removeItem('sy-spirit-cart')
+          status.classList.add('text-success')
+          status.textContent = 'Redirecting to checkout…'
+          window.location.href = result.redirect_url
+          return
+        }
+
+        if (result.action === 'confirm' && result.client_secret) {
+          // Client-side confirmation (Stripe Elements)
+          localStorage.removeItem('sy-spirit-cart')
+          status.classList.add('text-success')
+          status.textContent = 'Redirecting to secure payment…'
+          window.dispatchEvent(
+            new CustomEvent('sy:store:client-secret', { detail: result.client_secret }),
+          )
+          return
+        }
+
+        // Default: order complete (collect adapter)
         localStorage.removeItem('sy-spirit-cart')
         status.classList.add('text-success')
         status.textContent = 'Order placed! You will receive a confirmation email.'

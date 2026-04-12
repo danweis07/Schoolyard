@@ -30,6 +30,9 @@ try {
 }
 
 const storeLabel = siteConfig.spiritStore.storeLabel || t('spiritStore.title')
+const isExternalAdapter = siteConfig.spiritStore.provider === 'external'
+const externalUrl = siteConfig.spiritStore.externalUrl
+const externalLabel = siteConfig.spiritStore.externalLabel || 'Visit Store'
 ---
 
 <BaseLayout title={storeLabel} description={t('spiritStore.description')}>
@@ -42,19 +45,35 @@ const storeLabel = siteConfig.spiritStore.storeLabel || t('spiritStore.title')
     </div>
 
     {
-      products.length === 0 ? (
-        <p class="mt-8 text-muted">{t('spiritStore.noProducts')}</p>
-      ) : (
-        <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
-            <ProductCard product={product} locale={locale} />
-          ))}
+      isExternalAdapter && externalUrl ? (
+        <div class="mt-8 rounded-card border border-border bg-surface p-card text-center">
+          <p class="text-lg">Our spirit wear is available through our partner store.</p>
+          <a
+            href={externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-4 inline-block rounded-button bg-primary px-8 py-3 font-semibold text-inverse hover:opacity-90"
+          >
+            {externalLabel} &rarr;
+          </a>
         </div>
+      ) : (
+        <>
+          {products.length === 0 ? (
+            <p class="mt-8 text-muted">{t('spiritStore.noProducts')}</p>
+          ) : (
+            <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {products.map((product) => (
+                <ProductCard product={product} locale={locale} />
+              ))}
+            </div>
+          )}
+
+          <div class="mt-12">
+            <OrderForm locale={locale} />
+          </div>
+        </>
       )
     }
-
-    <div class="mt-12">
-      <OrderForm locale={locale} />
-    </div>
   </section>
 </BaseLayout>

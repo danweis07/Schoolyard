@@ -154,9 +154,26 @@ export const resourcesConfigSchema = z.object({
 })
 
 export const spiritStoreSchema = z.object({
-  /** Payment provider. 'collect' = order-only, 'stripe' = reuse fundraising stripe keys */
-  provider: z.enum(['collect', 'stripe', 'square', 'paypal']).default('collect'),
-  /** External store URL — fallback link-out for providers we don't integrate yet */
+  /**
+   * Store adapter — determines how checkout and fulfillment work.
+   *
+   * - 'collect': Order collection only. No payment processing.
+   *              Parents pay at pickup or via a separate arrangement.
+   * - 'stripe':  Stripe Checkout Sessions. Uses the school's Stripe keys
+   *              (shared with the fundraising module).
+   * - 'square':  Square Online Checkout API. Redirects to hosted checkout.
+   * - 'paypal':  PayPal Checkout. Redirects to PayPal hosted page.
+   * - 'shopify': Shopify Storefront API. Products synced from Shopify;
+   *              checkout redirects to Shopify's hosted checkout.
+   * - 'printful': Printful print-on-demand. Catalog synced from Printful;
+   *               orders submitted via Printful API.
+   * - 'external': Link-out to an external store (Bonfire, Custom Ink,
+   *               SquadLocker, etc.). No API integration — just a URL.
+   */
+  provider: z
+    .enum(['collect', 'stripe', 'square', 'paypal', 'shopify', 'printful', 'external'])
+    .default('collect'),
+  /** External store URL — used by 'external' adapter, or as fallback for any adapter */
   externalUrl: z.string().url().or(z.literal('')).default(''),
   /** Store-level open window (ISO datetime or empty = always open) */
   opensAt: z.string().default(''),
@@ -164,6 +181,24 @@ export const spiritStoreSchema = z.object({
   closesAt: z.string().default(''),
   /** Label shown on the store page */
   storeLabel: z.string().default('Spirit Store'),
+
+  // ── Per-adapter settings ────────────────────────────────────────
+  /** Stripe: publishable key (reuses fundraising.stripePublishableKey if empty) */
+  stripePublishableKey: z.string().default(''),
+  /** Square: application ID for Square Web Payments SDK */
+  squareApplicationId: z.string().default(''),
+  /** Square: location ID for the school's Square location */
+  squareLocationId: z.string().default(''),
+  /** PayPal: client ID for PayPal JS SDK */
+  paypalClientId: z.string().default(''),
+  /** Shopify: store domain (e.g. 'my-school.myshopify.com') */
+  shopifyDomain: z.string().default(''),
+  /** Shopify: Storefront API access token (public, read-only) */
+  shopifyStorefrontToken: z.string().default(''),
+  /** Printful: store ID for the school's Printful store */
+  printfulStoreId: z.string().default(''),
+  /** External: label for the link-out button (e.g. 'Shop on Bonfire') */
+  externalLabel: z.string().default('Visit Store'),
 })
 
 export const appSchema = z.object({

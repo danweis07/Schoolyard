@@ -73,7 +73,15 @@
     "externalUrl": "",
     "opensAt": "",
     "closesAt": "",
-    "storeLabel": "Eagle Spirit Store"
+    "storeLabel": "Eagle Spirit Store",
+    "stripePublishableKey": "",
+    "squareApplicationId": "",
+    "squareLocationId": "",
+    "paypalClientId": "",
+    "shopifyDomain": "",
+    "shopifyStorefrontToken": "",
+    "printfulStoreId": "",
+    "externalLabel": "Visit Store"
   },
   "app": {
     "enabled": true,

@@ -3,13 +3,9 @@
  *
  * Domain operation: "A parent places an order for spirit store items."
  *
- * - Validates the store is open (school config window)
- * - Validates all product IDs exist, are active, belong to the school
- * - Calculates total from current server-side prices
- * - Routes to the configured payment adapter:
- *   - 'collect': inserts order directly, returns { order_id, status: 'pending' }
- *   - 'stripe': creates PaymentIntent, returns { order_id, client_secret }
- *   - 'square'/'paypal': returns { order_id, redirect_url } (future)
+ * Adapter-first: validates products and creates the order locally, then
+ * delegates checkout to the configured store adapter (collect, stripe,
+ * square, paypal, shopify, printful, external).
  *
  * Auth required (user must be signed in).
  *
@@ -19,10 +15,12 @@
  *   customer_name: string
  *   customer_email: string
  *   notes?: string
- *   payment_provider?: string  // override; defaults to school config
+ *   success_url?: string
+ *   cancel_url?: string
  * }
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { resolveAdapter } from '../_shared/store-adapters/index.ts'
 
 interface OrderLinePayload {
   product_id: string
@@ -36,7 +34,8 @@ interface PlaceOrderPayload {
   customer_name: string
   customer_email: string
   notes?: string
-  payment_provider?: string
+  success_url?: string
+  cancel_url?: string
 }
 
 function cors(origin: string | null): HeadersInit {
@@ -45,11 +44,6 @@ function cors(origin: string | null): HeadersInit {
     'Access-Control-Allow-Headers': 'authorization, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   }
-}
-
-function getStripeKey(slug: string): string | null {
-  const perSchool = Deno.env.get(`SY_STRIPE_SECRET_${slug.toUpperCase().replace(/-/g, '_')}`)
-  return perSchool ?? Deno.env.get('STRIPE_SECRET_KEY') ?? null
 }
 
 Deno.serve(async (req: Request) => {
@@ -110,25 +104,36 @@ Deno.serve(async (req: Request) => {
     return new Response('unauthorized', { status: 401, headers: cors(origin) })
   }
 
-  // Resolve school
+  // Resolve school + spirit store config
   const { data: school } = await supabase
     .from('schools')
-    .select('id')
+    .select('id, slug, modules')
     .eq('slug', payload.school_slug)
     .maybeSingle()
   if (!school) {
     return new Response('unknown school', { status: 404, headers: cors(origin) })
   }
 
-  // Check store window (via school's spirit store config stored in schools.modules or config)
-  // For now we check the spirit_store_products — if none are active, store is effectively closed.
-  // A future enhancement could check opens_at/closes_at from a settings table.
+  // Read spirit store settings from the school config (stored as JSON in schools table
+  // or derived from the school.config.json at deploy time). For now, we read the
+  // provider from env or default to 'collect'.
+  const providerEnv = Deno.env.get(
+    `SY_STORE_PROVIDER_${payload.school_slug.toUpperCase().replace(/-/g, '_')}`,
+  )
+  const provider = (providerEnv ?? 'collect') as
+    | 'collect'
+    | 'stripe'
+    | 'square'
+    | 'paypal'
+    | 'shopify'
+    | 'printful'
+    | 'external'
 
   // Validate products exist, are active, and belong to the school
   const productIds = payload.items.map((item) => item.product_id)
   const { data: products, error: prodErr } = await supabase
     .from('spirit_store_products')
-    .select('id, price_cents, active, school_id, variants')
+    .select('id, slug, name, price_cents, active, school_id, variants')
     .in('id', productIds)
 
   if (prodErr) {
@@ -163,6 +168,13 @@ Deno.serve(async (req: Request) => {
     quantity: number
     unit_price_cents: number
   }> = []
+  const checkoutItems: Array<{
+    product_id: string
+    product_name: string
+    variant_label?: string
+    quantity: number
+    unit_price_cents: number
+  }> = []
 
   for (const item of payload.items) {
     if (item.quantity < 1) {
@@ -177,10 +189,14 @@ Deno.serve(async (req: Request) => {
       quantity: item.quantity,
       unit_price_cents: product.price_cents,
     })
+    checkoutItems.push({
+      product_id: item.product_id,
+      product_name: product.name,
+      variant_label: item.variant_label ?? undefined,
+      quantity: item.quantity,
+      unit_price_cents: product.price_cents,
+    })
   }
-
-  // Determine payment provider
-  const provider = payload.payment_provider ?? 'collect'
 
   // Insert order
   const { data: order, error: orderErr } = await supabase
@@ -191,7 +207,7 @@ Deno.serve(async (req: Request) => {
       customer_name: payload.customer_name,
       customer_email: payload.customer_email,
       total_cents: totalCents,
-      status: provider === 'collect' ? 'pending' : 'pending',
+      status: 'pending',
       payment_provider: provider,
       notes: payload.notes ?? null,
     })
@@ -206,10 +222,7 @@ Deno.serve(async (req: Request) => {
   }
 
   // Insert order lines
-  const lines = orderLines.map((line) => ({
-    order_id: order.id,
-    ...line,
-  }))
+  const lines = orderLines.map((line) => ({ order_id: order.id, ...line }))
   const { error: linesErr } = await supabase.from('spirit_store_order_lines').insert(lines)
   if (linesErr) {
     return new Response(`order lines insert failed: ${linesErr.message}`, {
@@ -218,56 +231,69 @@ Deno.serve(async (req: Request) => {
     })
   }
 
-  // Route by payment provider
-  if (provider === 'stripe') {
-    const stripeKey = getStripeKey(payload.school_slug)
-    if (!stripeKey) {
-      return new Response('stripe not configured for this school', {
-        status: 501,
-        headers: cors(origin),
-      })
-    }
-
-    const form = new URLSearchParams({
-      amount: String(totalCents),
-      currency: 'usd',
-      'automatic_payment_methods[enabled]': 'true',
-      'metadata[school_id]': school.id as string,
-      'metadata[order_id]': order.id as string,
-      'metadata[order_type]': 'spirit_store',
+  // ── Delegate to the store adapter ──────────────────────────────
+  try {
+    const adapter = resolveAdapter({
+      provider,
+      schoolSlug: payload.school_slug,
+      externalUrl:
+        Deno.env.get(
+          `SY_STORE_EXTERNAL_URL_${payload.school_slug.toUpperCase().replace(/-/g, '_')}`,
+        ) ?? '',
+      squareLocationId:
+        Deno.env.get(
+          `SY_SQUARE_LOCATION_${payload.school_slug.toUpperCase().replace(/-/g, '_')}`,
+        ) ?? '',
+      shopifyDomain:
+        Deno.env.get(`SY_SHOPIFY_DOMAIN_${payload.school_slug.toUpperCase().replace(/-/g, '_')}`) ??
+        '',
+      shopifyStorefrontToken:
+        Deno.env.get(`SY_SHOPIFY_TOKEN_${payload.school_slug.toUpperCase().replace(/-/g, '_')}`) ??
+        '',
+      printfulStoreId:
+        Deno.env.get(`SY_PRINTFUL_STORE_${payload.school_slug.toUpperCase().replace(/-/g, '_')}`) ??
+        '',
     })
 
-    const res = await fetch('https://api.stripe.com/v1/payment_intents', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${stripeKey}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: form.toString(),
+    const siteUrl = Deno.env.get('SITE_URL') ?? ''
+    const result = await adapter.beginCheckout({
+      school_slug: payload.school_slug,
+      school_id: school.id,
+      order_id: order.id,
+      items: checkoutItems,
+      total_cents: totalCents,
+      customer_name: payload.customer_name,
+      customer_email: payload.customer_email,
+      success_url: payload.success_url ?? `${siteUrl}/store/confirmation?order=${order.id}`,
+      cancel_url: payload.cancel_url ?? `${siteUrl}/store`,
     })
 
-    if (!res.ok) {
-      const text = await res.text()
-      return new Response(`stripe error: ${text}`, { status: 502, headers: cors(origin) })
+    // Store payment reference if the adapter returned one
+    if (result.payment_reference) {
+      await supabase
+        .from('spirit_store_orders')
+        .update({ payment_reference: result.payment_reference })
+        .eq('id', order.id)
     }
-
-    const intent = (await res.json()) as { client_secret: string; id: string }
-
-    // Store the PI reference
-    await supabase
-      .from('spirit_store_orders')
-      .update({ payment_reference: intent.id })
-      .eq('id', order.id)
 
     return new Response(
-      JSON.stringify({ order_id: order.id, client_secret: intent.client_secret }),
+      JSON.stringify({
+        order_id: order.id,
+        adapter: adapter.name,
+        ...result,
+      }),
       { status: 200, headers: { ...cors(origin), 'Content-Type': 'application/json' } },
     )
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'adapter error'
+    return new Response(
+      JSON.stringify({
+        order_id: order.id,
+        adapter: provider,
+        error: message,
+        // Order exists but checkout failed — admin can retry or use CSV export
+      }),
+      { status: 502, headers: { ...cors(origin), 'Content-Type': 'application/json' } },
+    )
   }
-
-  // Default: 'collect' — order placed, payment at pickup
-  return new Response(JSON.stringify({ order_id: order.id, status: 'pending' }), {
-    status: 200,
-    headers: { ...cors(origin), 'Content-Type': 'application/json' },
-  })
 })
