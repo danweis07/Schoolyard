@@ -1,0 +1,516 @@
+---
+/**
+ * Admin bulk slot generator for a conference window.
+ *
+ * Reached via `/admin/conferences/slots?window_id=<uuid>`.
+ * Admin enters teacher name, date range, start/end times, slot duration,
+ * and location. JS generates individual slot entries and POSTs each
+ * via the admin client.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+---
+
+<BaseLayout title="Admin - Conference Slots" description="Generate conference time slots">
+  <div
+    class="mx-auto max-w-3xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">You need to be signed in as an editor or admin to manage slots.</p>
+      <a
+        href="/sign-in?redirect=/admin/conferences/slots"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Form -->
+    <div id="admin-content" class="hidden">
+      <nav class="text-sm text-muted" aria-label="Breadcrumb">
+        <a href="/admin/" class="hover:underline">Admin</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <a href="/admin/conferences/" class="hover:underline">Conferences</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <span>Slots</span>
+      </nav>
+      <h1 class="mt-1 text-2xl font-bold">Bulk Slot Generator</h1>
+      <p class="mt-2 text-sm text-muted" id="window-subtitle"></p>
+
+      <!-- Status messages -->
+      <div id="form-message" class="mt-4 hidden rounded-card p-4 text-sm" role="alert"></div>
+
+      <form id="slots-form" class="mt-6 space-y-6" novalidate>
+        <!-- Teacher Name -->
+        <div>
+          <label for="field-teacher" class="block text-sm font-medium"
+            >Teacher Name <span class="text-error" aria-hidden="true">*</span></label
+          >
+          <input
+            id="field-teacher"
+            type="text"
+            required
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Ms. Johnson"
+          />
+        </div>
+
+        <!-- Date Range -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="field-date-start" class="block text-sm font-medium"
+              >Date Start <span class="text-error" aria-hidden="true">*</span></label
+            >
+            <input
+              id="field-date-start"
+              type="date"
+              required
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <div>
+            <label for="field-date-end" class="block text-sm font-medium"
+              >Date End <span class="text-error" aria-hidden="true">*</span></label
+            >
+            <input
+              id="field-date-end"
+              type="date"
+              required
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+        </div>
+
+        <!-- Time Range -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="field-time-start" class="block text-sm font-medium"
+              >Start Time <span class="text-error" aria-hidden="true">*</span></label
+            >
+            <input
+              id="field-time-start"
+              type="time"
+              required
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <div>
+            <label for="field-time-end" class="block text-sm font-medium"
+              >End Time <span class="text-error" aria-hidden="true">*</span></label
+            >
+            <input
+              id="field-time-end"
+              type="time"
+              required
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+        </div>
+
+        <!-- Slot Duration -->
+        <div>
+          <label for="field-duration" class="block text-sm font-medium"
+            >Slot Duration (minutes) <span class="text-error" aria-hidden="true">*</span></label
+          >
+          <input
+            id="field-duration"
+            type="number"
+            min="5"
+            max="120"
+            value="20"
+            required
+            class="mt-1 block w-48 rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        <!-- Location -->
+        <div>
+          <label for="field-location" class="block text-sm font-medium">Location</label>
+          <input
+            id="field-location"
+            type="text"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Room 204"
+          />
+        </div>
+
+        <!-- Preview -->
+        <div id="slots-preview" class="hidden">
+          <h3 class="text-sm font-semibold uppercase tracking-wide text-muted">Preview</h3>
+          <p class="mt-1 text-sm" id="slots-preview-count"></p>
+          <div
+            class="mt-3 max-h-64 overflow-y-auto rounded-card border border-border bg-muted/5 p-4 text-xs font-mono"
+            id="slots-preview-list"
+          ></div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap items-center gap-3 border-t border-border pt-6">
+          <button
+            type="button"
+            id="btn-preview"
+            class="rounded-button border border-border px-6 py-2.5 text-sm font-semibold hover:bg-muted/10"
+          >
+            Preview Slots
+          </button>
+          <button
+            type="submit"
+            id="btn-generate"
+            class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+            disabled
+          >
+            Create Slots
+          </button>
+          <a
+            href="/admin/conferences/"
+            class="rounded-button border border-border px-6 py-2.5 text-sm font-semibold hover:bg-muted/10"
+          >
+            Cancel
+          </a>
+        </div>
+      </form>
+
+      <!-- Existing slots -->
+      <div class="mt-10">
+        <h2 class="text-lg font-bold">Existing Slots</h2>
+        <div class="mt-4 overflow-x-auto rounded-card border border-border">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-border bg-muted/5">
+                <th class="px-4 py-3 font-semibold" scope="col">Teacher</th>
+                <th class="px-4 py-3 font-semibold" scope="col">Date</th>
+                <th class="px-4 py-3 font-semibold" scope="col">Time</th>
+                <th class="px-4 py-3 font-semibold" scope="col">Status</th>
+                <th class="px-4 py-3 text-right font-semibold" scope="col">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="existing-slots-tbody">
+              <tr>
+                <td class="px-4 py-8 text-center text-muted" colspan="5">Loading slots...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const form = document.getElementById('slots-form') as HTMLFormElement
+  const msgEl = document.getElementById('form-message')!
+  const btnPreview = document.getElementById('btn-preview') as HTMLButtonElement
+  const btnGenerate = document.getElementById('btn-generate') as HTMLButtonElement
+  const previewEl = document.getElementById('slots-preview')!
+  const previewCount = document.getElementById('slots-preview-count')!
+  const previewList = document.getElementById('slots-preview-list')!
+  const windowSubtitle = document.getElementById('window-subtitle')!
+  const existingTbody = document.getElementById('existing-slots-tbody')!
+
+  const f = {
+    teacher: document.getElementById('field-teacher') as HTMLInputElement,
+    dateStart: document.getElementById('field-date-start') as HTMLInputElement,
+    dateEnd: document.getElementById('field-date-end') as HTMLInputElement,
+    timeStart: document.getElementById('field-time-start') as HTMLInputElement,
+    timeEnd: document.getElementById('field-time-end') as HTMLInputElement,
+    duration: document.getElementById('field-duration') as HTMLInputElement,
+    location: document.getElementById('field-location') as HTMLInputElement,
+  }
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function showMsg(text: string, type: 'success' | 'error') {
+    msgEl.textContent = text
+    msgEl.className =
+      type === 'success'
+        ? 'mt-4 rounded-card p-4 text-sm bg-success/10 border border-success/30'
+        : 'mt-4 rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+  }
+
+  function escapeHtml(str: string): string {
+    const d = document.createElement('div')
+    d.textContent = str
+    return d.innerHTML
+  }
+
+  function padTime(h: number, m: number): string {
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+  }
+
+  interface GeneratedSlot {
+    window_id: string
+    teacher_name: string
+    date: string
+    start_time: string
+    end_time: string
+    duration_minutes: number
+    location: string | null
+  }
+
+  let generatedSlots: GeneratedSlot[] = []
+  let windowId = ''
+
+  function generateSlots(): GeneratedSlot[] {
+    const slots: GeneratedSlot[] = []
+    const teacher = f.teacher.value.trim()
+    const duration = parseInt(f.duration.value, 10)
+    const location = f.location.value.trim() || null
+
+    const startDate = new Date(f.dateStart.value)
+    const endDate = new Date(f.dateEnd.value)
+
+    const [startH, startM] = f.timeStart.value.split(':').map(Number)
+    const [endH, endM] = f.timeEnd.value.split(':').map(Number)
+    const dayStartMinutes = startH * 60 + startM
+    const dayEndMinutes = endH * 60 + endM
+
+    for (
+      let d = new Date(startDate);
+      d <= endDate;
+      d.setDate(d.getDate() + 1)
+    ) {
+      const dateStr = d.toISOString().slice(0, 10)
+
+      for (let t = dayStartMinutes; t + duration <= dayEndMinutes; t += duration) {
+        const sh = Math.floor(t / 60)
+        const sm = t % 60
+        const eh = Math.floor((t + duration) / 60)
+        const em = (t + duration) % 60
+
+        slots.push({
+          window_id: windowId,
+          teacher_name: teacher,
+          date: dateStr,
+          start_time: padTime(sh, sm),
+          end_time: padTime(eh, em),
+          duration_minutes: duration,
+          location,
+        })
+      }
+    }
+
+    return slots
+  }
+
+  function validateForm(): string | null {
+    if (!f.teacher.value.trim()) return 'Teacher name is required.'
+    if (!f.dateStart.value) return 'Start date is required.'
+    if (!f.dateEnd.value) return 'End date is required.'
+    if (!f.timeStart.value) return 'Start time is required.'
+    if (!f.timeEnd.value) return 'End time is required.'
+    if (!f.duration.value || parseInt(f.duration.value, 10) < 5) return 'Duration must be at least 5 minutes.'
+    if (new Date(f.dateEnd.value) < new Date(f.dateStart.value)) return 'End date must be after start date.'
+    return null
+  }
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const authClient = createBrowserClient({ url, anonKey: anon })
+    const params = new URLSearchParams(window.location.search)
+    windowId = params.get('window_id') ?? ''
+
+    if (!windowId) {
+      showView('content')
+      showMsg('No window_id query parameter provided. Go back to the conferences list.', 'error')
+      return
+    }
+
+    let admin: ReturnType<typeof createAdminClient>
+
+    async function loadExistingSlots() {
+      const { data: slots, error } = await admin.list<{
+        id: string
+        teacher_name: string
+        date: string
+        start_time: string
+        end_time: string
+        is_booked: boolean
+      }>(`conference-slots?window_id=${windowId}`)
+
+      if (error || !slots) {
+        existingTbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-error" colspan="5">Failed to load: ${escapeHtml(error ?? 'Unknown error')}</td></tr>`
+        return
+      }
+
+      if (slots.length === 0) {
+        existingTbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-muted" colspan="5">No slots created yet.</td></tr>`
+        return
+      }
+
+      existingTbody.innerHTML = slots
+        .map((s) => {
+          const status = s.is_booked
+            ? '<span class="inline-block rounded-button bg-warning/15 px-2 py-0.5 text-xs font-medium">Booked</span>'
+            : '<span class="inline-block rounded-button bg-success/15 px-2 py-0.5 text-xs font-medium">Open</span>'
+
+          return `<tr class="border-b border-border last:border-0 hover:bg-muted/5">
+            <td class="px-4 py-3">${escapeHtml(s.teacher_name)}</td>
+            <td class="px-4 py-3 text-muted">${escapeHtml(s.date)}</td>
+            <td class="px-4 py-3 text-muted">${escapeHtml(s.start_time)} - ${escapeHtml(s.end_time)}</td>
+            <td class="px-4 py-3">${status}</td>
+            <td class="px-4 py-3 text-right">
+              <button type="button" data-delete-slot="${s.id}" class="text-sm font-semibold text-error hover:underline">Delete</button>
+            </td>
+          </tr>`
+        })
+        .join('')
+
+      existingTbody.querySelectorAll<HTMLButtonElement>('[data-delete-slot]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.deleteSlot!
+          if (!confirm('Delete this slot?')) return
+
+          btn.disabled = true
+          btn.textContent = 'Deleting...'
+
+          const { error: delErr } = await admin.remove('conference-slots', id)
+          if (delErr) {
+            alert(`Failed to delete: ${delErr}`)
+            btn.disabled = false
+            btn.textContent = 'Delete'
+          } else {
+            loadExistingSlots()
+          }
+        })
+      })
+    }
+
+    async function init() {
+      const {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
+        showView('auth')
+        return
+      }
+
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error: profileErr } = await admin.getProfile()
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (profileErr || !profile?.school_id || !allowed.includes(profile.role)) {
+        showView('auth')
+        return
+      }
+
+      // Load window metadata for subtitle
+      const { data: w } = await admin.get<{ title: string }>('conference-windows', windowId)
+      if (w) {
+        windowSubtitle.textContent = `Window: ${w.title}`
+      }
+
+      showView('content')
+      loadExistingSlots()
+    }
+
+    // Preview handler
+    btnPreview.addEventListener('click', () => {
+      const err = validateForm()
+      if (err) {
+        showMsg(err, 'error')
+        return
+      }
+
+      generatedSlots = generateSlots()
+
+      if (generatedSlots.length === 0) {
+        showMsg('No slots fit in the given time range.', 'error')
+        previewEl.classList.add('hidden')
+        btnGenerate.disabled = true
+        return
+      }
+
+      previewCount.textContent = `${generatedSlots.length} slot(s) will be created.`
+      previewList.innerHTML = generatedSlots
+        .map(
+          (s) =>
+            `${escapeHtml(s.date)}  ${escapeHtml(s.start_time)}-${escapeHtml(s.end_time)}  ${escapeHtml(s.teacher_name)}  ${escapeHtml(s.location ?? '')}`,
+        )
+        .join('\n')
+
+      previewEl.classList.remove('hidden')
+      btnGenerate.disabled = false
+      msgEl.classList.add('hidden')
+    })
+
+    // Create handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      if (generatedSlots.length === 0) {
+        showMsg('Preview slots first.', 'error')
+        return
+      }
+
+      btnGenerate.disabled = true
+      btnGenerate.textContent = `Creating ${generatedSlots.length} slots...`
+
+      let created = 0
+      let failed = 0
+
+      for (const slot of generatedSlots) {
+        const { error } = await admin.create('conference-slots', slot)
+        if (error) {
+          failed++
+        } else {
+          created++
+        }
+      }
+
+      btnGenerate.disabled = false
+      btnGenerate.textContent = 'Create Slots'
+
+      if (failed > 0) {
+        showMsg(`Created ${created} slot(s), ${failed} failed.`, 'error')
+      } else {
+        showMsg(`Successfully created ${created} slot(s).`, 'success')
+      }
+
+      generatedSlots = []
+      previewEl.classList.add('hidden')
+      btnGenerate.disabled = true
+
+      loadExistingSlots()
+    })
+
+    init()
+  }
+</script>

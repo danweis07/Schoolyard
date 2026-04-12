@@ -1,3 +1,5 @@
 export { EventCard } from './EventCard.js'
 export { AnnouncementBanner } from './AnnouncementBanner.js'
 export { DonationProgress } from './DonationProgress.js'
+export { FormCard } from './FormCard.js'
+export { ConferenceSlotCard } from './ConferenceSlotCard.js'

@@ -1,0 +1,546 @@
+---
+/**
+ * Admin form builder — create or edit a form with dynamic fields.
+ *
+ * When `?id=<uuid>` is present, loads the existing form for editing.
+ * Otherwise renders a blank form for creating a new one.
+ *
+ * Fields are added/removed via client-side JavaScript. Each field has
+ * a label, type dropdown, required checkbox, and options input (for
+ * select type). No drag-and-drop — just add/remove.
+ *
+ * All mutations go through the gateway edge function.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+---
+
+<BaseLayout title="Admin - Edit Form" description="Create or edit a school form">
+  <div
+    class="mx-auto max-w-3xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">You need to be signed in as an editor or admin to edit forms.</p>
+      <a
+        href="/sign-in?redirect=/admin/forms/edit"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Form -->
+    <div id="admin-content" class="hidden">
+      <nav class="text-sm text-muted" aria-label="Breadcrumb">
+        <a href="/admin/" class="hover:underline">Admin</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <a href="/admin/forms/" class="hover:underline">Forms</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <span id="breadcrumb-action">New</span>
+      </nav>
+      <h1 class="mt-1 text-2xl font-bold" id="page-title">New Form</h1>
+
+      <!-- Status messages -->
+      <div id="form-message" class="mt-4 hidden rounded-card p-4 text-sm" role="alert"></div>
+
+      <form id="form-editor" class="mt-6 space-y-6" novalidate>
+        <!-- Title -->
+        <div>
+          <label for="field-title" class="block text-sm font-medium">
+            Title <span class="text-error" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="field-title"
+            type="text"
+            required
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Field Trip Permission Slip"
+          />
+        </div>
+
+        <!-- Slug -->
+        <div>
+          <label for="field-slug" class="block text-sm font-medium">Slug</label>
+          <input
+            id="field-slug"
+            type="text"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-sm font-mono placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="field-trip-permission-slip"
+          />
+          <p class="mt-1 text-xs text-muted">Auto-generated from title. You can edit it.</p>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label for="field-description" class="block text-sm font-medium">Description</label>
+          <textarea
+            id="field-description"
+            rows="3"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Please complete this form to grant permission for your child to attend the field trip."
+          ></textarea>
+        </div>
+
+        <!-- Due date -->
+        <div>
+          <label for="field-due-date" class="block text-sm font-medium">Due Date</label>
+          <input
+            id="field-due-date"
+            type="date"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        <!-- Target grades -->
+        <div>
+          <label for="field-grades" class="block text-sm font-medium">Target Grades</label>
+          <input
+            id="field-grades"
+            type="text"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="K, 1, 2, 3 (comma-separated, or leave blank for all)"
+          />
+          <p class="mt-1 text-xs text-muted">Comma-separated list of grades. Leave blank to target all grades.</p>
+        </div>
+
+        <!-- Dynamic fields section -->
+        <fieldset class="space-y-4">
+          <legend class="text-sm font-semibold uppercase tracking-wide text-muted">Form Fields</legend>
+          <div id="fields-container" class="space-y-4">
+            <!-- Dynamic field rows are added here by JavaScript -->
+          </div>
+          <button
+            type="button"
+            id="btn-add-field"
+            class="rounded-button border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/5"
+          >
+            + Add field
+          </button>
+        </fieldset>
+
+        <!-- Published toggle -->
+        <fieldset class="space-y-3">
+          <legend class="text-sm font-medium">Options</legend>
+          <label class="flex items-center gap-3">
+            <input
+              id="field-published"
+              type="checkbox"
+              checked
+              class="h-4 w-4 rounded border-border accent-primary"
+            />
+            <span class="text-sm">Published</span>
+          </label>
+        </fieldset>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap items-center gap-3 border-t border-border pt-6">
+          <button
+            type="submit"
+            id="btn-save"
+            class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+          >
+            Save Form
+          </button>
+          <a
+            href="/admin/forms/"
+            class="rounded-button border border-border px-6 py-2.5 text-sm font-semibold hover:bg-muted/10"
+          >
+            Cancel
+          </a>
+          <button
+            type="button"
+            id="btn-delete"
+            class="ml-auto hidden rounded-button border border-error px-6 py-2.5 text-sm font-semibold text-error hover:bg-error/10 disabled:opacity-60"
+          >
+            Delete
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const form = document.getElementById('form-editor') as HTMLFormElement
+  const msgEl = document.getElementById('form-message')!
+  const pageTitle = document.getElementById('page-title')!
+  const breadcrumbAction = document.getElementById('breadcrumb-action')!
+  const btnSave = document.getElementById('btn-save') as HTMLButtonElement
+  const btnDelete = document.getElementById('btn-delete') as HTMLButtonElement
+  const btnAddField = document.getElementById('btn-add-field') as HTMLButtonElement
+  const fieldsContainer = document.getElementById('fields-container')!
+
+  // Field references
+  const f = {
+    title: document.getElementById('field-title') as HTMLInputElement,
+    slug: document.getElementById('field-slug') as HTMLInputElement,
+    description: document.getElementById('field-description') as HTMLTextAreaElement,
+    dueDate: document.getElementById('field-due-date') as HTMLInputElement,
+    grades: document.getElementById('field-grades') as HTMLInputElement,
+    published: document.getElementById('field-published') as HTMLInputElement,
+  }
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function showMsg(text: string, type: 'success' | 'error') {
+    msgEl.textContent = text
+    msgEl.className =
+      type === 'success'
+        ? 'mt-4 rounded-card p-4 text-sm bg-success/10 border border-success/30'
+        : 'mt-4 rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+  }
+
+  function slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+
+  // Auto-generate slug from title
+  let slugManuallyEdited = false
+  f.slug.addEventListener('input', () => {
+    slugManuallyEdited = true
+  })
+  f.title.addEventListener('input', () => {
+    if (!slugManuallyEdited) {
+      f.slug.value = slugify(f.title.value)
+    }
+  })
+
+  // ── Dynamic field management ──────────────────────────────────────
+
+  let fieldCounter = 0
+  const fieldTypes = [
+    { value: 'text', label: 'Short text' },
+    { value: 'textarea', label: 'Long text' },
+    { value: 'select', label: 'Dropdown' },
+    { value: 'checkbox', label: 'Checkbox' },
+    { value: 'date', label: 'Date' },
+    { value: 'signature', label: 'Signature' },
+  ]
+
+  function createFieldRow(
+    data?: { name: string; label: string; type: string; required: boolean; options?: string[]; placeholder?: string },
+  ): HTMLElement {
+    const idx = fieldCounter++
+    const row = document.createElement('div')
+    row.className =
+      'rounded-card border border-border bg-muted/5 p-4 space-y-3'
+    row.dataset.fieldIdx = String(idx)
+
+    const typeOptions = fieldTypes
+      .map(
+        (ft) =>
+          `<option value="${ft.value}"${data?.type === ft.value ? ' selected' : ''}>${ft.label}</option>`,
+      )
+      .join('')
+
+    row.innerHTML = `
+      <div class="flex flex-wrap items-end gap-3">
+        <div class="flex-1 min-w-[140px]">
+          <label for="fl-${idx}-label" class="block text-xs font-medium">Field label</label>
+          <input
+            id="fl-${idx}-label"
+            type="text"
+            required
+            value="${escapeAttr(data?.label ?? '')}"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2 text-sm placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="e.g. Allergies"
+          />
+        </div>
+        <div class="w-36">
+          <label for="fl-${idx}-type" class="block text-xs font-medium">Type</label>
+          <select
+            id="fl-${idx}-type"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            ${typeOptions}
+          </select>
+        </div>
+        <label class="flex items-center gap-2 pb-1">
+          <input
+            id="fl-${idx}-required"
+            type="checkbox"
+            ${data?.required ? 'checked' : ''}
+            class="h-4 w-4 rounded border-border accent-primary"
+          />
+          <span class="text-xs font-medium">Required</span>
+        </label>
+        <button
+          type="button"
+          data-remove-field="${idx}"
+          class="rounded-button border border-error px-3 py-2 text-xs font-semibold text-error hover:bg-error/10"
+          aria-label="Remove field"
+        >
+          Remove
+        </button>
+      </div>
+      <div class="fl-options ${data?.type === 'select' ? '' : 'hidden'}">
+        <label for="fl-${idx}-options" class="block text-xs font-medium">Options (comma-separated)</label>
+        <input
+          id="fl-${idx}-options"
+          type="text"
+          value="${escapeAttr(data?.options?.join(', ') ?? '')}"
+          class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2 text-sm placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          placeholder="Option A, Option B, Option C"
+        />
+      </div>
+    `
+
+    // Toggle options visibility on type change
+    const typeSelect = row.querySelector<HTMLSelectElement>(`#fl-${idx}-type`)!
+    const optionsDiv = row.querySelector<HTMLElement>('.fl-options')!
+    typeSelect.addEventListener('change', () => {
+      optionsDiv.classList.toggle('hidden', typeSelect.value !== 'select')
+    })
+
+    // Remove button
+    row.querySelector<HTMLButtonElement>(`[data-remove-field="${idx}"]`)!.addEventListener(
+      'click',
+      () => {
+        row.remove()
+      },
+    )
+
+    return row
+  }
+
+  function escapeAttr(str: string): string {
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  }
+
+  btnAddField.addEventListener('click', () => {
+    fieldsContainer.appendChild(createFieldRow())
+  })
+
+  function collectFields(): Array<{
+    name: string
+    label: string
+    type: string
+    required: boolean
+    options?: string[]
+  }> {
+    const rows = fieldsContainer.querySelectorAll<HTMLElement>('[data-field-idx]')
+    return Array.from(rows).map((row) => {
+      const idx = row.dataset.fieldIdx!
+      const label = (row.querySelector(`#fl-${idx}-label`) as HTMLInputElement).value.trim()
+      const type = (row.querySelector(`#fl-${idx}-type`) as HTMLSelectElement).value
+      const required = (row.querySelector(`#fl-${idx}-required`) as HTMLInputElement).checked
+      const optionsStr = (row.querySelector(`#fl-${idx}-options`) as HTMLInputElement).value.trim()
+      const name = slugify(label) || `field-${idx}`
+
+      const field: {
+        name: string
+        label: string
+        type: string
+        required: boolean
+        options?: string[]
+      } = { name, label, type, required }
+
+      if (type === 'select' && optionsStr) {
+        field.options = optionsStr
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      }
+
+      return field
+    })
+  }
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const authClient = createBrowserClient({ url, anonKey: anon })
+    const params = new URLSearchParams(window.location.search)
+    const editId = params.get('id')
+
+    let admin: ReturnType<typeof createAdminClient>
+
+    async function init() {
+      const {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
+        showView('auth')
+        return
+      }
+
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error: profileErr } = await admin.getProfile()
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (profileErr || !profile?.school_id || !allowed.includes(profile.role)) {
+        showView('auth')
+        return
+      }
+
+      showView('content')
+
+      // If editing, load the form
+      if (editId) {
+        pageTitle.textContent = 'Edit Form'
+        breadcrumbAction.textContent = 'Edit'
+        btnDelete.classList.remove('hidden')
+        slugManuallyEdited = true
+
+        const { data: existing, error } = await admin.get<Record<string, unknown>>('forms', editId)
+
+        if (error || !existing) {
+          showMsg(error ?? 'Form not found', 'error')
+          return
+        }
+
+        f.title.value = (existing.title as string) ?? ''
+        f.slug.value = (existing.slug as string) ?? ''
+        f.description.value = (existing.description as string) ?? ''
+        f.dueDate.value = existing.due_date
+          ? (existing.due_date as string).slice(0, 10)
+          : ''
+        f.grades.value = Array.isArray(existing.target_grades)
+          ? (existing.target_grades as string[]).join(', ')
+          : ''
+        f.published.checked = (existing.published as boolean) ?? true
+
+        // Populate existing fields
+        const fields = (existing.fields as Array<{
+          name: string
+          label: string
+          type: string
+          required: boolean
+          options?: string[]
+          placeholder?: string
+        }>) ?? []
+        fields.forEach((fd) => {
+          fieldsContainer.appendChild(createFieldRow(fd))
+        })
+      } else {
+        // Start with one empty field for new forms
+        fieldsContainer.appendChild(createFieldRow())
+      }
+    }
+
+    // Save handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      if (!f.title.value.trim()) {
+        showMsg('Title is required.', 'error')
+        f.title.focus()
+        return
+      }
+
+      const fields = collectFields()
+      if (fields.length === 0) {
+        showMsg('Add at least one field to the form.', 'error')
+        return
+      }
+
+      const emptyLabels = fields.filter((fd) => !fd.label)
+      if (emptyLabels.length > 0) {
+        showMsg('Every field must have a label.', 'error')
+        return
+      }
+
+      btnSave.disabled = true
+      btnSave.textContent = 'Saving...'
+
+      const slug = f.slug.value.trim() || slugify(f.title.value)
+      const grades = f.grades.value
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+
+      const row = {
+        title: f.title.value.trim(),
+        slug,
+        description: f.description.value.trim() || null,
+        due_date: f.dueDate.value || null,
+        target_grades: grades,
+        fields,
+        published: f.published.checked,
+      }
+
+      let result: { data: { id?: string } | null; error: string | null }
+      if (editId) {
+        result = await admin.update('forms', editId, row)
+      } else {
+        result = await admin.create('forms', row)
+      }
+
+      btnSave.disabled = false
+      btnSave.textContent = 'Save Form'
+
+      if (result.error) {
+        showMsg(`Save failed: ${result.error}`, 'error')
+        return
+      }
+
+      showMsg('Form saved successfully.', 'success')
+
+      if (!editId && result.data?.id) {
+        setTimeout(() => {
+          window.location.href = `/admin/forms/edit?id=${result.data.id}`
+        }, 600)
+      }
+    })
+
+    // Delete handler
+    btnDelete.addEventListener('click', async () => {
+      if (!editId) return
+      if (!confirm('Delete this form? This cannot be undone.')) return
+
+      btnDelete.disabled = true
+      btnDelete.textContent = 'Deleting...'
+
+      const { error } = await admin.remove('forms', editId)
+
+      if (error) {
+        showMsg(`Delete failed: ${error}`, 'error')
+        btnDelete.disabled = false
+        btnDelete.textContent = 'Delete'
+        return
+      }
+
+      window.location.href = '/admin/forms/'
+    })
+
+    init()
+  }
+</script>

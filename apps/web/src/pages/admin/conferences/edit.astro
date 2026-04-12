@@ -1,0 +1,362 @@
+---
+/**
+ * Admin conference window editor — create or edit a conference window.
+ *
+ * When `?id=<uuid>` is present, loads the existing window for editing.
+ * Otherwise renders a blank form for creating a new window.
+ *
+ * All mutations go through the gateway edge function.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+---
+
+<BaseLayout title="Admin - Edit Conference" description="Create or edit a conference window">
+  <div
+    class="mx-auto max-w-3xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">You need to be signed in as an editor or admin to edit conferences.</p>
+      <a
+        href="/sign-in?redirect=/admin/conferences/edit"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Form -->
+    <div id="admin-content" class="hidden">
+      <nav class="text-sm text-muted" aria-label="Breadcrumb">
+        <a href="/admin/" class="hover:underline">Admin</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <a href="/admin/conferences/" class="hover:underline">Conferences</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <span id="breadcrumb-action">New</span>
+      </nav>
+      <h1 class="mt-1 text-2xl font-bold" id="page-title">New Conference Window</h1>
+
+      <!-- Status messages -->
+      <div id="form-message" class="mt-4 hidden rounded-card p-4 text-sm" role="alert"></div>
+
+      <form id="window-form" class="mt-6 space-y-6" novalidate>
+        <!-- Title -->
+        <div>
+          <label for="field-title" class="block text-sm font-medium"
+            >Title <span class="text-error" aria-hidden="true">*</span></label
+          >
+          <input
+            id="field-title"
+            type="text"
+            required
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Fall Parent-Teacher Conferences"
+          />
+        </div>
+
+        <!-- Slug -->
+        <div>
+          <label for="field-slug" class="block text-sm font-medium">Slug</label>
+          <input
+            id="field-slug"
+            type="text"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-sm font-mono placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="fall-conferences"
+          />
+          <p class="mt-1 text-xs text-muted">Auto-generated from title. You can edit it.</p>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label for="field-description" class="block text-sm font-medium">Description</label>
+          <textarea
+            id="field-description"
+            rows="3"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Schedule a meeting with your child's teacher to discuss progress."></textarea>
+        </div>
+
+        <!-- Date range -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="field-starts-on" class="block text-sm font-medium"
+              >Starts On <span class="text-error" aria-hidden="true">*</span></label
+            >
+            <input
+              id="field-starts-on"
+              type="date"
+              required
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <div>
+            <label for="field-ends-on" class="block text-sm font-medium"
+              >Ends On <span class="text-error" aria-hidden="true">*</span></label
+            >
+            <input
+              id="field-ends-on"
+              type="date"
+              required
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+        </div>
+
+        <!-- Toggles -->
+        <fieldset class="space-y-3">
+          <legend class="text-sm font-medium">Options</legend>
+          <label class="flex items-center gap-3">
+            <input
+              id="field-published"
+              type="checkbox"
+              checked
+              class="h-4 w-4 rounded border-border accent-primary"
+            />
+            <span class="text-sm">Published</span>
+          </label>
+        </fieldset>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap items-center gap-3 border-t border-border pt-6">
+          <button
+            type="submit"
+            id="btn-save"
+            class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+          >
+            Save Window
+          </button>
+          <a
+            href="/admin/conferences/"
+            class="rounded-button border border-border px-6 py-2.5 text-sm font-semibold hover:bg-muted/10"
+          >
+            Cancel
+          </a>
+          <button
+            type="button"
+            id="btn-delete"
+            class="ml-auto hidden rounded-button border border-error px-6 py-2.5 text-sm font-semibold text-error hover:bg-error/10 disabled:opacity-60"
+          >
+            Delete
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const form = document.getElementById('window-form') as HTMLFormElement
+  const msgEl = document.getElementById('form-message')!
+  const pageTitle = document.getElementById('page-title')!
+  const breadcrumbAction = document.getElementById('breadcrumb-action')!
+  const btnSave = document.getElementById('btn-save') as HTMLButtonElement
+  const btnDelete = document.getElementById('btn-delete') as HTMLButtonElement
+
+  // Field references
+  const f = {
+    title: document.getElementById('field-title') as HTMLInputElement,
+    slug: document.getElementById('field-slug') as HTMLInputElement,
+    description: document.getElementById('field-description') as HTMLTextAreaElement,
+    startsOn: document.getElementById('field-starts-on') as HTMLInputElement,
+    endsOn: document.getElementById('field-ends-on') as HTMLInputElement,
+    published: document.getElementById('field-published') as HTMLInputElement,
+  }
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function showMsg(text: string, type: 'success' | 'error') {
+    msgEl.textContent = text
+    msgEl.className =
+      type === 'success'
+        ? 'mt-4 rounded-card p-4 text-sm bg-success/10 border border-success/30'
+        : 'mt-4 rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+  }
+
+  function slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+
+  // Auto-generate slug from title
+  let slugManuallyEdited = false
+  f.slug.addEventListener('input', () => {
+    slugManuallyEdited = true
+  })
+  f.title.addEventListener('input', () => {
+    if (!slugManuallyEdited) {
+      f.slug.value = slugify(f.title.value)
+    }
+  })
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const authClient = createBrowserClient({ url, anonKey: anon })
+    const params = new URLSearchParams(window.location.search)
+    const editId = params.get('id')
+
+    let admin: ReturnType<typeof createAdminClient>
+
+    async function init() {
+      const {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
+        showView('auth')
+        return
+      }
+
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error: profileErr } = await admin.getProfile()
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (profileErr || !profile?.school_id || !allowed.includes(profile.role)) {
+        showView('auth')
+        return
+      }
+
+      showView('content')
+
+      // If editing, load the window
+      if (editId) {
+        pageTitle.textContent = 'Edit Conference Window'
+        breadcrumbAction.textContent = 'Edit'
+        btnDelete.classList.remove('hidden')
+        slugManuallyEdited = true
+
+        const { data: w, error } = await admin.get<Record<string, unknown>>(
+          'conference-windows',
+          editId,
+        )
+
+        if (error || !w) {
+          showMsg(error ?? 'Conference window not found', 'error')
+          return
+        }
+
+        f.title.value = (w.title as string) ?? ''
+        f.slug.value = (w.slug as string) ?? ''
+        f.description.value = (w.description as string) ?? ''
+        f.startsOn.value = (w.starts_on as string) ?? ''
+        f.endsOn.value = (w.ends_on as string) ?? ''
+        f.published.checked = (w.published as boolean) ?? true
+      }
+    }
+
+    // Save handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      if (!f.title.value.trim()) {
+        showMsg('Title is required.', 'error')
+        f.title.focus()
+        return
+      }
+      if (!f.startsOn.value) {
+        showMsg('Start date is required.', 'error')
+        f.startsOn.focus()
+        return
+      }
+      if (!f.endsOn.value) {
+        showMsg('End date is required.', 'error')
+        f.endsOn.focus()
+        return
+      }
+
+      btnSave.disabled = true
+      btnSave.textContent = 'Saving...'
+
+      const slug = f.slug.value.trim() || slugify(f.title.value)
+      const row = {
+        title: f.title.value.trim(),
+        slug,
+        description: f.description.value.trim() || null,
+        starts_on: f.startsOn.value,
+        ends_on: f.endsOn.value,
+        published: f.published.checked,
+      }
+
+      let result: { data: { id?: string } | null; error: string | null }
+      if (editId) {
+        result = await admin.update('conference-windows', editId, row)
+      } else {
+        result = await admin.create('conference-windows', row)
+      }
+
+      btnSave.disabled = false
+      btnSave.textContent = 'Save Window'
+
+      if (result.error) {
+        showMsg(`Save failed: ${result.error}`, 'error')
+        return
+      }
+
+      showMsg('Conference window saved successfully.', 'success')
+
+      if (!editId && result.data?.id) {
+        setTimeout(() => {
+          window.location.href = `/admin/conferences/edit?id=${result.data.id}`
+        }, 600)
+      }
+    })
+
+    // Delete handler
+    btnDelete.addEventListener('click', async () => {
+      if (!editId) return
+      if (!confirm('Delete this conference window? This cannot be undone.')) return
+
+      btnDelete.disabled = true
+      btnDelete.textContent = 'Deleting...'
+
+      const { error } = await admin.remove('conference-windows', editId)
+
+      if (error) {
+        showMsg(`Delete failed: ${error}`, 'error')
+        btnDelete.disabled = false
+        btnDelete.textContent = 'Delete'
+        return
+      }
+
+      window.location.href = '/admin/conferences/'
+    })
+
+    init()
+  }
+</script>
