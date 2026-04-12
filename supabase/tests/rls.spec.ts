@@ -825,6 +825,7 @@ describe('fundraising_donations', () => {
   })
 })
 
+
 // ─── Spirit Store ────────────────────────────────────────────────────
 
 describe('spirit_store_products', () => {
@@ -859,25 +860,6 @@ describe('spirit_store_products', () => {
         slug: 'rls-editor-product',
         name: 'Editor Product',
         price_cents: 1500,
-// ─── Forms & Conferences ──────────────────────────────────────────────
-
-describe('forms', () => {
-  it('anon can read published forms', async () => {
-    await expectRows(ctx.anon, 'forms', { column: 'id', value: ctx.rows.formPublished })
-  })
-
-  it('anon cannot read unpublished forms', async () => {
-    await expectNoRows(ctx.anon, 'forms', { column: 'id', value: ctx.rows.formUnpublished })
-  })
-
-  it('editor-a can insert form for school A', async () => {
-    const { data, error } = await ctx.editorA
-      .from('forms')
-      .insert({
-        school_id: ctx.schoolAId,
-        slug: 'rls-editor-form',
-        title: 'Editor Form',
-        fields: [{ name: 'q1', label: 'Question 1', type: 'text', required: false }],
       })
       .select('id')
       .single()
@@ -962,15 +944,6 @@ describe('spirit_store_orders', () => {
       .from('spirit_store_orders')
       .update({ status: 'fulfilled' })
       .eq('id', ctx.rows.spiritOrderMemberA)
-    // Cleanup
-    await ctx.service.from('forms').delete().eq('id', data!.id)
-  })
-
-  it('editor-a can update form for school A', async () => {
-    const { data, error } = await ctx.editorA
-      .from('forms')
-      .update({ title: 'Updated Form Title' })
-      .eq('id', ctx.rows.formPublished)
       .select('id')
     expect(error).toBeNull()
     expect(data!.length).toBe(1)
@@ -1010,7 +983,7 @@ describe('spirit_store_order_lines', () => {
   })
 })
 
-// ─── School Directory ────────────────────────────────────────────────
+// ─── School Directory ─────────────────────────────────────────��──────
 
 describe('directory_entries', () => {
   it('anon cannot read directory entries', async () => {
@@ -1046,6 +1019,76 @@ describe('directory_entries', () => {
         user_id: ctx.memberAId,
         family_name: 'RLS Test Family',
         email: 'rls@test.com',
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    await ctx.service.from('directory_entries').delete().eq('id', data!.id)
+  })
+
+  it('member-a cannot insert entry as another user', async () => {
+    await expectInsertDenied(ctx.memberA, 'directory_entries', {
+      school_id: ctx.schoolAId,
+      user_id: ctx.editorAId, // not memberA
+      family_name: 'Impersonation',
+    })
+  })
+
+  it('admin-a can read all entries (including hidden) for school A', async () => {
+    const { data, error } = await ctx.adminA
+      .from('directory_entries')
+      .select('id')
+      .eq('school_id', ctx.schoolAId)
+    expect(error).toBeNull()
+    expect(data!.length).toBeGreaterThanOrEqual(2) // visible + hidden
+  })
+
+  it('admin-a cannot read school B directory entries', async () => {
+    await expectNoRows(ctx.adminA, 'directory_entries', {
+      column: 'school_id',
+      value: ctx.schoolBId,
+    })
+  })
+})
+
+// ─── Forms & Conferences ──────────────────────────────────────────────
+
+describe('forms', () => {
+  it('anon can read published forms', async () => {
+    await expectRows(ctx.anon, 'forms', { column: 'id', value: ctx.rows.formPublished })
+  })
+
+  it('anon cannot read unpublished forms', async () => {
+    await expectNoRows(ctx.anon, 'forms', { column: 'id', value: ctx.rows.formUnpublished })
+  })
+
+  it('editor-a can insert form for school A', async () => {
+    const { data, error } = await ctx.editorA
+      .from('forms')
+      .insert({
+        school_id: ctx.schoolAId,
+        slug: 'rls-editor-form',
+        title: 'Editor Form',
+        fields: [{ name: 'q1', label: 'Question 1', type: 'text', required: false }],
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    // Cleanup
+    await ctx.service.from('forms').delete().eq('id', data!.id)
+  })
+
+  it('editor-a can update form for school A', async () => {
+    const { data, error } = await ctx.editorA
+      .from('forms')
+      .update({ title: 'Updated Form Title' })
+      .eq('id', ctx.rows.formPublished)
+      .select('id')
+    expect(error).toBeNull()
+    expect(data!.length).toBe(1)
+
+    // Revert
+    await ctx.service
       .from('forms')
       .update({ title: 'Published Form' })
       .eq('id', ctx.rows.formPublished)
@@ -1099,30 +1142,6 @@ describe('form_responses', () => {
       .select('id')
       .single()
     expect(error).toBeNull()
-    await ctx.service.from('directory_entries').delete().eq('id', data!.id)
-  })
-
-  it('member-a cannot insert entry as another user', async () => {
-    await expectInsertDenied(ctx.memberA, 'directory_entries', {
-      school_id: ctx.schoolAId,
-      user_id: ctx.editorAId, // not memberA
-      family_name: 'Impersonation',
-    })
-  })
-
-  it('admin-a can read all entries (including hidden) for school A', async () => {
-    const { data, error } = await ctx.adminA
-      .from('directory_entries')
-      .select('id')
-      .eq('school_id', ctx.schoolAId)
-    expect(error).toBeNull()
-    expect(data!.length).toBeGreaterThanOrEqual(2) // visible + hidden
-  })
-
-  it('admin-a cannot read school B directory entries', async () => {
-    await expectNoRows(ctx.adminA, 'directory_entries', {
-      column: 'school_id',
-      value: ctx.schoolBId,
     // Cleanup
     await ctx.service.from('form_responses').delete().eq('id', data!.id)
   })

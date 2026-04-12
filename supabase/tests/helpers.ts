@@ -521,16 +521,6 @@ export async function setupTestContext(): Promise<TestContext> {
       price_cents: 1500,
       active: true,
       variants: [{ label: 'S' }, { label: 'M' }, { label: 'L' }],
-  // ── Forms ─────────────────────────────────────────────────────
-  const { data: formPub } = await service
-    .from('forms')
-    .insert({
-      school_id: schoolAId,
-      slug: 'rls-form-published',
-      title: 'Published Form',
-      fields: [{ name: 'student_name', label: 'Student Name', type: 'text', required: true }],
-      published: true,
-      created_by: userIds.editorA,
     })
     .select('id')
     .single()
@@ -545,17 +535,6 @@ export async function setupTestContext(): Promise<TestContext> {
       name: 'Inactive Product',
       price_cents: 999,
       active: false,
-  rows.formPublished = formPub!.id
-
-  const { data: formUnpub } = await service
-    .from('forms')
-    .insert({
-      school_id: schoolAId,
-      slug: 'rls-form-unpublished',
-      title: 'Unpublished Form',
-      fields: [{ name: 'note', label: 'Note', type: 'textarea', required: false }],
-      published: false,
-      created_by: userIds.editorA,
     })
     .select('id')
     .single()
@@ -573,17 +552,6 @@ export async function setupTestContext(): Promise<TestContext> {
       total_cents: 1500,
       status: 'pending',
       payment_provider: 'collect',
-  rows.formUnpublished = formUnpub!.id
-
-  // Form response for member-a
-  const { data: formResp } = await service
-    .from('form_responses')
-    .insert({
-      form_id: rows.formPublished,
-      school_id: schoolAId,
-      user_id: userIds.memberA,
-      student_name: 'Test Student',
-      responses: { student_name: 'Test Student' },
     })
     .select('id')
     .single()
@@ -615,6 +583,72 @@ export async function setupTestContext(): Promise<TestContext> {
       student_grades: ['3rd'],
       email: 'editor@test.com',
       visible: true,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.directoryEntryVisible = dirVisible!.id
+
+  const { data: dirHidden } = await service
+    .from('directory_entries')
+    .insert({
+      school_id: schoolAId,
+      user_id: userIds.adminA,
+      family_name: 'Hidden Family',
+      parent_names: ['Admin A'],
+      student_grades: ['K'],
+      email: 'admin@test.com',
+      visible: false,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.directoryEntryHidden = dirHidden!.id
+
+  // ── Forms ─────────────────────────────────────────────────────
+  const { data: formPub } = await service
+    .from('forms')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-form-published',
+      title: 'Published Form',
+      fields: [{ name: 'student_name', label: 'Student Name', type: 'text', required: true }],
+      published: true,
+      created_by: userIds.editorA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.formPublished = formPub!.id
+
+  const { data: formUnpub } = await service
+    .from('forms')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-form-unpublished',
+      title: 'Unpublished Form',
+      fields: [{ name: 'note', label: 'Note', type: 'textarea', required: false }],
+      published: false,
+      created_by: userIds.editorA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.formUnpublished = formUnpub!.id
+
+  // Form response for member-a
+  const { data: formResp } = await service
+    .from('form_responses')
+    .insert({
+      form_id: rows.formPublished,
+      school_id: schoolAId,
+      user_id: userIds.memberA,
+      student_name: 'Test Student',
+      responses: { student_name: 'Test Student' },
+    })
+    .select('id')
+    .single()
+    .throwOnError()
   rows.formResponseMemberA = formResp!.id
 
   // ── Conferences ──────────────────────────────────────────────
@@ -632,18 +666,6 @@ export async function setupTestContext(): Promise<TestContext> {
     .select('id')
     .single()
     .throwOnError()
-  rows.directoryEntryVisible = dirVisible!.id
-
-  const { data: dirHidden } = await service
-    .from('directory_entries')
-    .insert({
-      school_id: schoolAId,
-      user_id: userIds.adminA,
-      family_name: 'Hidden Family',
-      parent_names: ['Admin A'],
-      student_grades: ['K'],
-      email: 'admin@test.com',
-      visible: false,
   rows.conferenceWindowPublished = cwPub!.id
 
   const { data: cwUnpub } = await service
@@ -660,7 +682,6 @@ export async function setupTestContext(): Promise<TestContext> {
     .select('id')
     .single()
     .throwOnError()
-  rows.directoryEntryHidden = dirHidden!.id
   rows.conferenceWindowUnpublished = cwUnpub!.id
 
   // We use editorA as a pseudo-teacher for conference slots
