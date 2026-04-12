@@ -530,10 +530,10 @@ const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+
       f.accentColorPicker.value = ac
       f.logo.value = school.branding?.logo ?? ''
 
-      f.instagram.value = school.social?.instagram ?? ''
-      f.facebook.value = school.social?.facebook ?? ''
-      f.twitter.value = school.social?.twitter ?? ''
-      f.youtube.value = school.social?.youtube ?? ''
+      f.instagram.value = school.social_links?.instagram ?? ''
+      f.facebook.value = school.social_links?.facebook ?? ''
+      f.twitter.value = school.social_links?.twitter ?? ''
+      f.youtube.value = school.social_links?.youtube ?? ''
 
       showStep(1)
     }
@@ -570,7 +570,7 @@ const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+
           accentColor: f.accentColor.value.trim() || '#f5a623',
           logo: f.logo.value.trim(),
         },
-        social: {
+        social_links: {
           instagram: f.instagram.value.trim(),
           facebook: f.facebook.value.trim(),
           twitter: f.twitter.value.trim(),

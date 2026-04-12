@@ -54,7 +54,7 @@ export async function handleAdmin(ctx: GatewayContext): Promise<Response> {
         .from('schools')
         .select(
           'id, name, short_name, slug, tagline, mascot, address, phone, email, website, ' +
-          'grades, founded, enrollment, title_one, timezone, branding, social',
+          'grades, founded, enrollment, title_one, timezone, branding, social_links',
         )
         .eq('id', schoolId)
         .single()

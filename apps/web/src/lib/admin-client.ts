@@ -89,7 +89,7 @@ export function createAdminClient(options: AdminClientOptions) {
           heroImage?: string
           mascotImage?: string
         }
-        social: {
+        social_links: {
           instagram?: string
           facebook?: string
           twitter?: string
