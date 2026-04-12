@@ -1,0 +1,95 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { getCollection } from 'astro:content'
+import LanguageBadges from '@/modules/resources/components/LanguageBadges.astro'
+import CategoryBadge from '@/modules/resources/components/CategoryBadge.astro'
+import {
+  useTranslate,
+  getLocaleFromUrl,
+  localizedPath,
+  supportedLocales,
+  defaultLocale,
+} from '@/i18n/index'
+
+export async function getStaticPaths() {
+  const resources = await getCollection('resources')
+  return resources.flatMap((resource) =>
+    supportedLocales.map((code) => ({
+      params: {
+        locale: code === defaultLocale ? undefined : code,
+        slug: resource.slug,
+      },
+      props: { resource },
+    })),
+  )
+}
+
+const { resource } = Astro.props
+
+if (!isModuleEnabled(siteConfig, 'resources')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+---
+
+<BaseLayout title={resource.data.name} description={resource.data.description}>
+  <article class="mx-auto max-w-3xl px-4 py-12">
+    <a href={localizedPath('/resources', locale)} class="text-sm text-primary hover:underline">
+      &larr; {t('resources.title')}
+    </a>
+
+    <h1 class="mt-4 text-4xl font-bold">{resource.data.name}</h1>
+
+    <div class="mt-4 flex flex-wrap items-center gap-2">
+      <CategoryBadge category={resource.data.category} locale={locale} />
+      {
+        resource.data.languages.length > 0 ? (
+          <LanguageBadges languages={resource.data.languages} />
+        ) : null
+      }
+    </div>
+
+    <div class="mt-6 prose max-w-none">
+      <p>{resource.data.description}</p>
+    </div>
+
+    <dl class="mt-8 space-y-4">
+      {
+        resource.data.address ? (
+          <div>
+            <dt class="text-sm font-semibold text-muted">{t('resources.address')}</dt>
+            <dd class="mt-1">{resource.data.address}</dd>
+          </div>
+        ) : null
+      }
+      {
+        resource.data.phone ? (
+          <div>
+            <dt class="text-sm font-semibold text-muted">{t('resources.phone')}</dt>
+            <dd class="mt-1">
+              <a href={`tel:${resource.data.phone}`} class="text-primary hover:underline">
+                {resource.data.phone}
+              </a>
+            </dd>
+          </div>
+        ) : null
+      }
+      {
+        resource.data.url ? (
+          <div>
+            <dt class="text-sm font-semibold text-muted">{t('resources.website')}</dt>
+            <dd class="mt-1">
+              <a href={resource.data.url} class="text-primary hover:underline" rel="noopener">
+                {resource.data.url}
+              </a>
+            </dd>
+          </div>
+        ) : null
+      }
+    </dl>
+  </article>
+</BaseLayout>

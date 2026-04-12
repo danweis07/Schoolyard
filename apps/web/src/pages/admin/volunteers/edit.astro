@@ -1,0 +1,395 @@
+---
+/**
+ * Admin volunteer role editor — create or edit a single volunteer role.
+ *
+ * When `?id=<uuid>` is present, loads the existing role for editing.
+ * Otherwise renders a blank form for creating a new role.
+ *
+ * All mutations happen client-side via the browser Supabase client.
+ * RLS on the volunteer_roles table enforces that only editors/admins for
+ * the matching school_id can insert or update rows.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+---
+
+<BaseLayout title="Admin - Edit Volunteer Role" description="Create or edit a volunteer role">
+  <div
+    class="mx-auto max-w-3xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">
+        You need to be signed in as an editor or admin to edit volunteer roles.
+      </p>
+      <a
+        href={`/sign-in?redirect=/admin/volunteers/edit`}
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Form -->
+    <div id="admin-content" class="hidden">
+      <nav class="text-sm text-muted" aria-label="Breadcrumb">
+        <a href="/admin/" class="hover:underline">Admin</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <a href="/admin/volunteers/" class="hover:underline">Volunteers</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <span id="breadcrumb-action">New</span>
+      </nav>
+      <h1 class="mt-1 text-2xl font-bold" id="page-title">New Volunteer Role</h1>
+
+      <!-- Status messages -->
+      <div id="form-message" class="mt-4 hidden rounded-card p-4 text-sm" role="alert"></div>
+
+      <form id="volunteer-form" class="mt-6 space-y-6" novalidate>
+        <!-- Title -->
+        <div>
+          <label for="field-title" class="block text-sm font-medium"
+            >Title <span class="text-error" aria-hidden="true">*</span></label
+          >
+          <input
+            id="field-title"
+            type="text"
+            required
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Library Helper"
+          />
+        </div>
+
+        <!-- Slug -->
+        <div>
+          <label for="field-slug" class="block text-sm font-medium">Slug</label>
+          <input
+            id="field-slug"
+            type="text"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-sm font-mono placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="library-helper"
+          />
+          <p class="mt-1 text-xs text-muted">Auto-generated from title. You can edit it.</p>
+        </div>
+
+        <!-- Description (Markdown) -->
+        <div>
+          <label for="field-description" class="block text-sm font-medium"
+            >Description (Markdown)</label
+          >
+          <textarea
+            id="field-description"
+            rows="6"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-sm font-mono placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Describe the volunteer role..."></textarea>
+        </div>
+
+        <!-- Commitment -->
+        <div>
+          <label for="field-commitment" class="block text-sm font-medium">Commitment</label>
+          <input
+            id="field-commitment"
+            type="text"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="2 hours/week"
+          />
+        </div>
+
+        <!-- Capacity / Filled row -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="field-capacity" class="block text-sm font-medium">Capacity</label>
+            <input
+              id="field-capacity"
+              type="number"
+              min="0"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="10"
+            />
+            <p class="mt-1 text-xs text-muted">
+              Max number of volunteers needed. Leave empty for unlimited.
+            </p>
+          </div>
+          <div>
+            <label for="field-filled" class="block text-sm font-medium">Filled</label>
+            <input
+              id="field-filled"
+              type="number"
+              min="0"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="0"
+            />
+            <p class="mt-1 text-xs text-muted">Number of spots currently filled.</p>
+          </div>
+        </div>
+
+        <!-- Contact Email -->
+        <div>
+          <label for="field-contact-email" class="block text-sm font-medium">Contact Email</label>
+          <input
+            id="field-contact-email"
+            type="email"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="volunteer@school.org"
+          />
+        </div>
+
+        <!-- Sort Order -->
+        <div>
+          <label for="field-sort-order" class="block text-sm font-medium">Sort Order</label>
+          <input
+            id="field-sort-order"
+            type="number"
+            min="0"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="0"
+          />
+          <p class="mt-1 text-xs text-muted">Lower numbers appear first.</p>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap items-center gap-3 border-t border-border pt-6">
+          <button
+            type="submit"
+            id="btn-save"
+            class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+          >
+            Save Role
+          </button>
+          <a
+            href="/admin/volunteers/"
+            class="rounded-button border border-border px-6 py-2.5 text-sm font-semibold hover:bg-muted/10"
+          >
+            Cancel
+          </a>
+          <button
+            type="button"
+            id="btn-delete"
+            class="ml-auto hidden rounded-button border border-error px-6 py-2.5 text-sm font-semibold text-error hover:bg-error/10 disabled:opacity-60"
+          >
+            Delete
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const form = document.getElementById('volunteer-form') as HTMLFormElement
+  const msgEl = document.getElementById('form-message')!
+  const pageTitle = document.getElementById('page-title')!
+  const breadcrumbAction = document.getElementById('breadcrumb-action')!
+  const btnSave = document.getElementById('btn-save') as HTMLButtonElement
+  const btnDelete = document.getElementById('btn-delete') as HTMLButtonElement
+
+  // Field references
+  const f = {
+    title: document.getElementById('field-title') as HTMLInputElement,
+    slug: document.getElementById('field-slug') as HTMLInputElement,
+    description: document.getElementById('field-description') as HTMLTextAreaElement,
+    commitment: document.getElementById('field-commitment') as HTMLInputElement,
+    capacity: document.getElementById('field-capacity') as HTMLInputElement,
+    filled: document.getElementById('field-filled') as HTMLInputElement,
+    contactEmail: document.getElementById('field-contact-email') as HTMLInputElement,
+    sortOrder: document.getElementById('field-sort-order') as HTMLInputElement,
+  }
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function showMsg(text: string, type: 'success' | 'error') {
+    msgEl.textContent = text
+    msgEl.className =
+      type === 'success'
+        ? 'mt-4 rounded-card p-4 text-sm bg-success/10 border border-success/30'
+        : 'mt-4 rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+  }
+
+  function slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+
+  // Auto-generate slug from title
+  let slugManuallyEdited = false
+  f.slug.addEventListener('input', () => {
+    slugManuallyEdited = true
+  })
+  f.title.addEventListener('input', () => {
+    if (!slugManuallyEdited) {
+      f.slug.value = slugify(f.title.value)
+    }
+  })
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const supabase = createBrowserClient({ url, anonKey: anon })
+    const params = new URLSearchParams(window.location.search)
+    const editId = params.get('id')
+    let schoolId = ''
+
+    async function init() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        showView('auth')
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('school_id, role')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (!profile?.school_id || !allowed.includes(profile.role)) {
+        showView('auth')
+        return
+      }
+
+      schoolId = profile.school_id
+      showView('content')
+
+      // If editing, load the role
+      if (editId) {
+        pageTitle.textContent = 'Edit Volunteer Role'
+        breadcrumbAction.textContent = 'Edit'
+        btnDelete.classList.remove('hidden')
+        slugManuallyEdited = true // don't overwrite existing slug
+
+        const { data: role, error } = await supabase
+          .from('volunteer_roles')
+          .select('*')
+          .eq('id', editId)
+          .eq('school_id', schoolId)
+          .maybeSingle()
+
+        if (error || !role) {
+          showMsg(error?.message ?? 'Volunteer role not found', 'error')
+          return
+        }
+
+        f.title.value = role.title ?? ''
+        f.slug.value = role.slug ?? ''
+        f.description.value = role.description_md ?? ''
+        f.commitment.value = role.commitment ?? ''
+        f.capacity.value = role.capacity != null ? String(role.capacity) : ''
+        f.filled.value = role.filled != null ? String(role.filled) : ''
+        f.contactEmail.value = role.contact_email ?? ''
+        f.sortOrder.value = role.sort_order != null ? String(role.sort_order) : ''
+      }
+    }
+
+    // Save handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      // Validate required fields
+      if (!f.title.value.trim()) {
+        showMsg('Title is required.', 'error')
+        f.title.focus()
+        return
+      }
+
+      btnSave.disabled = true
+      btnSave.textContent = 'Saving...'
+
+      const slug = f.slug.value.trim() || slugify(f.title.value)
+      const row = {
+        school_id: schoolId,
+        title: f.title.value.trim(),
+        slug,
+        description_md: f.description.value.trim() || null,
+        commitment: f.commitment.value.trim() || null,
+        capacity: f.capacity.value ? parseInt(f.capacity.value, 10) : null,
+        filled: f.filled.value ? parseInt(f.filled.value, 10) : 0,
+        contact_email: f.contactEmail.value.trim() || null,
+        sort_order: f.sortOrder.value ? parseInt(f.sortOrder.value, 10) : 0,
+      }
+
+      let result
+      if (editId) {
+        result = await supabase
+          .from('volunteer_roles')
+          .update(row)
+          .eq('id', editId)
+          .eq('school_id', schoolId)
+      } else {
+        result = await supabase.from('volunteer_roles').insert(row).select('id').single()
+      }
+
+      btnSave.disabled = false
+      btnSave.textContent = 'Save Role'
+
+      if (result.error) {
+        showMsg(`Save failed: ${result.error.message}`, 'error')
+        return
+      }
+
+      showMsg('Volunteer role saved successfully.', 'success')
+
+      // If creating, redirect to the edit page for the new record
+      if (!editId && result.data?.id) {
+        setTimeout(() => {
+          window.location.href = `/admin/volunteers/edit?id=${result.data.id}`
+        }, 600)
+      }
+    })
+
+    // Delete handler
+    btnDelete.addEventListener('click', async () => {
+      if (!editId) return
+      if (!confirm('Delete this volunteer role? This cannot be undone.')) return
+
+      btnDelete.disabled = true
+      btnDelete.textContent = 'Deleting...'
+
+      const { error } = await supabase
+        .from('volunteer_roles')
+        .delete()
+        .eq('id', editId)
+        .eq('school_id', schoolId)
+
+      if (error) {
+        showMsg(`Delete failed: ${error.message}`, 'error')
+        btnDelete.disabled = false
+        btnDelete.textContent = 'Delete'
+        return
+      }
+
+      window.location.href = '/admin/volunteers/'
+    })
+
+    init()
+  }
+</script>

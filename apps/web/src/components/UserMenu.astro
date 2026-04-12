@@ -1,0 +1,143 @@
+---
+/**
+ * Auth-aware user menu — renders a "Sign in" link for anon visitors
+ * and a user dropdown (email + sign out) for authenticated users.
+ *
+ * Hydrates client-side via a <script> tag that checks Supabase auth
+ * state. The SSR render always shows "Sign in" as the safe default.
+ */
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+---
+
+<div
+  data-sy-user-menu
+  data-supabase-url={supabaseUrl}
+  data-supabase-anon={supabaseAnon}
+  class="relative"
+>
+  <a
+    href="/sign-in"
+    data-sy-signin-link
+    class="rounded-button border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted"
+  >
+    Sign in
+  </a>
+
+  <div data-sy-user-info class="hidden items-center gap-2">
+    <button
+      type="button"
+      data-sy-user-toggle
+      class="flex items-center gap-1.5 rounded-button border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted"
+      aria-expanded="false"
+      aria-haspopup="true"
+    >
+      <span data-sy-user-email class="max-w-[120px] truncate"></span>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        class="h-3.5 w-3.5"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+          clip-rule="evenodd"></path>
+      </svg>
+    </button>
+
+    <div
+      data-sy-user-dropdown
+      class="absolute right-0 top-full z-50 mt-1 hidden min-w-[160px] rounded-lg border border-border bg-surface p-1 shadow-lg"
+    >
+      <a
+        href="/admin"
+        data-sy-admin-link
+        class="hidden w-full rounded px-3 py-2 text-left text-sm hover:bg-muted"
+      >
+        Admin
+      </a>
+      <button
+        type="button"
+        data-sy-signout
+        class="w-full rounded px-3 py-2 text-left text-sm hover:bg-muted"
+      >
+        Sign out
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-user-menu]')
+  if (root) {
+    const url = root.dataset.supabaseUrl ?? ''
+    const anon = root.dataset.supabaseAnon ?? ''
+
+    if (url && anon) {
+      const supabase = createBrowserClient({ url, anonKey: anon })
+      const signinLink = root.querySelector<HTMLElement>('[data-sy-signin-link]')!
+      const userInfo = root.querySelector<HTMLElement>('[data-sy-user-info]')!
+      const userEmail = root.querySelector<HTMLElement>('[data-sy-user-email]')!
+      const toggle = root.querySelector<HTMLButtonElement>('[data-sy-user-toggle]')!
+      const dropdown = root.querySelector<HTMLElement>('[data-sy-user-dropdown]')!
+      const signoutBtn = root.querySelector<HTMLButtonElement>('[data-sy-signout]')!
+      const adminLink = root.querySelector<HTMLElement>('[data-sy-admin-link]')!
+
+      async function refresh() {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (user) {
+          signinLink.classList.add('hidden')
+          userInfo.classList.remove('hidden')
+          userInfo.classList.add('flex')
+          userEmail.textContent = user.email ?? 'Account'
+
+          // Show admin link for editors/admins
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', user.id)
+              .maybeSingle<{ role: string }>()
+            if (profile && ['editor', 'admin', 'district_admin'].includes(profile.role)) {
+              adminLink.classList.remove('hidden')
+              adminLink.classList.add('block')
+            }
+          } catch {
+            /* ignore — profile lookup optional */
+          }
+        } else {
+          signinLink.classList.remove('hidden')
+          userInfo.classList.add('hidden')
+          userInfo.classList.remove('flex')
+        }
+      }
+
+      toggle.addEventListener('click', () => {
+        const open = toggle.getAttribute('aria-expanded') === 'true'
+        toggle.setAttribute('aria-expanded', String(!open))
+        dropdown.classList.toggle('hidden', open)
+      })
+
+      document.addEventListener('click', (e) => {
+        if (!root.contains(e.target as Node)) {
+          toggle.setAttribute('aria-expanded', 'false')
+          dropdown.classList.add('hidden')
+        }
+      })
+
+      signoutBtn.addEventListener('click', async () => {
+        await supabase.auth.signOut()
+        window.location.reload()
+      })
+
+      refresh()
+      supabase.auth.onAuthStateChange(() => refresh())
+    }
+  }
+</script>

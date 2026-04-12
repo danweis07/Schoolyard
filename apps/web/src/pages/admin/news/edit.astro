@@ -1,0 +1,412 @@
+---
+/**
+ * Admin news editor — create or edit a single news post.
+ *
+ * When `?id=<uuid>` is present, loads the existing post for editing.
+ * Otherwise renders a blank form for creating a new post.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+---
+
+<BaseLayout title="Admin - Edit News" description="Create or edit a news post">
+  <div
+    class="mx-auto max-w-3xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">You need to be signed in as an editor or admin to edit news.</p>
+      <a
+        href="/sign-in?redirect=/admin/news/edit"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Form -->
+    <div id="admin-content" class="hidden">
+      <nav class="text-sm text-muted" aria-label="Breadcrumb">
+        <a href="/admin/" class="hover:underline">Admin</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <a href="/admin/news/" class="hover:underline">News</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <span id="breadcrumb-action">New</span>
+      </nav>
+      <h1 class="mt-1 text-2xl font-bold" id="page-title">New Post</h1>
+
+      <div id="form-message" class="mt-4 hidden rounded-card p-4 text-sm" role="alert"></div>
+
+      <form id="news-form" class="mt-6 space-y-6" novalidate>
+        <!-- Title -->
+        <div>
+          <label for="field-title" class="block text-sm font-medium"
+            >Title <span class="text-error" aria-hidden="true">*</span></label
+          >
+          <input
+            id="field-title"
+            type="text"
+            required
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Welcome Back to School"
+          />
+        </div>
+
+        <!-- Slug -->
+        <div>
+          <label for="field-slug" class="block text-sm font-medium">Slug</label>
+          <input
+            id="field-slug"
+            type="text"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-sm font-mono placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="welcome-back-to-school"
+          />
+          <p class="mt-1 text-xs text-muted">Auto-generated from title. You can edit it.</p>
+        </div>
+
+        <!-- Excerpt -->
+        <div>
+          <label for="field-excerpt" class="block text-sm font-medium">Excerpt</label>
+          <textarea
+            id="field-excerpt"
+            rows="2"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="A short summary of the post..."></textarea>
+        </div>
+
+        <!-- Body (Markdown) -->
+        <div>
+          <label for="field-body" class="block text-sm font-medium">Body (Markdown)</label>
+          <textarea
+            id="field-body"
+            rows="12"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-sm font-mono placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Write the full post in Markdown..."></textarea>
+        </div>
+
+        <!-- Author + Published Date row -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="field-author" class="block text-sm font-medium">Author</label>
+            <input
+              id="field-author"
+              type="text"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="PTA Board"
+            />
+          </div>
+          <div>
+            <label for="field-published-at" class="block text-sm font-medium"
+              >Published Date <span class="text-error" aria-hidden="true">*</span></label
+            >
+            <input
+              id="field-published-at"
+              type="datetime-local"
+              required
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div>
+          <label for="field-tags" class="block text-sm font-medium">Tags</label>
+          <input
+            id="field-tags"
+            type="text"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="announcement, pta, fundraising"
+          />
+          <p class="mt-1 text-xs text-muted">Comma-separated list of tags.</p>
+        </div>
+
+        <!-- Toggles -->
+        <fieldset class="space-y-3">
+          <legend class="text-sm font-medium">Options</legend>
+          <label class="flex items-center gap-3">
+            <input
+              id="field-featured"
+              type="checkbox"
+              class="h-4 w-4 rounded border-border accent-primary"
+            />
+            <span class="text-sm">Featured post</span>
+          </label>
+          <label class="flex items-center gap-3">
+            <input
+              id="field-published"
+              type="checkbox"
+              checked
+              class="h-4 w-4 rounded border-border accent-primary"
+            />
+            <span class="text-sm">Published</span>
+          </label>
+        </fieldset>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap items-center gap-3 border-t border-border pt-6">
+          <button
+            type="submit"
+            id="btn-save"
+            class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+          >
+            Save Post
+          </button>
+          <a
+            href="/admin/news/"
+            class="rounded-button border border-border px-6 py-2.5 text-sm font-semibold hover:bg-muted/10"
+          >
+            Cancel
+          </a>
+          <button
+            type="button"
+            id="btn-delete"
+            class="ml-auto hidden rounded-button border border-error px-6 py-2.5 text-sm font-semibold text-error hover:bg-error/10 disabled:opacity-60"
+          >
+            Delete
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const form = document.getElementById('news-form') as HTMLFormElement
+  const msgEl = document.getElementById('form-message')!
+  const pageTitle = document.getElementById('page-title')!
+  const breadcrumbAction = document.getElementById('breadcrumb-action')!
+  const btnSave = document.getElementById('btn-save') as HTMLButtonElement
+  const btnDelete = document.getElementById('btn-delete') as HTMLButtonElement
+
+  const f = {
+    title: document.getElementById('field-title') as HTMLInputElement,
+    slug: document.getElementById('field-slug') as HTMLInputElement,
+    excerpt: document.getElementById('field-excerpt') as HTMLTextAreaElement,
+    body: document.getElementById('field-body') as HTMLTextAreaElement,
+    author: document.getElementById('field-author') as HTMLInputElement,
+    publishedAt: document.getElementById('field-published-at') as HTMLInputElement,
+    tags: document.getElementById('field-tags') as HTMLInputElement,
+    featured: document.getElementById('field-featured') as HTMLInputElement,
+    published: document.getElementById('field-published') as HTMLInputElement,
+  }
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function showMsg(text: string, type: 'success' | 'error') {
+    msgEl.textContent = text
+    msgEl.className =
+      type === 'success'
+        ? 'mt-4 rounded-card p-4 text-sm bg-success/10 border border-success/30'
+        : 'mt-4 rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+  }
+
+  function slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+
+  let slugManuallyEdited = false
+  f.slug.addEventListener('input', () => {
+    slugManuallyEdited = true
+  })
+  f.title.addEventListener('input', () => {
+    if (!slugManuallyEdited) {
+      f.slug.value = slugify(f.title.value)
+    }
+  })
+
+  function localToIso(val: string): string {
+    if (!val) return ''
+    return new Date(val).toISOString()
+  }
+
+  function isoToLocal(iso: string): string {
+    if (!iso) return ''
+    const d = new Date(iso)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+
+  function parseTags(val: string): string[] {
+    return val
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean)
+  }
+
+  // Default published_at to now
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  f.publishedAt.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const supabase = createBrowserClient({ url, anonKey: anon })
+    const params = new URLSearchParams(window.location.search)
+    const editId = params.get('id')
+    let schoolId = ''
+
+    async function init() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        showView('auth')
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('school_id, role')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (!profile?.school_id || !allowed.includes(profile.role)) {
+        showView('auth')
+        return
+      }
+
+      schoolId = profile.school_id
+      showView('content')
+
+      if (editId) {
+        pageTitle.textContent = 'Edit Post'
+        breadcrumbAction.textContent = 'Edit'
+        btnDelete.classList.remove('hidden')
+        slugManuallyEdited = true
+
+        const { data: post, error } = await supabase
+          .from('news')
+          .select('*')
+          .eq('id', editId)
+          .eq('school_id', schoolId)
+          .maybeSingle()
+
+        if (error || !post) {
+          showMsg(error?.message ?? 'Post not found', 'error')
+          return
+        }
+
+        f.title.value = post.title ?? ''
+        f.slug.value = post.slug ?? ''
+        f.excerpt.value = post.excerpt ?? ''
+        f.body.value = post.body_md ?? ''
+        f.author.value = post.author ?? ''
+        f.publishedAt.value = isoToLocal(post.published_at)
+        f.tags.value = (post.tags ?? []).join(', ')
+        f.featured.checked = post.featured ?? false
+        f.published.checked = post.published ?? true
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      if (!f.title.value.trim()) {
+        showMsg('Title is required.', 'error')
+        f.title.focus()
+        return
+      }
+      if (!f.publishedAt.value) {
+        showMsg('Published date is required.', 'error')
+        f.publishedAt.focus()
+        return
+      }
+
+      btnSave.disabled = true
+      btnSave.textContent = 'Saving...'
+
+      const slug = f.slug.value.trim() || slugify(f.title.value)
+      const row = {
+        school_id: schoolId,
+        title: f.title.value.trim(),
+        slug,
+        excerpt: f.excerpt.value.trim() || null,
+        body_md: f.body.value.trim() || null,
+        author: f.author.value.trim() || null,
+        published_at: localToIso(f.publishedAt.value),
+        tags: parseTags(f.tags.value),
+        featured: f.featured.checked,
+        published: f.published.checked,
+      }
+
+      let result
+      if (editId) {
+        result = await supabase.from('news').update(row).eq('id', editId).eq('school_id', schoolId)
+      } else {
+        result = await supabase.from('news').insert(row).select('id').single()
+      }
+
+      btnSave.disabled = false
+      btnSave.textContent = 'Save Post'
+
+      if (result.error) {
+        showMsg(`Save failed: ${result.error.message}`, 'error')
+        return
+      }
+
+      showMsg('Post saved successfully.', 'success')
+
+      if (!editId && result.data?.id) {
+        setTimeout(() => {
+          window.location.href = `/admin/news/edit?id=${result.data.id}`
+        }, 600)
+      }
+    })
+
+    btnDelete.addEventListener('click', async () => {
+      if (!editId) return
+      if (!confirm('Delete this post? This cannot be undone.')) return
+
+      btnDelete.disabled = true
+      btnDelete.textContent = 'Deleting...'
+
+      const { error } = await supabase
+        .from('news')
+        .delete()
+        .eq('id', editId)
+        .eq('school_id', schoolId)
+
+      if (error) {
+        showMsg(`Delete failed: ${error.message}`, 'error')
+        btnDelete.disabled = false
+        btnDelete.textContent = 'Delete'
+        return
+      }
+
+      window.location.href = '/admin/news/'
+    })
+
+    init()
+  }
+</script>

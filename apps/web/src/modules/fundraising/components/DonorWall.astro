@@ -1,0 +1,105 @@
+---
+/**
+ * Donor wall — shows live fundraising totals from the Supabase
+ * `fundraising_program_totals` view. Individual donor names are NOT
+ * shown because the schema lacks a consent flag — only aggregate
+ * numbers are public. A donor name display requires a future migration
+ * adding a `public_display` boolean to `fundraising_donations`.
+ *
+ * In static mode, falls back to the config-defined `currentRaised`.
+ */
+import { siteConfig } from '@/lib/site'
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  locale: Locale
+  programs?: Array<{
+    name: string
+    goalCents: number | null
+    raisedCents: number
+  }>
+  totalRaisedCents?: number
+  donorCount?: number
+}
+
+const { locale, programs = [], totalRaisedCents, donorCount } = Astro.props
+const t = useTranslate(locale)
+
+const formatter = new Intl.NumberFormat(locale, {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+})
+
+const displayRaised =
+  totalRaisedCents !== undefined ? totalRaisedCents / 100 : siteConfig.fundraising.currentRaised
+
+const displayGoal = siteConfig.fundraising.annualGoal
+const percent = displayGoal > 0 ? Math.min(100, Math.round((displayRaised / displayGoal) * 100)) : 0
+---
+
+<section class="rounded-card border border-border bg-surface p-card shadow-sm">
+  <h2 class="text-xl font-bold">{t('fundraising.progressTitle')}</h2>
+
+  <div class="mt-4">
+    <p class="text-4xl font-bold text-accent">{formatter.format(displayRaised)}</p>
+    <p class="text-sm text-muted">
+      {t('fundraising.ofGoal', { goal: formatter.format(displayGoal) })}
+    </p>
+  </div>
+
+  <div
+    class="mt-4 h-4 overflow-hidden rounded-full bg-muted"
+    role="progressbar"
+    aria-valuenow={percent}
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-label={t('fundraising.percentRaised', { percent })}
+  >
+    <div
+      class="h-full rounded-full bg-accent transition-all duration-500"
+      style={`width: ${percent}%`}
+    >
+    </div>
+  </div>
+
+  <p class="mt-2 text-sm font-medium">{t('fundraising.percentRaised', { percent })}</p>
+
+  {
+    donorCount !== undefined && donorCount > 0 ? (
+      <p class="mt-4 text-sm text-muted">
+        {donorCount} {donorCount === 1 ? 'donor' : 'donors'} so far
+      </p>
+    ) : null
+  }
+
+  {
+    programs.length > 0 ? (
+      <div class="mt-6 space-y-3">
+        <h3 class="text-sm font-semibold uppercase tracking-wide text-muted">
+          {t('fundraising.programsHeading')}
+        </h3>
+        {programs.map((prog) => {
+          const progPercent =
+            prog.goalCents && prog.goalCents > 0
+              ? Math.min(100, Math.round((prog.raisedCents / prog.goalCents) * 100))
+              : null
+          return (
+            <div class="rounded-lg border border-border p-3">
+              <div class="flex items-center justify-between">
+                <span class="font-medium">{prog.name}</span>
+                <span class="text-sm text-muted">{formatter.format(prog.raisedCents / 100)}</span>
+              </div>
+              {progPercent !== null ? (
+                <div class="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+                  <div class="h-full bg-accent/70" style={`width: ${progPercent}%`} />
+                </div>
+              ) : null}
+            </div>
+          )
+        })}
+      </div>
+    ) : null
+  }
+</section>

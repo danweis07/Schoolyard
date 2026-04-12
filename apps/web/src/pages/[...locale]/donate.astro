@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro'
 import DonationProgress from '@/modules/fundraising/components/DonationProgress.astro'
+import DonorWall from '@/modules/fundraising/components/DonorWall.astro'
 import { siteConfig } from '@/lib/site'
 import { isModuleEnabled } from '@schoolyard/config'
 import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
@@ -47,6 +48,10 @@ const { annualGoal, currentRaised, goalLabel, donateUrl } = siteConfig.fundraisi
         </div>
       )
     }
+
+    <div class="mt-8">
+      <DonorWall locale={locale} />
+    </div>
 
     <div class="mt-12 prose max-w-none text-base">
       <h2>{t('fundraising.whereItGoesHeading')}</h2>

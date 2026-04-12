@@ -83,14 +83,14 @@ Schoolyard/
 
 ### Key docs to read first
 
-| File | Who it's for | What it covers |
-|------|-------------|----------------|
-| `README.md` | Everyone | Quick start, what's in the box, repo layout |
-| `CLAUDE.md` | AI agents + architects | Full platform spec, every design decision |
-| `AI.md` | AI agents + developers | Architecture conventions, code patterns |
-| `CONTRIBUTING.md` | Contributors | Dev setup, PR workflow, how to add features |
-| `DEPLOYMENT.md` | PTA volunteers | Step-by-step deploy to Netlify/Vercel |
-| `ROADMAP.md` | Everyone | What's planned, what's out of scope |
+| File              | Who it's for           | What it covers                              |
+| ----------------- | ---------------------- | ------------------------------------------- |
+| `README.md`       | Everyone               | Quick start, what's in the box, repo layout |
+| `CLAUDE.md`       | AI agents + architects | Full platform spec, every design decision   |
+| `AI.md`           | AI agents + developers | Architecture conventions, code patterns     |
+| `CONTRIBUTING.md` | Contributors           | Dev setup, PR workflow, how to add features |
+| `DEPLOYMENT.md`   | PTA volunteers         | Step-by-step deploy to Netlify/Vercel       |
+| `ROADMAP.md`      | Everyone               | What's planned, what's out of scope         |
 
 ---
 
@@ -199,6 +199,7 @@ Before opening a PR, confirm:
 - [ ] `pnpm validate-config` passes
 - [ ] `pnpm build` succeeds
 - [ ] `pnpm test` passes
+- [ ] `pnpm test:rls` passes (if touching `supabase/migrations/`)
 - [ ] New translation keys added to `en.json` first
 - [ ] No hardcoded English strings in components
 - [ ] No hardcoded colors — uses Tailwind + design tokens
@@ -211,6 +212,25 @@ Before opening a PR, confirm:
 - **Commit messages:** imperative present tense ("Add events filter" not "Added events filter")
 - **Link issues:** `Closes #N` or `Refs #N` in the PR description
 - **Title:** under 70 characters, descriptive
+
+### Branch protection on `main`
+
+The `main` branch has the following protections enabled:
+
+- **Pull request required** — no direct pushes to `main`
+- **CI must pass** — the `Build & Test` and `RLS Policy Tests` jobs must both be green
+- **Linear history** — use squash or rebase merges, not merge commits
+- **No force-push** — history is immutable once merged
+
+#### Branch naming conventions
+
+| Prefix    | Use                       |
+| --------- | ------------------------- |
+| `feat/`   | New features              |
+| `fix/`    | Bug fixes                 |
+| `chore/`  | Tooling, CI, dependencies |
+| `docs/`   | Documentation only        |
+| `claude/` | AI-generated work         |
 
 ---
 

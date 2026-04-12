@@ -57,6 +57,9 @@ export {
 
 export type { PresetName } from './presets.js'
 
+export { validateSupabaseEnv, assertSupabaseEnv } from './env.js'
+export type { EnvValidationResult } from './env.js'
+
 import { MODULE_NAMES } from './schema.js'
 import type { ModuleName, SchoolConfig } from './schema.js'
 

@@ -55,27 +55,35 @@ All 12 modules now follow the same shape: `modules/<name>/index.ts` manifest + `
 - CLAUDE.md, AI.md, DEPLOYMENT.md updated for the pivot
 - New `BACKEND.md` — schema reference, RLS cheat sheet, admin workflows, edge-function index
 
-## v1 — Still in progress
+## v0.1.0 — Shipping preparations (in progress)
 
-### Phase 4 — Web middleware + hybrid mode
+### Release infrastructure
 
-- Flip `apps/web/astro.config.mjs` to `output: 'hybrid'` + `@astrojs/node`
-- `apps/web/src/middleware.ts` — resolves school from subdomain → `Astro.locals.school` + `Astro.locals.supabase`
-- Split `apps/web/src/lib/site.ts` into build-time + request-time helpers
+- [x] RLS test matrix (`supabase/tests/rls.spec.ts`) — release-blocking, wired into CI
+- [x] Env validation at startup (fail-fast if `SUPABASE_URL` / `SUPABASE_ANON_KEY` missing)
+- [x] SECURITY.md + vulnerability reporting policy
+- [x] Branch protection rules documented in CONTRIBUTING.md
+- [x] GitHub community files (issue/PR templates, CoC, dependabot)
+- [ ] Changesets for versioning + CHANGELOG
+- [ ] Deployment workflow (preview deploys on PRs, auto-deploy on merge)
+- [ ] Lighthouse CI enforcement (95+ perf, 100 a11y, 100 best practices)
 
-### Phase 6 — Auth + dynamic feature components
+### Mobile features for v0.1.0
 
-- Supabase Auth (email magic link) + JWT claim hook for role / school_id / district_id
-- `RsvpButton`, `HoursLogForm`, `FlagButton`, `DonateForm` client islands
-- Edge functions: `contact-submit`, `donate`, `stripe-webhook`, `volunteer-hours-export`, `announce`
-- CSV export for volunteer hours (authed only)
+- [ ] Live data wiring (React Query hooks for all 5 tabs)
+- [ ] Push notifications (broadcast per school via Expo Notifications)
+- [ ] Offline mode (SQLite-backed React Query persister)
 
-### Phase 7 — Mobile Supabase wiring
+### Web features for v0.1.0
 
-- `apps/mobile/lib/supabase.ts` (`@supabase/supabase-js` + AsyncStorage)
-- Replace `useFetch.ts` with React Query + `expo-sqlite` persistence
-- Magic-link sign-in at `app/(auth)/sign-in.tsx`, guest mode stays default
-- Expo Notifications + `push_tokens` upsert on launch
+- [ ] Admin route → Supabase Studio (thin redirect, not full editor)
+- [ ] Donor wall + live fundraising progress on fundraising module page
+
+### Deferred to v1.0
+
+- Phase 4: Hybrid mode middleware + subdomain/path routing (partially done)
+- Phase 6: Auth client islands (RsvpButton, HoursLogForm, FlagButton, DonateForm)
+- Phase 7: Mobile magic-link auth
 
 ### Translation backlog
 

@@ -24,6 +24,7 @@ import {
   isDistrictMode,
   findTenant,
   resolveTenantConfig,
+  validateSupabaseEnv,
   type TenantSchool,
 } from '@schoolyard/config'
 
@@ -111,6 +112,18 @@ function parseCookieHeader(header: string | null): Record<string, string> {
     if (name) out[name] = decodeURIComponent(value)
   }
   return out
+}
+
+// Validate env once at module load — fail fast in supabase mode.
+const backendMode = process.env.SCHOOLYARD_BACKEND ?? 'supabase'
+if (backendMode === 'supabase') {
+  const envResult = validateSupabaseEnv(process.env as Record<string, string | undefined>)
+  if (!envResult.valid) {
+    console.error(
+      `[Schoolyard] Missing required env vars for supabase backend: ${envResult.missing.join(', ')}. ` +
+        `Set these in .env or your hosting provider. See .env.example.`,
+    )
+  }
 }
 
 export const onRequest = defineMiddleware((context, next) => {

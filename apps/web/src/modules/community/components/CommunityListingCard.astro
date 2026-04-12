@@ -1,5 +1,6 @@
 ---
 import { useTranslate } from '@/i18n/index'
+import { localizedPath } from '@/i18n/index'
 import type { Locale } from '@schoolyard/i18n'
 import type { CollectionEntry } from 'astro:content'
 
@@ -17,35 +18,39 @@ const dateFormatter = new Intl.DateTimeFormat(locale, {
 })
 ---
 
-<article class="rounded-card border border-border bg-surface p-card shadow-sm">
-  <h3 class="text-lg font-bold">{listing.data.title}</h3>
-  <p class="mt-2 text-sm">{listing.data.description}</p>
-  <dl class="mt-3 space-y-1 text-xs text-muted">
-    {
-      listing.data.neighborhood && (
-        <div>
-          <dt class="inline font-semibold">{t('community.neighborhood')}:</dt>{' '}
-          <dd class="inline">{listing.data.neighborhood}</dd>
-        </div>
-      )
-    }
-    {
-      listing.data.contact && (
-        <div>
-          <dt class="inline font-semibold">{t('community.contact')}:</dt>{' '}
-          <dd class="inline">{listing.data.contact}</dd>
-        </div>
-      )
-    }
-    {
-      listing.data.postedDate && (
-        <div>
-          <dt class="inline font-semibold">{t('community.posted')}:</dt>{' '}
-          <dd class="inline">{dateFormatter.format(listing.data.postedDate)}</dd>
-        </div>
-      )
-    }
-  </dl>
+<article
+  class="rounded-card border border-border bg-surface p-card shadow-sm transition-colors hover:bg-muted/5"
+>
+  <a href={localizedPath(`/community/${listing.slug}`, locale)} class="block no-underline">
+    <h3 class="text-lg font-bold">{listing.data.title}</h3>
+    <p class="mt-2 text-sm">{listing.data.description}</p>
+    <dl class="mt-3 space-y-1 text-xs text-muted">
+      {
+        listing.data.neighborhood && (
+          <div>
+            <dt class="inline font-semibold">{t('community.neighborhood')}:</dt>{' '}
+            <dd class="inline">{listing.data.neighborhood}</dd>
+          </div>
+        )
+      }
+      {
+        listing.data.contact && (
+          <div>
+            <dt class="inline font-semibold">{t('community.contact')}:</dt>{' '}
+            <dd class="inline">{listing.data.contact}</dd>
+          </div>
+        )
+      }
+      {
+        listing.data.postedDate && (
+          <div>
+            <dt class="inline font-semibold">{t('community.posted')}:</dt>{' '}
+            <dd class="inline">{dateFormatter.format(listing.data.postedDate)}</dd>
+          </div>
+        )
+      }
+    </dl>
+  </a>
   {
     listing.data.url && (
       <a

@@ -21,6 +21,7 @@ import type {
   ManifestBoardMember,
   ManifestVolunteerRole,
   ManifestResource,
+  CommunityListing,
 } from '@schoolyard/content-api'
 
 export function getBaseUrl(): string {
@@ -90,4 +91,8 @@ export function fetchVolunteers(signal?: AbortSignal): Promise<ManifestVolunteer
 
 export function fetchResources(signal?: AbortSignal): Promise<ManifestResource[]> {
   return getClient().fetchResources(undefined, { signal })
+}
+
+export function fetchCommunityListings(signal?: AbortSignal): Promise<CommunityListing[]> {
+  return getClient().fetchCommunityListings(undefined, { signal })
 }
