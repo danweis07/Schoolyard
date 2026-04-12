@@ -45,6 +45,67 @@ export async function handleAdmin(ctx: GatewayContext): Promise<Response> {
     return jsonOk(data, origin)
   }
 
+  // ── /admin/school — read or update the current school's profile ──
+  if (route.resource === 'school') {
+    const method = req.method.toUpperCase()
+
+    if (method === 'GET') {
+      const { data, error } = await supabase
+        .from('schools')
+        .select(
+          'id, name, short_name, slug, tagline, mascot, address, phone, email, website, ' +
+          'grades, founded, enrollment, title_one, timezone, branding, social',
+        )
+        .eq('id', schoolId)
+        .single()
+      if (error) return jsonError(500, error.message, origin)
+      if (!data) return jsonError(404, 'school not found', origin)
+      return jsonOk(data, origin)
+    }
+
+    if (method === 'PUT') {
+      let body: Record<string, unknown>
+      try {
+        body = (await req.json()) as Record<string, unknown>
+      } catch {
+        return jsonError(400, 'invalid json', origin)
+      }
+      // Strip immutable fields
+      delete body.id
+      delete body.slug
+      delete body.school_id
+      delete body.district_id
+      delete body.created_at
+      delete body.updated_at
+      delete body.backend
+      delete body.domain
+      delete body.path_slug
+      delete body.languages
+      delete body.modules
+
+      // Merge branding with existing values to preserve keys the wizard doesn't manage
+      if (body.branding && typeof body.branding === 'object') {
+        const { data: current } = await supabase
+          .from('schools')
+          .select('branding')
+          .eq('id', schoolId)
+          .single()
+        if (current?.branding) {
+          body.branding = { ...current.branding, ...(body.branding as Record<string, unknown>) }
+        }
+      }
+
+      const { error } = await supabase
+        .from('schools')
+        .update(body)
+        .eq('id', schoolId)
+      if (error) return jsonError(500, error.message, origin)
+      return noContent(origin)
+    }
+
+    return jsonError(405, 'method not allowed', origin)
+  }
+
   // ── /admin/form-responses/{formId} — read responses for a form ──
   if (route.resource === 'form-responses') {
     if (!route.id) return jsonError(400, 'form id required', origin)

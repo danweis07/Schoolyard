@@ -1,0 +1,596 @@
+---
+/**
+ * School profile setup wizard — 5-step form for admins to configure
+ * school identity, contact info, branding, and social links.
+ *
+ * Reads and writes via the gateway's /admin/school endpoint.
+ * Restricted to admin and district_admin roles.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+---
+
+<BaseLayout title="Admin - School Setup" description="Configure your school profile">
+  <div
+    class="mx-auto max-w-3xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">
+        You need to be signed in as an admin to manage school settings.
+      </p>
+      <a
+        href="/sign-in?redirect=/admin/setup"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Wizard content -->
+    <div id="admin-content" class="hidden">
+      <nav class="text-sm text-muted" aria-label="Breadcrumb">
+        <a href="/admin/" class="hover:underline">Admin</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <span>School Setup</span>
+      </nav>
+      <h1 class="mt-1 text-2xl font-bold">School Setup</h1>
+      <p class="mt-1 text-sm text-muted">Configure your school's profile, branding, and social links.</p>
+
+      <!-- Step indicator -->
+      <nav class="mt-6 flex flex-wrap items-center gap-2 text-sm" aria-label="Setup steps">
+        <button type="button" data-step-indicator="1" class="rounded-button bg-primary px-3 py-1 text-inverse font-bold">
+          1. Basics
+        </button>
+        <span class="text-muted" aria-hidden="true">&rarr;</span>
+        <button type="button" data-step-indicator="2" class="rounded-button bg-muted/10 px-3 py-1">
+          2. Contact
+        </button>
+        <span class="text-muted" aria-hidden="true">&rarr;</span>
+        <button type="button" data-step-indicator="3" class="rounded-button bg-muted/10 px-3 py-1">
+          3. Details
+        </button>
+        <span class="text-muted" aria-hidden="true">&rarr;</span>
+        <button type="button" data-step-indicator="4" class="rounded-button bg-muted/10 px-3 py-1">
+          4. Branding
+        </button>
+        <span class="text-muted" aria-hidden="true">&rarr;</span>
+        <button type="button" data-step-indicator="5" class="rounded-button bg-muted/10 px-3 py-1">
+          5. Social
+        </button>
+      </nav>
+
+      <!-- Status messages -->
+      <div id="form-message" class="mt-4 hidden rounded-card p-4 text-sm" role="alert"></div>
+
+      <form id="setup-form" class="mt-6" novalidate>
+
+        <!-- Step 1: Basics -->
+        <fieldset id="step-1" class="space-y-6">
+          <legend class="sr-only">Basics</legend>
+          <div>
+            <label for="field-name" class="block text-sm font-medium">
+              School Name <span class="text-error" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="field-name"
+              type="text"
+              required
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="Longfellow Elementary"
+            />
+          </div>
+          <div>
+            <label for="field-short-name" class="block text-sm font-medium">Short Name</label>
+            <input
+              id="field-short-name"
+              type="text"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="Longfellow"
+            />
+            <p class="mt-1 text-xs text-muted">Used in nav and mobile app. Defaults to full name.</p>
+          </div>
+          <div>
+            <label for="field-tagline" class="block text-sm font-medium">Tagline</label>
+            <input
+              id="field-tagline"
+              type="text"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="Where every student shines"
+            />
+          </div>
+          <div>
+            <label for="field-mascot" class="block text-sm font-medium">Mascot</label>
+            <input
+              id="field-mascot"
+              type="text"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="Lions"
+            />
+          </div>
+        </fieldset>
+
+        <!-- Step 2: Contact -->
+        <fieldset id="step-2" class="hidden space-y-6">
+          <legend class="sr-only">Contact</legend>
+          <div>
+            <label for="field-address" class="block text-sm font-medium">Address</label>
+            <input
+              id="field-address"
+              type="text"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="123 Main St, San Francisco, CA 94110"
+            />
+          </div>
+          <div>
+            <label for="field-phone" class="block text-sm font-medium">Phone</label>
+            <input
+              id="field-phone"
+              type="tel"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="(415) 555-0123"
+            />
+          </div>
+          <div>
+            <label for="field-email" class="block text-sm font-medium">Email</label>
+            <input
+              id="field-email"
+              type="email"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="info@longfellow.edu"
+            />
+          </div>
+          <div>
+            <label for="field-website" class="block text-sm font-medium">Website</label>
+            <input
+              id="field-website"
+              type="url"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="https://longfellow.edu"
+            />
+          </div>
+        </fieldset>
+
+        <!-- Step 3: Details -->
+        <fieldset id="step-3" class="hidden space-y-6">
+          <legend class="sr-only">Details</legend>
+          <div>
+            <label for="field-grades" class="block text-sm font-medium">Grades</label>
+            <input
+              id="field-grades"
+              type="text"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="K-5"
+            />
+          </div>
+          <div>
+            <label for="field-founded" class="block text-sm font-medium">Founded</label>
+            <input
+              id="field-founded"
+              type="text"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="1897"
+            />
+          </div>
+          <div>
+            <label for="field-enrollment" class="block text-sm font-medium">Enrollment</label>
+            <input
+              id="field-enrollment"
+              type="number"
+              min="0"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="450"
+            />
+          </div>
+          <div>
+            <label for="field-timezone" class="block text-sm font-medium">Timezone</label>
+            <select
+              id="field-timezone"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="America/New_York">Eastern (America/New_York)</option>
+              <option value="America/Chicago">Central (America/Chicago)</option>
+              <option value="America/Denver">Mountain (America/Denver)</option>
+              <option value="America/Los_Angeles">Pacific (America/Los_Angeles)</option>
+              <option value="America/Anchorage">Alaska (America/Anchorage)</option>
+              <option value="Pacific/Honolulu">Hawaii (Pacific/Honolulu)</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <!-- Step 4: Branding -->
+        <fieldset id="step-4" class="hidden space-y-6">
+          <legend class="sr-only">Branding</legend>
+          <div>
+            <label for="field-primary-color" class="block text-sm font-medium">Primary Color</label>
+            <div class="mt-1 flex items-center gap-3">
+              <input
+                id="field-primary-color-picker"
+                type="color"
+                value="#1a4f8a"
+                class="h-10 w-10 cursor-pointer rounded border border-border"
+              />
+              <input
+                id="field-primary-color"
+                type="text"
+                class="block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-sm font-mono placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="#1a4f8a"
+              />
+            </div>
+          </div>
+          <div>
+            <label for="field-accent-color" class="block text-sm font-medium">Accent Color</label>
+            <div class="mt-1 flex items-center gap-3">
+              <input
+                id="field-accent-color-picker"
+                type="color"
+                value="#f5a623"
+                class="h-10 w-10 cursor-pointer rounded border border-border"
+              />
+              <input
+                id="field-accent-color"
+                type="text"
+                class="block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-sm font-mono placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="#f5a623"
+              />
+            </div>
+          </div>
+          <div>
+            <label for="field-logo" class="block text-sm font-medium">Logo URL</label>
+            <input
+              id="field-logo"
+              type="text"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="/images/logo.svg"
+            />
+            <p class="mt-1 text-xs text-muted">Path to your school logo image.</p>
+          </div>
+        </fieldset>
+
+        <!-- Step 5: Social -->
+        <fieldset id="step-5" class="hidden space-y-6">
+          <legend class="sr-only">Social</legend>
+          <div>
+            <label for="field-instagram" class="block text-sm font-medium">Instagram</label>
+            <input
+              id="field-instagram"
+              type="url"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="https://instagram.com/longfellowpta"
+            />
+          </div>
+          <div>
+            <label for="field-facebook" class="block text-sm font-medium">Facebook</label>
+            <input
+              id="field-facebook"
+              type="url"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="https://facebook.com/longfellowpta"
+            />
+          </div>
+          <div>
+            <label for="field-twitter" class="block text-sm font-medium">Twitter / X</label>
+            <input
+              id="field-twitter"
+              type="url"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="https://twitter.com/longfellowpta"
+            />
+          </div>
+          <div>
+            <label for="field-youtube" class="block text-sm font-medium">YouTube</label>
+            <input
+              id="field-youtube"
+              type="url"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="https://youtube.com/@longfellowpta"
+            />
+          </div>
+        </fieldset>
+
+        <!-- Navigation buttons -->
+        <div class="mt-8 flex flex-wrap items-center gap-3 border-t border-border pt-6">
+          <button
+            type="button"
+            id="btn-back"
+            class="hidden rounded-button border border-border px-6 py-2.5 text-sm font-semibold hover:bg-muted/10"
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            id="btn-next"
+            class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90"
+          >
+            Next
+          </button>
+          <button
+            type="submit"
+            id="btn-save"
+            class="hidden rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+          >
+            Save
+          </button>
+          <a
+            href="/admin/"
+            class="ml-auto rounded-button border border-border px-6 py-2.5 text-sm font-semibold hover:bg-muted/10"
+          >
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const form = document.getElementById('setup-form') as HTMLFormElement
+  const msgEl = document.getElementById('form-message')!
+  const btnBack = document.getElementById('btn-back') as HTMLButtonElement
+  const btnNext = document.getElementById('btn-next') as HTMLButtonElement
+  const btnSave = document.getElementById('btn-save') as HTMLButtonElement
+
+  // Field references
+  const f = {
+    name: document.getElementById('field-name') as HTMLInputElement,
+    shortName: document.getElementById('field-short-name') as HTMLInputElement,
+    tagline: document.getElementById('field-tagline') as HTMLInputElement,
+    mascot: document.getElementById('field-mascot') as HTMLInputElement,
+    address: document.getElementById('field-address') as HTMLInputElement,
+    phone: document.getElementById('field-phone') as HTMLInputElement,
+    email: document.getElementById('field-email') as HTMLInputElement,
+    website: document.getElementById('field-website') as HTMLInputElement,
+    grades: document.getElementById('field-grades') as HTMLInputElement,
+    founded: document.getElementById('field-founded') as HTMLInputElement,
+    enrollment: document.getElementById('field-enrollment') as HTMLInputElement,
+    timezone: document.getElementById('field-timezone') as HTMLSelectElement,
+    primaryColor: document.getElementById('field-primary-color') as HTMLInputElement,
+    primaryColorPicker: document.getElementById('field-primary-color-picker') as HTMLInputElement,
+    accentColor: document.getElementById('field-accent-color') as HTMLInputElement,
+    accentColorPicker: document.getElementById('field-accent-color-picker') as HTMLInputElement,
+    logo: document.getElementById('field-logo') as HTMLInputElement,
+    instagram: document.getElementById('field-instagram') as HTMLInputElement,
+    facebook: document.getElementById('field-facebook') as HTMLInputElement,
+    twitter: document.getElementById('field-twitter') as HTMLInputElement,
+    youtube: document.getElementById('field-youtube') as HTMLInputElement,
+  }
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function showMsg(text: string, type: 'success' | 'error') {
+    msgEl.textContent = text
+    msgEl.className =
+      type === 'success'
+        ? 'mt-4 rounded-card p-4 text-sm bg-success/10 border border-success/30'
+        : 'mt-4 rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+  }
+
+  function hideMsg() {
+    msgEl.className = 'mt-4 hidden rounded-card p-4 text-sm'
+  }
+
+  // ── Step navigation ──────────────────────────────────────────────
+  const TOTAL_STEPS = 5
+  let currentStep = 1
+
+  function showStep(step: number) {
+    currentStep = step
+    for (let s = 1; s <= TOTAL_STEPS; s++) {
+      const el = document.getElementById(`step-${s}`)
+      if (el) el.classList.toggle('hidden', s !== step)
+      const indicator = document.querySelector<HTMLElement>(`[data-step-indicator="${s}"]`)
+      if (indicator) {
+        const active = s === step
+        indicator.classList.toggle('bg-primary', active)
+        indicator.classList.toggle('text-inverse', active)
+        indicator.classList.toggle('font-bold', active)
+        indicator.classList.toggle('bg-muted/10', !active)
+      }
+    }
+    btnBack.classList.toggle('hidden', step === 1)
+    btnNext.classList.toggle('hidden', step === TOTAL_STEPS)
+    btnSave.classList.toggle('hidden', step !== TOTAL_STEPS)
+    hideMsg()
+  }
+
+  btnBack.addEventListener('click', () => {
+    if (currentStep > 1) showStep(currentStep - 1)
+  })
+
+  btnNext.addEventListener('click', () => {
+    // Validate current step before advancing
+    if (currentStep === 1 && !f.name.value.trim()) {
+      showMsg('School name is required.', 'error')
+      f.name.focus()
+      return
+    }
+    if (currentStep < TOTAL_STEPS) showStep(currentStep + 1)
+  })
+
+  // Clicking step indicators navigates directly
+  for (let s = 1; s <= TOTAL_STEPS; s++) {
+    const indicator = document.querySelector<HTMLElement>(`[data-step-indicator="${s}"]`)
+    indicator?.addEventListener('click', () => {
+      // Validate step 1 before allowing forward navigation
+      if (s > 1 && !f.name.value.trim()) {
+        showStep(1)
+        showMsg('School name is required.', 'error')
+        f.name.focus()
+        return
+      }
+      showStep(s)
+    })
+  }
+
+  // ── Color picker sync ────────────────────────────────────────────
+  f.primaryColorPicker.addEventListener('input', () => {
+    f.primaryColor.value = f.primaryColorPicker.value
+  })
+  f.primaryColor.addEventListener('input', () => {
+    if (/^#[0-9a-fA-F]{6}$/.test(f.primaryColor.value)) {
+      f.primaryColorPicker.value = f.primaryColor.value
+    }
+  })
+  f.accentColorPicker.addEventListener('input', () => {
+    f.accentColor.value = f.accentColorPicker.value
+  })
+  f.accentColor.addEventListener('input', () => {
+    if (/^#[0-9a-fA-F]{6}$/.test(f.accentColor.value)) {
+      f.accentColorPicker.value = f.accentColor.value
+    }
+  })
+
+  // ── Auth + init ──────────────────────────────────────────────────
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const authClient = createBrowserClient({ url, anonKey: anon })
+    let admin: ReturnType<typeof createAdminClient>
+
+    async function init() {
+      const {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
+        showView('auth')
+        return
+      }
+
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error: profileErr } = await admin.getProfile()
+      const allowed = ['admin', 'district_admin']
+      if (profileErr || !profile?.school_id || !allowed.includes(profile.role)) {
+        showView('auth')
+        return
+      }
+
+      showView('content')
+
+      // Load existing school data
+      const { data: school, error: schoolErr } = await admin.getSchool()
+      if (schoolErr || !school) {
+        showMsg(schoolErr ?? 'Failed to load school profile', 'error')
+        return
+      }
+
+      // Populate fields
+      f.name.value = school.name ?? ''
+      f.shortName.value = school.short_name ?? ''
+      f.tagline.value = school.tagline ?? ''
+      f.mascot.value = school.mascot ?? ''
+      f.address.value = school.address ?? ''
+      f.phone.value = school.phone ?? ''
+      f.email.value = school.email ?? ''
+      f.website.value = school.website ?? ''
+      f.grades.value = school.grades ?? ''
+      f.founded.value = school.founded ?? ''
+      f.enrollment.value = String(school.enrollment ?? 0)
+      f.timezone.value = school.timezone ?? 'America/Los_Angeles'
+
+      const pc = school.branding?.primaryColor ?? '#1a4f8a'
+      f.primaryColor.value = pc
+      f.primaryColorPicker.value = pc
+      const ac = school.branding?.accentColor ?? '#f5a623'
+      f.accentColor.value = ac
+      f.accentColorPicker.value = ac
+      f.logo.value = school.branding?.logo ?? ''
+
+      f.instagram.value = school.social?.instagram ?? ''
+      f.facebook.value = school.social?.facebook ?? ''
+      f.twitter.value = school.social?.twitter ?? ''
+      f.youtube.value = school.social?.youtube ?? ''
+
+      showStep(1)
+    }
+
+    // ── Save handler ─────────────────────────────────────────────────
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      if (!f.name.value.trim()) {
+        showStep(1)
+        showMsg('School name is required.', 'error')
+        f.name.focus()
+        return
+      }
+
+      btnSave.disabled = true
+      btnSave.textContent = 'Saving...'
+
+      const payload = {
+        name: f.name.value.trim(),
+        short_name: f.shortName.value.trim() || null,
+        tagline: f.tagline.value.trim(),
+        mascot: f.mascot.value.trim(),
+        address: f.address.value.trim(),
+        phone: f.phone.value.trim(),
+        email: f.email.value.trim(),
+        website: f.website.value.trim(),
+        grades: f.grades.value.trim(),
+        founded: f.founded.value.trim(),
+        enrollment: parseInt(f.enrollment.value, 10) || 0,
+        timezone: f.timezone.value || 'America/Los_Angeles',
+        branding: {
+          primaryColor: f.primaryColor.value.trim() || '#1a4f8a',
+          accentColor: f.accentColor.value.trim() || '#f5a623',
+          logo: f.logo.value.trim(),
+        },
+        social: {
+          instagram: f.instagram.value.trim(),
+          facebook: f.facebook.value.trim(),
+          twitter: f.twitter.value.trim(),
+          youtube: f.youtube.value.trim(),
+        },
+      }
+
+      const { error } = await admin.updateSchool(payload)
+
+      btnSave.disabled = false
+      btnSave.textContent = 'Save'
+
+      if (error) {
+        showMsg(`Save failed: ${error}`, 'error')
+        return
+      }
+
+      showMsg('School profile saved successfully.', 'success')
+    })
+
+    init()
+  }
+</script>
