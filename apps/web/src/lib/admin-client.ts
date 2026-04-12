@@ -64,6 +64,15 @@ export function createAdminClient(options: AdminClientOptions) {
       return request<Record<string, number>>('GET', `/admin/counts${schoolParam}`)
     },
 
+    // ── School settings ───────────────────────────────────────
+    getSchool() {
+      return request<Record<string, unknown>>('GET', `/admin/school${schoolParam}`)
+    },
+
+    updateSchool(data: Record<string, unknown>) {
+      return request<null>('PUT', `/admin/school${schoolParam}`, data)
+    },
+
     // ── Generic CRUD ───────────────────────────────────────────
     list<T = unknown>(resource: string) {
       return request<T[]>('GET', `/admin/${resource}${schoolParam}`)

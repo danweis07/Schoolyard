@@ -60,6 +60,44 @@ export async function handleAdmin(ctx: GatewayContext): Promise<Response> {
     return jsonOk(counts, origin)
   }
 
+  // ── /admin/school — read or update the admin's own school row ──
+  if (route.resource === 'school') {
+    if (!auth) return jsonError(401, 'unauthorized', origin)
+    const method = req.method.toUpperCase()
+
+    if (method === 'GET') {
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .eq('id', schoolId)
+        .single()
+      if (error) return jsonError(500, error.message, origin)
+      return jsonOk(data, origin)
+    }
+
+    if (method === 'PUT') {
+      let body: Record<string, unknown>
+      try {
+        body = (await req.json()) as Record<string, unknown>
+      } catch {
+        return jsonError(400, 'invalid json', origin)
+      }
+      // Prevent changing immutable identifiers
+      delete body.id
+      delete body.district_id
+      delete body.created_at
+      delete body.updated_at
+      const { error } = await supabase
+        .from('schools')
+        .update(body)
+        .eq('id', schoolId)
+      if (error) return jsonError(500, error.message, origin)
+      return noContent(origin)
+    }
+
+    return jsonError(405, 'method not allowed', origin)
+  }
+
   // ── CRUD on content tables ─────────────────────────────────────
   const pgTable = TABLE_MAP[route.resource]
   if (!pgTable) {
