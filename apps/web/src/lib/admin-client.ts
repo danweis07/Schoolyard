@@ -64,9 +64,38 @@ export function createAdminClient(options: AdminClientOptions) {
       return request<Record<string, number>>('GET', `/admin/counts${schoolParam}`)
     },
 
-    // ── School settings ───────────────────────────────────────
+    // ── School profile ──────────────────────────────────────────
     getSchool() {
-      return request<Record<string, unknown>>('GET', `/admin/school${schoolParam}`)
+      return request<{
+        id: string
+        name: string
+        short_name: string | null
+        slug: string
+        tagline: string
+        mascot: string
+        address: string
+        phone: string
+        email: string
+        website: string
+        grades: string
+        founded: string
+        enrollment: number
+        title_one: boolean
+        timezone: string
+        branding: {
+          primaryColor?: string
+          accentColor?: string
+          logo?: string
+          heroImage?: string
+          mascotImage?: string
+        }
+        social_links: {
+          instagram?: string
+          facebook?: string
+          twitter?: string
+          youtube?: string
+        }
+      }>('GET', `/admin/school${schoolParam}`)
     },
 
     updateSchool(data: Record<string, unknown>) {
