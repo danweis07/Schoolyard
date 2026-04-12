@@ -2,11 +2,11 @@ import { ScrollView, View, Text, ActivityIndicator } from 'react-native'
 import { useQuery } from '@tanstack/react-query'
 import { fetchCommunityListings } from '../../lib/manifest'
 import { useLocale, useTranslate } from '../../hooks/useLocale'
-import { useSchoolConfig } from '../../hooks/useSchoolConfig'
+import { useSchoolContext } from '../../lib/school-context'
 import type { CommunityListing } from '@schoolyard/content-api'
 
 export default function CommunityScreen() {
-  const config = useSchoolConfig()
+  const { schoolSlug } = useSchoolContext()
   const locale = useLocale()
   const t = useTranslate(locale)
 
@@ -15,8 +15,9 @@ export default function CommunityScreen() {
     isLoading,
     error,
   } = useQuery<CommunityListing[]>({
-    queryKey: ['communityListings'],
-    queryFn: ({ signal }) => fetchCommunityListings(signal),
+    queryKey: ['communityListings', schoolSlug],
+    queryFn: ({ signal }) => fetchCommunityListings(signal, schoolSlug ?? undefined),
+    enabled: !!schoolSlug,
   })
 
   if (isLoading) {

@@ -1,8 +1,6 @@
 /**
  * Mobile-side Supabase client — one browser/anon client for reads and
- * auth, backed by in-memory storage for now. When `@react-native-async-
- * storage/async-storage` or `expo-secure-store` is installed, plug it
- * in via the `storage` option to persist sessions across launches.
+ * auth, backed by AsyncStorage for persistent sessions across launches.
  *
  * Env:
  *   EXPO_PUBLIC_SUPABASE_URL
@@ -11,26 +9,9 @@
  * These are exposed to the Expo bundle at build time by Metro.
  */
 import { createBrowserClient, type Database, type SupabaseClient } from '@schoolyard/supabase'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export type SchoolyardSupabase = SupabaseClient<Database>
-
-/**
- * Best-effort storage adapter. In-memory by default — sessions won't
- * persist across app restarts. Swap in AsyncStorage once it's wired:
- *
- *   import AsyncStorage from '@react-native-async-storage/async-storage'
- *   const storage = AsyncStorage
- */
-const memoryStore = new Map<string, string>()
-const defaultStorage = {
-  getItem: (key: string) => memoryStore.get(key) ?? null,
-  setItem: (key: string, value: string) => {
-    memoryStore.set(key, value)
-  },
-  removeItem: (key: string) => {
-    memoryStore.delete(key)
-  },
-}
 
 let cached: SchoolyardSupabase | null = null
 
@@ -42,7 +23,7 @@ export function getSupabase(): SchoolyardSupabase | null {
   cached = createBrowserClient({
     url,
     anonKey,
-    storage: defaultStorage,
+    storage: AsyncStorage,
     storageKey: 'sy-auth-mobile',
   })
   return cached

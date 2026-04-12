@@ -20,6 +20,7 @@ import type {
   Committee,
   Program,
   PtaNewsletter,
+  SchoolInfo,
 } from '../types.js'
 import type {
   ManifestEvent,
@@ -47,6 +48,9 @@ export interface Scope {
 }
 
 export interface ContentAdapter {
+  // School discovery — list available schools, optionally filtered by district
+  fetchSchools(districtId?: string, options?: FetchOptions): Promise<SchoolInfo[]>
+
   // Discovery
   fetchManifest(scope?: Scope, options?: FetchOptions): Promise<ManifestIndex>
   fetchConfig(scope?: Scope, options?: FetchOptions): Promise<ManifestConfig>
@@ -84,4 +88,5 @@ export type {
   Committee,
   Program,
   PtaNewsletter,
+  SchoolInfo,
 }

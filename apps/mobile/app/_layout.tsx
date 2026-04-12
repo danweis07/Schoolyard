@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
-import { Stack } from 'expo-router'
+import { View, ActivityIndicator } from 'react-native'
+import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { validateSupabaseEnv } from '@schoolyard/config'
 import { AppProviders } from './providers'
+import { SchoolProvider, useSchoolContext } from '../lib/school-context'
 import { registerForPushNotifications } from '../lib/notifications'
-import { siteConfig } from '../lib/config'
 import '../global.css'
 
 // Fail fast if Supabase env vars are missing in supabase backend mode.
@@ -23,23 +24,55 @@ if (backendMode === 'supabase') {
   }
 }
 
-function useRegisterPush() {
+/**
+ * Handles routing based on school selection state.
+ * If no school is selected, redirects to the school picker.
+ * Also registers for push notifications once a school is selected.
+ */
+function SchoolGate() {
+  const { schoolSlug, isLoading } = useSchoolContext()
+  const router = useRouter()
+  const segments = useSegments()
+
   useEffect(() => {
-    const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    if (isLoading) return
+
+    const onPickerScreen = segments[0] === 'school-picker'
+
+    if (!schoolSlug && !onPickerScreen) {
+      router.replace('/school-picker')
+    } else if (schoolSlug && onPickerScreen) {
+      router.replace('/(tabs)')
+    }
+  }, [schoolSlug, isLoading, segments, router])
+
+  // Register for push notifications when a school is selected
+  useEffect(() => {
+    if (!schoolSlug) return
     registerForPushNotifications(schoolSlug).catch(() => {
       // Silent failure — push is optional. Registration will retry next launch.
     })
-  }, [])
+  }, [schoolSlug])
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-surface">
+        <ActivityIndicator size="large" />
+      </View>
+    )
+  }
+
+  return <Stack screenOptions={{ headerShown: false }} />
 }
 
 export default function RootLayout() {
-  useRegisterPush()
-
   return (
     <SafeAreaProvider>
       <AppProviders>
-        <StatusBar style="auto" />
-        <Stack screenOptions={{ headerShown: false }} />
+        <SchoolProvider>
+          <StatusBar style="auto" />
+          <SchoolGate />
+        </SchoolProvider>
       </AppProviders>
     </SafeAreaProvider>
   )

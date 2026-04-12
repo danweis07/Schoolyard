@@ -69,6 +69,12 @@ export function createStaticAdapter(options: StaticAdapterOptions): ContentAdapt
   }
 
   return {
+    // Static adapter has no school directory — returns empty.
+    // Callers that need school discovery must use the Supabase adapter.
+    async fetchSchools() {
+      return []
+    },
+
     async fetchManifest(scope, fetchOptions): Promise<ManifestIndex> {
       if (scope?.schoolSlug) {
         return manifestFetchTenantManifest(

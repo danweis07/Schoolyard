@@ -21,5 +21,5 @@
 export { createBrowserClient } from './browser.js'
 export { createServerClient } from './server.js'
 export { createServiceClient } from './service.js'
-export type { Database } from './database.types.js'
+export type { Database, SchoolRow, DistrictRow } from './database.types.js'
 export type { SupabaseClient, SupabaseClientOptions, Session, User } from '@supabase/supabase-js'

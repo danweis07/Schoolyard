@@ -16,6 +16,7 @@ export type {
   Committee,
   Program,
   PtaNewsletter,
+  SchoolInfo,
 } from './types.js'
 
 export {

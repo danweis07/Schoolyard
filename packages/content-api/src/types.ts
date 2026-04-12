@@ -182,3 +182,20 @@ export interface PtaNewsletter {
   pdfUrl?: string
   publishedAt: string
 }
+
+/**
+ * Lightweight school record returned by `fetchSchools()`. Contains
+ * enough data to populate a school picker and construct a runtime
+ * config — branding, modules, and languages are the JSONB columns
+ * from the `schools` table.
+ */
+export interface SchoolInfo {
+  id: string
+  slug: string
+  name: string
+  shortName: string
+  branding: Record<string, unknown>
+  modules: Record<string, unknown>
+  languages: Record<string, unknown>
+  districtId: string | null
+}
