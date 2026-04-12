@@ -6,6 +6,7 @@ import { useSchoolConfig } from '../../hooks/useSchoolConfig'
 import { useLocale, useTranslate } from '../../hooks/useLocale'
 import { useSchoolContext } from '../../lib/school-context'
 import { clearClientCache } from '../../lib/manifest'
+import { isModuleEnabled } from '@schoolyard/config'
 import { getSupabase } from '../../lib/supabase'
 
 export default function MoreScreen() {
@@ -141,6 +142,19 @@ export default function MoreScreen() {
         <View className="border-b border-border px-4 py-3">
           <Text className="text-xs font-semibold uppercase text-muted">Links</Text>
         </View>
+        {isModuleEnabled(config, 'resources') ? (
+          <Pressable
+            onPress={() => router.push('/resources')}
+            className="flex-row items-center border-b border-border px-4 py-3 active:bg-muted/10"
+          >
+            <Ionicons name="heart-circle-outline" size={20} color="#1a4f8a" />
+            <View className="ml-3 flex-1">
+              <Text className="text-sm font-medium">{t('nav.resources')}</Text>
+              <Text className="text-xs text-muted">{t('resources.description')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#999" />
+          </Pressable>
+        ) : null}
         {config.deployment.siteUrl ? (
           <Pressable
             onPress={() => Linking.openURL(config.deployment.siteUrl)}

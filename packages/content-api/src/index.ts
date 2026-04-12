@@ -5,6 +5,7 @@ export type {
   BoardMember,
   VolunteerRole,
   ResourceCategory,
+  ResourceSource,
   SchoolResource,
   LunchMenu,
   TransportationRoute,
@@ -74,3 +75,12 @@ export { createSupabaseAdapter } from './adapters/supabase.js'
 export type { SupabaseAdapterOptions } from './adapters/supabase.js'
 export { createGatewayAdapter } from './adapters/gateway.js'
 export type { GatewayAdapterOptions } from './adapters/gateway.js'
+
+// ─────────────────────────────────────────────
+// External resource aggregation (211, USDA, HRSA)
+// ─────────────────────────────────────────────
+export { fetchExternalResources } from './external-resources.js'
+export type {
+  ExternalResourcesOptions,
+  ExternalResourcesResult,
+} from './external-resources.js'

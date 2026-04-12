@@ -58,6 +58,8 @@ export interface VolunteerRole {
 
 export type ResourceCategory = 'food' | 'health' | 'housing' | 'legal' | 'mental-health' | 'other'
 
+export type ResourceSource = 'curated' | '211' | 'usda' | 'hrsa'
+
 export interface SchoolResource {
   slug: string
   name: string
@@ -67,6 +69,10 @@ export interface SchoolResource {
   phone?: string
   url?: string
   languages: string[]
+  /** Where this resource came from. Absent or 'curated' for school-maintained entries. */
+  source?: ResourceSource
+  /** For external resources, link to the provider's detail page. */
+  externalUrl?: string
 }
 
 // ── Newly exposed shapes for modules that previously lived only in

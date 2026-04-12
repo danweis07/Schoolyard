@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro'
-import { siteConfig } from '@/lib/site'
-import { isModuleEnabled } from '@schoolyard/config'
+import { siteConfig, resolveRequestSchool } from '@/lib/site'
+import { isModuleEnabled, getResourceZipCode } from '@schoolyard/config'
 import { getCollection } from 'astro:content'
 import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
 import ResourceCard from '@/modules/resources/components/ResourceCard.astro'
+import CategoryFilter from '@/modules/resources/components/CategoryFilter.astro'
 
 export const getStaticPaths = localeStaticPaths
 
@@ -14,6 +15,7 @@ if (!isModuleEnabled(siteConfig, 'resources')) {
 
 const locale = getLocaleFromUrl(Astro.url)
 const t = useTranslate(locale)
+const school = resolveRequestSchool(Astro.locals)
 
 const resources = (await getCollection('resources')).sort((a, b) =>
   a.data.name.localeCompare(b.data.name),
@@ -33,32 +35,258 @@ const byCategory: Record<Category, typeof resources> = {
 for (const resource of resources) {
   byCategory[resource.data.category].push(resource)
 }
+
+const zipCode = getResourceZipCode(siteConfig)
+const gatewayUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const sources = siteConfig.resourcesConfig.sources?.join(',') ?? '211'
+const radius = siteConfig.resourcesConfig.radiusMiles ?? 10
 ---
 
 <BaseLayout title={t('resources.title')} description={t('resources.description')}>
-  <section class="mx-auto max-w-4xl px-4 py-12">
+  <section
+    class="mx-auto max-w-4xl px-4 py-12"
+    id="resources-page"
+    data-gateway-url={gatewayUrl}
+    data-zip-code={zipCode}
+    data-school-slug={school.slug}
+    data-sources={sources}
+    data-radius={String(radius)}
+    data-locale={locale}
+  >
     <h1 class="text-4xl font-bold">{t('resources.title')}</h1>
     <p class="mt-2 text-lg text-muted">{t('resources.callToAction')}</p>
 
+    <!-- Category filter chips -->
+    <CategoryFilter categories={categories} locale={locale} />
+
+    <!-- Curated school resources (SSG) -->
     {
-      resources.length === 0 ? (
-        <p class="mt-8 text-muted">{t('resources.noResources')}</p>
-      ) : (
-        <div class="mt-10 space-y-10">
-          {categories.map((cat) =>
-            byCategory[cat].length > 0 ? (
-              <div>
-                <h2 class="text-2xl font-bold">{t(`resources.categories.${cat}`)}</h2>
-                <div class="mt-4 grid gap-4 md:grid-cols-2">
-                  {byCategory[cat].map((resource) => (
-                    <ResourceCard resource={resource} locale={locale} />
-                  ))}
+      resources.length > 0 && (
+        <div class="mt-10">
+          <h2 class="text-2xl font-bold">{t('resources.schoolResources')}</h2>
+          <div class="mt-6 space-y-10" id="curated-resources">
+            {categories.map((cat) =>
+              byCategory[cat].length > 0 ? (
+                <div data-category={cat}>
+                  <h3 class="text-xl font-bold">{t(`resources.categories.${cat}`)}</h3>
+                  <div class="mt-4 grid gap-4 md:grid-cols-2">
+                    {byCategory[cat].map((resource) => (
+                      <ResourceCard resource={resource} locale={locale} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : null,
-          )}
+              ) : null,
+            )}
+          </div>
         </div>
+      )
+    }
+
+    <!-- Live community resources (client-side fetch) -->
+    {
+      zipCode && (
+        <div class="mt-12" id="external-resources-section">
+          <div class="flex items-center gap-3">
+            <h2 class="text-2xl font-bold">{t('resources.communityResources')}</h2>
+            <span class="rounded-button bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+              {t('resources.poweredBy211')}
+            </span>
+          </div>
+
+          {/* Loading skeleton */}
+          <div id="external-loading" class="mt-6 space-y-4">
+            <p class="text-muted">{t('resources.loadingResources')}</p>
+            <div class="grid gap-4 md:grid-cols-2">
+              {[1, 2, 3, 4].map(() => (
+                <div class="animate-pulse rounded-card border border-border p-card">
+                  <div class="h-4 w-3/4 rounded bg-muted/20" />
+                  <div class="mt-3 h-3 w-full rounded bg-muted/20" />
+                  <div class="mt-2 h-3 w-2/3 rounded bg-muted/20" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Error state */}
+          <div id="external-error" class="mt-6 hidden">
+            <p class="text-muted">{t('resources.errorLoading')}</p>
+            <button
+              type="button"
+              id="external-retry"
+              class="mt-3 rounded-button bg-primary px-4 py-2 text-sm font-bold text-inverse hover:opacity-90"
+            >
+              {t('resources.retry')}
+            </button>
+          </div>
+
+          {/* Empty state */}
+          <div id="external-empty" class="mt-6 hidden">
+            <p class="text-muted">{t('resources.noExternalResources')}</p>
+          </div>
+
+          {/* Results container */}
+          <div id="external-results" class="mt-6 hidden space-y-10" />
+        </div>
+      )
+    }
+
+    {
+      resources.length === 0 && !zipCode && (
+        <p class="mt-8 text-muted">{t('resources.noResources')}</p>
       )
     }
   </section>
 </BaseLayout>
+
+<script>
+  // @ts-nocheck
+  const page = document.getElementById('resources-page')
+  if (!page) throw new Error('resources-page not found')
+
+  const gatewayUrl = page.dataset.gatewayUrl ?? ''
+  const zipCode = page.dataset.zipCode ?? ''
+  const schoolSlug = page.dataset.schoolSlug ?? ''
+  const sources = page.dataset.sources ?? '211'
+  const radius = page.dataset.radius ?? '10'
+  const locale = page.dataset.locale ?? 'en'
+
+  const loadingEl = document.getElementById('external-loading')
+  const errorEl = document.getElementById('external-error')
+  const emptyEl = document.getElementById('external-empty')
+  const resultsEl = document.getElementById('external-results')
+  const retryBtn = document.getElementById('external-retry')
+
+  // ── Category filter ──────────────────────────────────────────────
+  const filterChips = document.querySelectorAll('[data-filter-category]')
+  let activeCategory = ''
+
+  filterChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      activeCategory = chip.dataset.filterCategory ?? ''
+
+      // Update chip styles
+      filterChips.forEach((c) => {
+        c.classList.toggle('bg-primary', c.dataset.filterCategory === activeCategory)
+        c.classList.toggle('text-inverse', c.dataset.filterCategory === activeCategory)
+        c.classList.toggle('bg-muted/10', c.dataset.filterCategory !== activeCategory)
+      })
+
+      // Filter curated resources
+      document.querySelectorAll('#curated-resources [data-category]').forEach((section) => {
+        const cat = section.dataset.category
+        section.classList.toggle('hidden', activeCategory !== '' && cat !== activeCategory)
+      })
+
+      // Filter external resources
+      document.querySelectorAll('#external-results [data-category]').forEach((section) => {
+        const cat = section.dataset.category
+        section.classList.toggle('hidden', activeCategory !== '' && cat !== activeCategory)
+      })
+    })
+  })
+
+  // ── External resource fetching ───────────────────────────────────
+  function showState(state) {
+    loadingEl?.classList.toggle('hidden', state !== 'loading')
+    errorEl?.classList.toggle('hidden', state !== 'error')
+    emptyEl?.classList.toggle('hidden', state !== 'empty')
+    resultsEl?.classList.toggle('hidden', state !== 'results')
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement('div')
+    d.textContent = str
+    return d.innerHTML
+  }
+
+  function renderExternalCard(resource) {
+    const sourceBadge = resource.source
+      ? `<span class="rounded-button bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">${escapeHtml(resource.source)}</span>`
+      : ''
+
+    const phone = resource.phone
+      ? `<div class="mt-1"><a href="tel:${escapeHtml(resource.phone)}" class="text-sm text-primary hover:underline">${escapeHtml(resource.phone)}</a></div>`
+      : ''
+
+    const address = resource.address
+      ? `<div class="mt-1 text-xs text-muted">${escapeHtml(resource.address)}</div>`
+      : ''
+
+    const link = resource.externalUrl || resource.url
+    const linkHtml = link
+      ? `<a href="${escapeHtml(link)}" class="mt-3 inline-block text-sm font-semibold text-primary" rel="noopener" target="_blank">${escapeHtml(resource.url ? 'Visit website' : 'View on 211.org')} →</a>`
+      : ''
+
+    return `<article class="rounded-card border border-border bg-surface p-card shadow-sm">
+      <div class="flex items-start justify-between gap-2">
+        <h4 class="text-lg font-bold">${escapeHtml(resource.name)}</h4>
+        ${sourceBadge}
+      </div>
+      <p class="mt-2 text-sm">${escapeHtml(resource.description)}</p>
+      ${address}
+      ${phone}
+      ${linkHtml}
+    </article>`
+  }
+
+  async function fetchExternalResources() {
+    if (!gatewayUrl || !zipCode) return
+
+    showState('loading')
+
+    try {
+      const url = new URL(`${gatewayUrl}/functions/v1/gateway/content/community-resources`)
+      url.searchParams.set('school', schoolSlug)
+      url.searchParams.set('zip', zipCode)
+      url.searchParams.set('sources', sources)
+      url.searchParams.set('radius', radius)
+      if (locale !== 'en') url.searchParams.set('locale', locale)
+
+      const res = await fetch(url.toString())
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+      const data = await res.json()
+      const resources = data.resources ?? []
+
+      if (resources.length === 0) {
+        showState('empty')
+        return
+      }
+
+      // Group by category
+      const categories = ['food', 'health', 'housing', 'legal', 'mental-health', 'other']
+      const grouped = {}
+      for (const cat of categories) grouped[cat] = []
+      for (const r of resources) {
+        const cat = categories.includes(r.category) ? r.category : 'other'
+        grouped[cat].push(r)
+      }
+
+      // Render
+      let html = ''
+      for (const cat of categories) {
+        if (grouped[cat].length === 0) continue
+        const hidden = activeCategory && cat !== activeCategory ? ' hidden' : ''
+        html += `<div data-category="${cat}" class="${hidden}">
+          <h3 class="text-xl font-bold">${escapeHtml(cat.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase()))}</h3>
+          <div class="mt-4 grid gap-4 md:grid-cols-2">
+            ${grouped[cat].map(renderExternalCard).join('')}
+          </div>
+        </div>`
+      }
+
+      if (resultsEl) {
+        resultsEl.innerHTML = html
+        showState('results')
+      }
+    } catch (err) {
+      console.error('[resources] failed to fetch external resources:', err)
+      showState('error')
+    }
+  }
+
+  retryBtn?.addEventListener('click', fetchExternalResources)
+
+  // Fetch on page load
+  fetchExternalResources()
+</script>
