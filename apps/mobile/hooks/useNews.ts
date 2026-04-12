@@ -1,10 +1,10 @@
-import { useFetch } from './useFetch'
-import { fetchNews, hasBaseUrl } from '../lib/manifest'
+import { useQuery } from '@tanstack/react-query'
+import { fetchNews } from '../lib/manifest'
 import type { ManifestNewsPost } from '@schoolyard/content-api'
 
 export function useNews() {
-  return useFetch<ManifestNewsPost[]>(async (signal) => {
-    if (!hasBaseUrl()) return []
-    return fetchNews(signal)
+  return useQuery<ManifestNewsPost[]>({
+    queryKey: ['news'],
+    queryFn: ({ signal }) => fetchNews(signal),
   })
 }

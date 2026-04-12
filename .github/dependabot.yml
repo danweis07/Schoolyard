@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      dev-dependencies:
+        dependency-type: development
+      astro:
+        patterns:
+          - "astro*"
+          - "@astrojs/*"
+      supabase:
+        patterns:
+          - "@supabase/*"
+      expo:
+        patterns:
+          - "expo*"
+          - "@expo/*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

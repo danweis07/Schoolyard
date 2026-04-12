@@ -8,9 +8,9 @@ export default function NewsDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>()
   const locale = useLocale()
   const t = useTranslate(locale)
-  const { data: news, loading, error } = useNews()
+  const { data: news, isLoading, error } = useNews()
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-surface p-4">
         <ActivityIndicator />
@@ -22,7 +22,7 @@ export default function NewsDetailScreen() {
   if (error) {
     return (
       <View className="flex-1 items-center justify-center bg-surface p-4">
-        <Text className="text-center text-muted">{error.message}</Text>
+        <Text className="text-center text-muted">{(error as Error).message}</Text>
       </View>
     )
   }

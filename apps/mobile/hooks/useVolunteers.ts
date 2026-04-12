@@ -1,10 +1,10 @@
-import { useFetch } from './useFetch'
-import { fetchVolunteers, hasBaseUrl } from '../lib/manifest'
+import { useQuery } from '@tanstack/react-query'
+import { fetchVolunteers } from '../lib/manifest'
 import type { ManifestVolunteerRole } from '@schoolyard/content-api'
 
 export function useVolunteers() {
-  return useFetch<ManifestVolunteerRole[]>(async (signal) => {
-    if (!hasBaseUrl()) return []
-    return fetchVolunteers(signal)
+  return useQuery<ManifestVolunteerRole[]>({
+    queryKey: ['volunteers'],
+    queryFn: ({ signal }) => fetchVolunteers(signal),
   })
 }

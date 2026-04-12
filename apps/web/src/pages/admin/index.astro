@@ -1,0 +1,77 @@
+---
+/**
+ * Admin route — links editors/admins to Supabase Studio for content
+ * management. In v1 this is a lightweight redirect page, not a full
+ * in-app editor. See ROADMAP.md for the v1.1 editor plan.
+ *
+ * This page is intentionally NOT under [...locale]/ — admin always
+ * renders in English (Studio itself is English-only anyway).
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.SUPABASE_URL ?? process.env.SUPABASE_URL ?? ''
+const projectRef = supabaseUrl
+  ? new URL(supabaseUrl).hostname.split('.')[0]
+  : (siteConfig.supabase?.projectRef ?? '')
+
+const studioBase = projectRef ? `https://supabase.com/dashboard/project/${projectRef}` : ''
+
+const tables = [
+  { label: 'Events', table: 'events', icon: '📅' },
+  { label: 'News', table: 'news', icon: '📰' },
+  { label: 'Board Members', table: 'board_members', icon: '👥' },
+  { label: 'Volunteer Roles', table: 'volunteer_roles', icon: '🙋' },
+  { label: 'Resources', table: 'resources', icon: '📚' },
+  { label: 'Lunch Menus', table: 'lunch_menus', icon: '🍎' },
+  { label: 'Community Listings', table: 'community_listings', icon: '🏘️' },
+  { label: 'Announcements', table: 'announcements', icon: '📢' },
+  { label: 'Contact Submissions', table: 'contact_submissions', icon: '✉️' },
+  { label: 'Donations', table: 'fundraising_donations', icon: '💰' },
+]
+---
+
+<BaseLayout title="Admin">
+  <main class="mx-auto max-w-2xl px-4 py-12">
+    <h1 class="text-3xl font-bold">Content Admin</h1>
+    <p class="mt-2 text-muted">
+      Schoolyard v1 uses Supabase Studio for content editing. Sign in to your Supabase project to
+      manage school content.
+    </p>
+
+    {
+      studioBase ? (
+        <div class="mt-8 space-y-3">
+          {tables.map(({ label, table, icon }) => (
+            <a
+              href={`${studioBase}/editor/${table}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-3 rounded-lg border border-border p-4 transition-colors hover:bg-muted/10"
+            >
+              <span class="text-xl">{icon}</span>
+              <span class="font-medium">{label}</span>
+              <span class="ml-auto text-xs text-muted">Open in Studio →</span>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="mt-8 rounded-lg border border-border bg-muted/5 p-6">
+          <p class="font-medium">Supabase project not configured</p>
+          <p class="mt-2 text-sm text-muted">
+            Set <code>SUPABASE_URL</code> in your environment to enable admin links. See{' '}
+            <code>.env.example</code> and <code>DEPLOYMENT.md</code>.
+          </p>
+        </div>
+      )
+    }
+
+    <p class="mt-8 text-sm text-muted">
+      A full in-app admin editor is planned for v1.1. See
+      <a href="https://github.com/danweis07/Schoolyard/blob/main/ROADMAP.md" class="underline"
+        >ROADMAP.md</a
+      >
+      for details.
+    </p>
+  </main>
+</BaseLayout>

@@ -162,7 +162,9 @@
     "donateDescription": "Choose an amount — 100% of your gift stays at our school.",
     "amount": "Amount",
     "customAmount": "Other amount",
-    "continueToPayment": "Continue to secure payment"
+    "continueToPayment": "Continue to secure payment",
+    "progressTitle": "Fundraising Progress",
+    "programsHeading": "Programs"
   },
   "home": {
     "heroCta": "Learn more",

@@ -5,9 +5,9 @@ import { useLocale, useTranslate } from '../../hooks/useLocale'
 export default function VolunteerScreen() {
   const locale = useLocale()
   const t = useTranslate(locale)
-  const { data: roles, loading, error } = useVolunteers()
+  const { data: roles, isLoading, error } = useVolunteers()
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-surface p-4">
         <ActivityIndicator />
@@ -20,7 +20,7 @@ export default function VolunteerScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-surface p-4">
         <Text className="text-lg font-semibold">{t('volunteer.title')}</Text>
-        <Text className="mt-2 text-center text-muted">{error.message}</Text>
+        <Text className="mt-2 text-center text-muted">{(error as Error).message}</Text>
       </View>
     )
   }
