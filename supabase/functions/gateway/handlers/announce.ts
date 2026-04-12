@@ -30,8 +30,7 @@ export async function handleAnnounce(ctx: GatewayContext): Promise<Response> {
   if (!school) return jsonError(404, 'unknown school', origin)
 
   // Check admin role for this school
-  const allowed =
-    ['admin', 'district_admin'].includes(auth.role) && auth.schoolId === school.id
+  const allowed = ['admin', 'district_admin'].includes(auth.role) && auth.schoolId === school.id
   if (!allowed) return jsonError(403, 'forbidden', origin)
 
   // Persist the announcement

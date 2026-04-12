@@ -1,0 +1,65 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import DirectoryEntryCard from '@/modules/directory/components/DirectoryEntryCard.astro'
+import DirectoryForm from '@/modules/directory/components/DirectoryForm.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
+import { createContentClient } from '@schoolyard/content-api'
+
+export const getStaticPaths = localeStaticPaths
+
+if (!isModuleEnabled(siteConfig, 'directory')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+
+// Directory requires auth — SSR route will pass user session.
+// In SSG mode, we show a sign-in prompt.
+let entries: import('@schoolyard/content-api').DirectoryEntry[] = []
+let isAuthenticated = false
+
+try {
+  const client = createContentClient({
+    backend: (siteConfig.backend ?? 'static') as 'static' | 'supabase',
+    baseUrl: siteConfig.deployment.siteUrl || '',
+  })
+  entries = await client.fetchDirectory()
+  isAuthenticated = entries.length > 0 || siteConfig.backend === 'supabase'
+} catch {
+  // Not authenticated or not in supabase mode
+}
+---
+
+<BaseLayout title={t('directory.title')} description={t('directory.description')}>
+  <section class="mx-auto max-w-6xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{t('directory.title')}</h1>
+    <p class="mt-2 text-lg text-muted">{t('directory.description')}</p>
+
+    {
+      !isAuthenticated ? (
+        <div class="mt-8 rounded-card border border-border bg-surface p-card text-center">
+          <p class="text-muted">{t('directory.signInRequired')}</p>
+        </div>
+      ) : (
+        <>
+          <div class="mt-6">
+            <DirectoryForm locale={locale} />
+          </div>
+
+          {entries.length === 0 ? (
+            <p class="mt-8 text-muted">{t('directory.noEntries')}</p>
+          ) : (
+            <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {entries.map((entry) => (
+                <DirectoryEntryCard entry={entry} locale={locale} />
+              ))}
+            </div>
+          )}
+        </>
+      )
+    }
+  </section>
+</BaseLayout>

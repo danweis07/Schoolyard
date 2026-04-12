@@ -20,6 +20,12 @@ import type {
   Committee,
   Program,
   PtaNewsletter,
+  SchoolInfo,
+  SpiritStoreProduct,
+  DirectoryEntry,
+  SchoolForm,
+  ConferenceWindow,
+  ConferenceSlot,
 } from '../types.js'
 import type {
   ManifestEvent,
@@ -47,6 +53,9 @@ export interface Scope {
 }
 
 export interface ContentAdapter {
+  // School discovery — list available schools, optionally filtered by district
+  fetchSchools(districtId?: string, options?: FetchOptions): Promise<SchoolInfo[]>
+
   // Discovery
   fetchManifest(scope?: Scope, options?: FetchOptions): Promise<ManifestIndex>
   fetchConfig(scope?: Scope, options?: FetchOptions): Promise<ManifestConfig>
@@ -67,6 +76,19 @@ export interface ContentAdapter {
   fetchCommittees(scope?: Scope, options?: FetchOptions): Promise<Committee[]>
   fetchPrograms(scope?: Scope, options?: FetchOptions): Promise<Program[]>
   fetchPtaNewsletters(scope?: Scope, options?: FetchOptions): Promise<PtaNewsletter[]>
+
+  // Spirit Store
+  fetchSpiritStoreProducts(scope?: Scope, options?: FetchOptions): Promise<SpiritStoreProduct[]>
+
+  // School Directory (requires auth — returns empty for anon)
+  fetchDirectory(scope?: Scope, options?: FetchOptions): Promise<DirectoryEntry[]>
+
+  // Forms
+  fetchForms(scope?: Scope, options?: FetchOptions): Promise<SchoolForm[]>
+
+  // Conferences
+  fetchConferenceWindows(scope?: Scope, options?: FetchOptions): Promise<ConferenceWindow[]>
+  fetchConferenceSlots(windowSlug: string, scope?: Scope, options?: FetchOptions): Promise<ConferenceSlot[]>
 }
 
 /** Local aliases re-exported for convenience. */
@@ -84,4 +106,10 @@ export type {
   Committee,
   Program,
   PtaNewsletter,
+  SchoolInfo,
+  SpiritStoreProduct,
+  DirectoryEntry,
+  SchoolForm,
+  ConferenceWindow,
+  ConferenceSlot,
 }

@@ -825,6 +825,519 @@ describe('fundraising_donations', () => {
   })
 })
 
+
+// ─── Spirit Store ────────────────────────────────────────────────────
+
+describe('spirit_store_products', () => {
+  it('anon can read active products', async () => {
+    await expectRows(ctx.anon, 'spirit_store_products', {
+      column: 'id',
+      value: ctx.rows.spiritProductA,
+    })
+  })
+
+  it('anon cannot read inactive products', async () => {
+    await expectNoRows(ctx.anon, 'spirit_store_products', {
+      column: 'id',
+      value: ctx.rows.spiritProductInactive,
+    })
+  })
+
+  it('anon cannot insert products', async () => {
+    await expectInsertDenied(ctx.anon, 'spirit_store_products', {
+      school_id: ctx.schoolAId,
+      slug: 'anon-hack-product',
+      name: 'Hack',
+      price_cents: 1000,
+    })
+  })
+
+  it('editor-a can insert product for school A', async () => {
+    const { data, error } = await ctx.editorA
+      .from('spirit_store_products')
+      .insert({
+        school_id: ctx.schoolAId,
+        slug: 'rls-editor-product',
+        name: 'Editor Product',
+        price_cents: 1500,
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    await ctx.service.from('spirit_store_products').delete().eq('id', data!.id)
+  })
+
+  it('editor-b cannot insert product for school A', async () => {
+    await expectInsertDenied(ctx.editorB, 'spirit_store_products', {
+      school_id: ctx.schoolAId,
+      slug: 'rls-cross-product',
+      name: 'Cross Tenant Product',
+      price_cents: 1000,
+    })
+  })
+
+  it('editor-b cannot update school A products', async () => {
+    await expectUpdateDenied(ctx.editorB, 'spirit_store_products', ctx.rows.spiritProductA, {
+      name: 'Hacked',
+    })
+  })
+
+  it('editor-b cannot delete school A products', async () => {
+    await expectDeleteDenied(ctx.editorB, 'spirit_store_products', ctx.rows.spiritProductA)
+  })
+})
+
+describe('spirit_store_orders', () => {
+  it('anon cannot read orders', async () => {
+    await expectNoRows(ctx.anon, 'spirit_store_orders')
+  })
+
+  it('member-a can read own orders', async () => {
+    await expectRows(ctx.memberA, 'spirit_store_orders', {
+      column: 'id',
+      value: ctx.rows.spiritOrderMemberA,
+    })
+  })
+
+  it('editor-b cannot read member-a orders', async () => {
+    await expectNoRows(ctx.editorB, 'spirit_store_orders', {
+      column: 'id',
+      value: ctx.rows.spiritOrderMemberA,
+    })
+  })
+
+  it('admin-a can read school A orders', async () => {
+    await expectRows(ctx.adminA, 'spirit_store_orders', {
+      column: 'school_id',
+      value: ctx.schoolAId,
+    })
+  })
+
+  it('admin-a cannot read school B orders', async () => {
+    await expectNoRows(ctx.adminA, 'spirit_store_orders', {
+      column: 'school_id',
+      value: ctx.schoolBId,
+    })
+  })
+
+  it('anon cannot insert orders (service-role only)', async () => {
+    await expectInsertDenied(ctx.anon, 'spirit_store_orders', {
+      school_id: ctx.schoolAId,
+      customer_name: 'Anon',
+      customer_email: 'anon@example.com',
+      total_cents: 1500,
+    })
+  })
+
+  it('member cannot insert orders directly (service-role only)', async () => {
+    await expectInsertDenied(ctx.memberA, 'spirit_store_orders', {
+      school_id: ctx.schoolAId,
+      user_id: ctx.memberAId,
+      customer_name: 'Member',
+      customer_email: 'member@example.com',
+      total_cents: 1500,
+    })
+  })
+
+  it('admin-a can update order status', async () => {
+    const { data, error } = await ctx.adminA
+      .from('spirit_store_orders')
+      .update({ status: 'fulfilled' })
+      .eq('id', ctx.rows.spiritOrderMemberA)
+      .select('id')
+    expect(error).toBeNull()
+    expect(data!.length).toBe(1)
+
+    // Revert
+    await ctx.service
+      .from('spirit_store_orders')
+      .update({ status: 'pending' })
+      .eq('id', ctx.rows.spiritOrderMemberA)
+  })
+})
+
+describe('spirit_store_order_lines', () => {
+  it('member-a can read own order lines', async () => {
+    await expectRows(ctx.memberA, 'spirit_store_order_lines', {
+      column: 'id',
+      value: ctx.rows.spiritOrderLineMemberA,
+    })
+  })
+
+  it('editor-b cannot read member-a order lines', async () => {
+    await expectNoRows(ctx.editorB, 'spirit_store_order_lines', {
+      column: 'id',
+      value: ctx.rows.spiritOrderLineMemberA,
+    })
+  })
+
+  it('admin-a can read school A order lines', async () => {
+    await expectRows(ctx.adminA, 'spirit_store_order_lines', {
+      column: 'id',
+      value: ctx.rows.spiritOrderLineMemberA,
+    })
+  })
+
+  it('anon cannot read order lines', async () => {
+    await expectNoRows(ctx.anon, 'spirit_store_order_lines')
+  })
+})
+
+// ─── School Directory ─────────────────────────────────────────��──────
+
+describe('directory_entries', () => {
+  it('anon cannot read directory entries', async () => {
+    await expectNoRows(ctx.anon, 'directory_entries')
+  })
+
+  it('member-a can read visible entries from same school', async () => {
+    await expectRows(ctx.memberA, 'directory_entries', {
+      column: 'id',
+      value: ctx.rows.directoryEntryVisible,
+    })
+  })
+
+  it('member-a cannot read hidden entries', async () => {
+    await expectNoRows(ctx.memberA, 'directory_entries', {
+      column: 'id',
+      value: ctx.rows.directoryEntryHidden,
+    })
+  })
+
+  it('editor-b (different school) cannot read school A directory', async () => {
+    await expectNoRows(ctx.editorB, 'directory_entries', {
+      column: 'id',
+      value: ctx.rows.directoryEntryVisible,
+    })
+  })
+
+  it('member-a can insert own entry', async () => {
+    const { data, error } = await ctx.memberA
+      .from('directory_entries')
+      .insert({
+        school_id: ctx.schoolAId,
+        user_id: ctx.memberAId,
+        family_name: 'RLS Test Family',
+        email: 'rls@test.com',
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    await ctx.service.from('directory_entries').delete().eq('id', data!.id)
+  })
+
+  it('member-a cannot insert entry as another user', async () => {
+    await expectInsertDenied(ctx.memberA, 'directory_entries', {
+      school_id: ctx.schoolAId,
+      user_id: ctx.editorAId, // not memberA
+      family_name: 'Impersonation',
+    })
+  })
+
+  it('admin-a can read all entries (including hidden) for school A', async () => {
+    const { data, error } = await ctx.adminA
+      .from('directory_entries')
+      .select('id')
+      .eq('school_id', ctx.schoolAId)
+    expect(error).toBeNull()
+    expect(data!.length).toBeGreaterThanOrEqual(2) // visible + hidden
+  })
+
+  it('admin-a cannot read school B directory entries', async () => {
+    await expectNoRows(ctx.adminA, 'directory_entries', {
+      column: 'school_id',
+      value: ctx.schoolBId,
+    })
+  })
+})
+
+// ─── Forms & Conferences ──────────────────────────────────────────────
+
+describe('forms', () => {
+  it('anon can read published forms', async () => {
+    await expectRows(ctx.anon, 'forms', { column: 'id', value: ctx.rows.formPublished })
+  })
+
+  it('anon cannot read unpublished forms', async () => {
+    await expectNoRows(ctx.anon, 'forms', { column: 'id', value: ctx.rows.formUnpublished })
+  })
+
+  it('editor-a can insert form for school A', async () => {
+    const { data, error } = await ctx.editorA
+      .from('forms')
+      .insert({
+        school_id: ctx.schoolAId,
+        slug: 'rls-editor-form',
+        title: 'Editor Form',
+        fields: [{ name: 'q1', label: 'Question 1', type: 'text', required: false }],
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    // Cleanup
+    await ctx.service.from('forms').delete().eq('id', data!.id)
+  })
+
+  it('editor-a can update form for school A', async () => {
+    const { data, error } = await ctx.editorA
+      .from('forms')
+      .update({ title: 'Updated Form Title' })
+      .eq('id', ctx.rows.formPublished)
+      .select('id')
+    expect(error).toBeNull()
+    expect(data!.length).toBe(1)
+
+    // Revert
+    await ctx.service
+      .from('forms')
+      .update({ title: 'Published Form' })
+      .eq('id', ctx.rows.formPublished)
+  })
+
+  it('editor-b cannot insert form for school A', async () => {
+    await expectInsertDenied(ctx.editorB, 'forms', {
+      school_id: ctx.schoolAId,
+      slug: 'rls-cross-form',
+      title: 'Cross Tenant Form',
+      fields: [],
+    })
+  })
+
+  it('editor-b cannot update form for school A', async () => {
+    await expectUpdateDenied(ctx.editorB, 'forms', ctx.rows.formPublished, {
+      title: 'Hacked by B',
+    })
+  })
+
+  it('member cannot insert forms', async () => {
+    await expectInsertDenied(ctx.memberA, 'forms', {
+      school_id: ctx.schoolAId,
+      slug: 'rls-member-form',
+      title: 'Member Form',
+      fields: [],
+    })
+  })
+
+  it('anon cannot insert forms', async () => {
+    await expectInsertDenied(ctx.anon, 'forms', {
+      school_id: ctx.schoolAId,
+      slug: 'rls-anon-form',
+      title: 'Anon Form',
+      fields: [],
+    })
+  })
+})
+
+describe('form_responses', () => {
+  it('member-a can insert own response', async () => {
+    const { data, error } = await ctx.memberA
+      .from('form_responses')
+      .insert({
+        form_id: ctx.rows.formPublished,
+        school_id: ctx.schoolAId,
+        user_id: ctx.memberAId,
+        student_name: 'New Student',
+        responses: { student_name: 'New Student' },
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    // Cleanup
+    await ctx.service.from('form_responses').delete().eq('id', data!.id)
+  })
+
+  it('member-a can read own responses', async () => {
+    await expectRows(ctx.memberA, 'form_responses', {
+      column: 'id',
+      value: ctx.rows.formResponseMemberA,
+    })
+  })
+
+  it('member-a cannot insert response with a different user_id', async () => {
+    await expectInsertDenied(ctx.memberA, 'form_responses', {
+      form_id: ctx.rows.formPublished,
+      school_id: ctx.schoolAId,
+      user_id: ctx.editorAId, // not memberA
+      student_name: 'Impersonation Student',
+      responses: { student_name: 'Impersonation' },
+    })
+  })
+
+  it('admin-a can read all responses for school A', async () => {
+    await expectRows(ctx.adminA, 'form_responses', {
+      column: 'school_id',
+      value: ctx.schoolAId,
+    })
+  })
+
+  it('editor-b cannot read member-a responses', async () => {
+    await expectNoRows(ctx.editorB, 'form_responses', {
+      column: 'id',
+      value: ctx.rows.formResponseMemberA,
+    })
+  })
+
+  it('anon cannot read responses', async () => {
+    await expectNoRows(ctx.anon, 'form_responses')
+  })
+
+  it('anon cannot insert responses', async () => {
+    await expectInsertDenied(ctx.anon, 'form_responses', {
+      form_id: ctx.rows.formPublished,
+      school_id: ctx.schoolAId,
+      user_id: ctx.memberAId,
+      student_name: 'Anon Student',
+      responses: { student_name: 'Anon' },
+    })
+  })
+})
+
+describe('conference_windows', () => {
+  it('anon can read published windows', async () => {
+    await expectRows(ctx.anon, 'conference_windows', {
+      column: 'id',
+      value: ctx.rows.conferenceWindowPublished,
+    })
+  })
+
+  it('anon cannot read unpublished windows', async () => {
+    await expectNoRows(ctx.anon, 'conference_windows', {
+      column: 'id',
+      value: ctx.rows.conferenceWindowUnpublished,
+    })
+  })
+
+  it('editor-a can write windows for school A', async () => {
+    const { data, error } = await ctx.editorA
+      .from('conference_windows')
+      .insert({
+        school_id: ctx.schoolAId,
+        slug: 'rls-editor-cw',
+        title: 'Editor Conference Window',
+        starts_on: '2026-12-01',
+        ends_on: '2026-12-03',
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    // Cleanup
+    await ctx.service.from('conference_windows').delete().eq('id', data!.id)
+  })
+
+  it('editor-b cannot write windows for school A', async () => {
+    await expectInsertDenied(ctx.editorB, 'conference_windows', {
+      school_id: ctx.schoolAId,
+      slug: 'rls-cross-cw',
+      title: 'Cross Tenant Window',
+      starts_on: '2026-12-01',
+      ends_on: '2026-12-03',
+    })
+  })
+})
+
+describe('conference_slots', () => {
+  it('anon can read slots under published windows', async () => {
+    await expectRows(ctx.anon, 'conference_slots', {
+      column: 'id',
+      value: ctx.rows.conferenceSlotOpen,
+    })
+  })
+
+  it('editor-a can insert slots for school A', async () => {
+    const { data, error } = await ctx.editorA
+      .from('conference_slots')
+      .insert({
+        window_id: ctx.rows.conferenceWindowPublished,
+        school_id: ctx.schoolAId,
+        teacher_id: ctx.editorAId,
+        teacher_name: 'Teacher A',
+        date: '2026-10-16',
+        start_time: '14:00',
+        end_time: '14:15',
+        duration_minutes: 15,
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    // Cleanup
+    await ctx.service.from('conference_slots').delete().eq('id', data!.id)
+  })
+
+  it('editor-a can update slots for school A', async () => {
+    const { data, error } = await ctx.editorA
+      .from('conference_slots')
+      .update({ location: 'Room 101' })
+      .eq('id', ctx.rows.conferenceSlotOpen)
+      .select('id')
+    expect(error).toBeNull()
+    expect(data!.length).toBe(1)
+
+    // Revert
+    await ctx.service
+      .from('conference_slots')
+      .update({ location: null })
+      .eq('id', ctx.rows.conferenceSlotOpen)
+  })
+
+  it('editor-b cannot update school A slots', async () => {
+    await expectUpdateDenied(ctx.editorB, 'conference_slots', ctx.rows.conferenceSlotOpen, {
+      location: 'Hacked Room',
+    })
+  })
+})
+
+describe('book_conference_slot RPC', () => {
+  it('member-a can book an available slot', async () => {
+    const { data, error } = await ctx.memberA.rpc('book_conference_slot', {
+      p_slot_id: ctx.rows.conferenceSlotOpen,
+      p_student_name: 'Member A Child',
+    })
+    expect(error).toBeNull()
+    expect(data).toBe(true)
+
+    // Revert booking for subsequent tests
+    await ctx.service
+      .from('conference_slots')
+      .update({ booked_by: null, booked_at: null, student_name: null })
+      .eq('id', ctx.rows.conferenceSlotOpen)
+  })
+
+  it('booking an already-booked slot returns false', async () => {
+    const { data, error } = await ctx.memberA.rpc('book_conference_slot', {
+      p_slot_id: ctx.rows.conferenceSlotBooked,
+      p_student_name: 'Should Fail',
+    })
+    expect(error).toBeNull()
+    expect(data).toBe(false)
+  })
+
+  it('booking same teacher twice in same window returns false', async () => {
+    // First book one slot for memberA
+    await ctx.service
+      .from('conference_slots')
+      .update({
+        booked_by: ctx.memberAId,
+        booked_at: new Date().toISOString(),
+        student_name: 'First Booking',
+      })
+      .eq('id', ctx.rows.conferenceSlotOpen)
+
+    // Now try to book another slot for the same teacher in the same window
+    const { data, error } = await ctx.memberA.rpc('book_conference_slot', {
+      p_slot_id: ctx.rows.conferenceSlotOpen2,
+      p_student_name: 'Second Booking',
+    })
+    expect(error).toBeNull()
+    expect(data).toBe(false)
+
+    // Revert
+    await ctx.service
+      .from('conference_slots')
+      .update({ booked_by: null, booked_at: null, student_name: null })
+      .eq('id', ctx.rows.conferenceSlotOpen)
+  })
+})
+
 // ─── Cross-tenant isolation summary ───────────────────────────────────
 
 describe('cross-tenant isolation', () => {

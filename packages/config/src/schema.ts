@@ -85,7 +85,7 @@ export const languagesSchema = z.object({
 })
 
 /**
- * The 12 module names. Adding a module means adding it here AND creating
+ * The 14 module names. Adding a module means adding it here AND creating
  * a folder under apps/web/src/modules/<name>/.
  */
 export const MODULE_NAMES = [
@@ -101,6 +101,10 @@ export const MODULE_NAMES = [
   'district',
   'resources',
   'transparency',
+  'spirit-store',
+  'directory',
+  'forms',
+  'conferences',
 ] as const
 
 export type ModuleName = (typeof MODULE_NAMES)[number]
@@ -118,6 +122,10 @@ export const modulesSchema = z.object({
   district: z.boolean().default(false),
   resources: z.boolean().default(false),
   transparency: z.boolean().default(false),
+  'spirit-store': z.boolean().default(false),
+  directory: z.boolean().default(false),
+  forms: z.boolean().default(false),
+  conferences: z.boolean().default(false),
 })
 
 export const fundraisingSchema = z.object({
@@ -127,6 +135,74 @@ export const fundraisingSchema = z.object({
   currentRaised: z.number().nonnegative().default(0),
   goalLabel: z.string().default('Annual Fund'),
   stripePublishableKey: z.string().default(''),
+})
+
+/**
+ * Resource aggregation settings. Controls which external sources
+ * (211.org, USDA, HRSA) are queried and at what radius.
+ */
+export const RESOURCE_SOURCES = ['211', 'usda', 'hrsa'] as const
+export type ResourceSource = (typeof RESOURCE_SOURCES)[number]
+export const resourceSourceSchema = z.enum(RESOURCE_SOURCES)
+
+export const resourcesConfigSchema = z.object({
+  /** Explicit 5-digit zip code. Falls back to parsing school.address. */
+  zipCode: z
+    .string()
+    .regex(/^\d{5}$/, 'zipCode must be a 5-digit US zip code')
+    .optional(),
+  /** Which external resource databases to query. */
+  sources: z.array(resourceSourceSchema).default(['211']),
+  /** Search radius in miles from the zip code centroid. */
+  radiusMiles: z.number().positive().default(10),
+})
+
+export const spiritStoreSchema = z.object({
+  /**
+   * Store adapter — determines how checkout and fulfillment work.
+   *
+   * - 'collect': Order collection only. No payment processing.
+   *              Parents pay at pickup or via a separate arrangement.
+   * - 'stripe':  Stripe Checkout Sessions. Uses the school's Stripe keys
+   *              (shared with the fundraising module).
+   * - 'square':  Square Online Checkout API. Redirects to hosted checkout.
+   * - 'paypal':  PayPal Checkout. Redirects to PayPal hosted page.
+   * - 'shopify': Shopify Storefront API. Products synced from Shopify;
+   *              checkout redirects to Shopify's hosted checkout.
+   * - 'printful': Printful print-on-demand. Catalog synced from Printful;
+   *               orders submitted via Printful API.
+   * - 'external': Link-out to an external store (Bonfire, Custom Ink,
+   *               SquadLocker, etc.). No API integration — just a URL.
+   */
+  provider: z
+    .enum(['collect', 'stripe', 'square', 'paypal', 'shopify', 'printful', 'external'])
+    .default('collect'),
+  /** External store URL — used by 'external' adapter, or as fallback for any adapter */
+  externalUrl: z.string().url().or(z.literal('')).default(''),
+  /** Store-level open window (ISO datetime or empty = always open) */
+  opensAt: z.string().default(''),
+  /** Store-level close window (ISO datetime or empty = no close) */
+  closesAt: z.string().default(''),
+  /** Label shown on the store page */
+  storeLabel: z.string().default('Spirit Store'),
+
+  // ── Per-adapter settings ────────────────────────────────────────
+  /** Stripe: publishable key (reuses fundraising.stripePublishableKey if empty) */
+  stripePublishableKey: z.string().default(''),
+  /** Square: application ID for Square Web Payments SDK */
+  squareApplicationId: z.string().default(''),
+  /** Square: location ID for the school's Square location */
+  squareLocationId: z.string().default(''),
+  /** PayPal: client ID for PayPal JS SDK */
+  paypalClientId: z.string().default(''),
+  /** Shopify: store domain (e.g. 'my-school.myshopify.com') */
+  shopifyDomain: z.string().default(''),
+  /** Shopify: Storefront API access token (public, read-only) */
+  shopifyStorefrontToken: z.string().default(''),
+  /** Printful: store ID for the school's Printful store */
+  printfulStoreId: z.string().default(''),
+  /** External: label for the link-out button (e.g. 'Shop on Bonfire') */
+  externalLabel: z.string().default('Visit Store'),
 })
 
 export const appSchema = z.object({
@@ -223,6 +299,12 @@ export const schoolConfigSchema = z.object({
   languages: languagesSchema.default({}),
   modules: modulesSchema.default({}),
   fundraising: fundraisingSchema.default({}),
+  /**
+   * External community resource aggregation (211.org, USDA, HRSA).
+   * Only consulted when `modules.resources` is enabled.
+   */
+  resourcesConfig: resourcesConfigSchema.default({}),
+  spiritStore: spiritStoreSchema.default({}),
   app: appSchema.default({}),
   deployment: deploymentSchema.default({}),
   announcements: z.array(announcementSchema).default([]),
@@ -248,6 +330,7 @@ export const schoolConfigSchema = z.object({
 
 export type SchoolConfig = z.infer<typeof schoolConfigSchema>
 export type Modules = z.infer<typeof modulesSchema>
+export type ResourcesConfig = z.infer<typeof resourcesConfigSchema>
 export type TenantSchool = z.infer<typeof tenantSchoolSchema>
 export type District = NonNullable<z.infer<typeof districtSchema>>
 export type SupabaseConnection = z.infer<typeof supabaseSchema>

@@ -9,6 +9,7 @@
 import type { GatewayContext } from '../types.ts'
 import { jsonOk, jsonError } from '../response.ts'
 import { PUBLIC_SELECT } from '../column-filters.ts'
+import { handleCommunityResources } from './community-resources.ts'
 
 export async function handleContent(ctx: GatewayContext): Promise<Response> {
   const { supabase, route, schoolId, origin } = ctx
@@ -48,6 +49,14 @@ export async function handleContent(ctx: GatewayContext): Promise<Response> {
       return handleCollection(ctx, 'pta_newsletters', {}, 'published_at', false)
     case 'announcements':
       return handleAnnouncements(ctx)
+    case 'community-resources':
+      return handleCommunityResources(ctx)
+    case 'forms':
+      return handleCollection(ctx, 'forms', { published: true }, 'due_date', true)
+    case 'conferences':
+      return handleCollection(ctx, 'conference_windows', { published: true }, 'starts_on', true)
+    case 'conference-slots':
+      return handleConferenceSlots(ctx)
     default:
       return jsonError(404, `unknown content resource: ${route.resource}`, origin)
   }
@@ -160,10 +169,22 @@ async function handleCounts(ctx: GatewayContext): Promise<Response> {
   const { supabase, schoolId, origin } = ctx
 
   const tables = [
-    'events', 'news', 'board_members', 'volunteer_roles', 'resources',
-    'announcements', 'lunch_menus', 'transportation_routes',
-    'community_listings', 'classroom_teachers', 'budget_years',
-    'committees', 'programs', 'pta_newsletters',
+    'events',
+    'news',
+    'board_members',
+    'volunteer_roles',
+    'resources',
+    'announcements',
+    'lunch_menus',
+    'transportation_routes',
+    'community_listings',
+    'classroom_teachers',
+    'budget_years',
+    'committees',
+    'programs',
+    'pta_newsletters',
+    'forms',
+    'conference_windows',
   ] as const
 
   const results = await Promise.all(
@@ -178,6 +199,46 @@ async function handleCounts(ctx: GatewayContext): Promise<Response> {
   }
 
   return jsonOk(counts, origin)
+}
+
+// ── Conference slots (special: filter by window slug) ────────────
+
+async function handleConferenceSlots(ctx: GatewayContext): Promise<Response> {
+  const { supabase, schoolId, origin, route } = ctx
+  const windowSlug = route.id
+  if (!windowSlug) {
+    return jsonError(400, 'window slug required: /content/conference-slots/{slug}', origin)
+  }
+
+  // Resolve window slug → id
+  const { data: window } = await supabase
+    .from('conference_windows')
+    .select('id')
+    .eq('school_id', schoolId)
+    .eq('slug', windowSlug)
+    .eq('published', true)
+    .maybeSingle()
+
+  if (!window) return jsonError(404, 'conference window not found', origin)
+
+  // Select public columns plus a computed is_booked boolean
+  const { data, error } = await supabase
+    .from('conference_slots')
+    .select('id, window_id, teacher_name, date, start_time, end_time, duration_minutes, location, booked_by')
+    .eq('window_id', window.id)
+    .eq('school_id', schoolId)
+    .order('date', { ascending: true })
+    .order('start_time', { ascending: true })
+
+  if (error) return jsonError(500, error.message, origin)
+
+  // Strip PII (booked_by), expose only is_booked boolean
+  const slots = (data ?? []).map(({ booked_by, ...rest }: Record<string, unknown>) => ({
+    ...rest,
+    is_booked: booked_by != null,
+  }))
+
+  return jsonOk(slots, origin)
 }
 
 // ── Announcements (special: filter on sent_at) ───────────────────

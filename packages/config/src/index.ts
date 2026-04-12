@@ -11,6 +11,9 @@ export {
   languagesSchema,
   modulesSchema,
   fundraisingSchema,
+  resourcesConfigSchema,
+  resourceSourceSchema,
+  spiritStoreSchema,
   appSchema,
   deploymentSchema,
   localeSchema,
@@ -21,11 +24,14 @@ export {
   SUPPORTED_LOCALES,
   MODULE_NAMES,
   BACKEND_MODES,
+  RESOURCE_SOURCES,
 } from './schema.js'
 
 export type {
   SchoolConfig,
   Modules,
+  ResourcesConfig,
+  ResourceSource,
   Locale,
   ModuleName,
   TenantSchool,
@@ -73,4 +79,15 @@ export function getEnabledModules(config: SchoolConfig): ModuleName[] {
 
 export function isModuleEnabled(config: SchoolConfig, name: ModuleName): boolean {
   return config.modules[name] === true
+}
+
+/**
+ * Returns the zip code to use for external resource lookups.
+ * Prefers explicit `resourcesConfig.zipCode`, falls back to
+ * regex-extracting a 5-digit zip from `school.address`.
+ */
+export function getResourceZipCode(config: SchoolConfig): string | undefined {
+  if (config.resourcesConfig.zipCode) return config.resourcesConfig.zipCode
+  const match = config.school.address.match(/\b(\d{5})(?:-\d{4})?\b/)
+  return match?.[1]
 }

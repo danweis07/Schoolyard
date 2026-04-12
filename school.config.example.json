@@ -51,7 +51,11 @@
     "classroom": false,
     "district": false,
     "resources": false,
-    "transparency": false
+    "transparency": false,
+    "spirit-store": false,
+    "directory": false,
+    "forms": false,
+    "conferences": false
   },
   "fundraising": {
     "provider": "paypal",
@@ -60,6 +64,21 @@
     "currentRaised": 0,
     "goalLabel": "Annual Fund",
     "stripePublishableKey": ""
+  },
+  "spiritStore": {
+    "provider": "collect",
+    "externalUrl": "",
+    "opensAt": "",
+    "closesAt": "",
+    "storeLabel": "Spirit Store",
+    "stripePublishableKey": "",
+    "squareApplicationId": "",
+    "squareLocationId": "",
+    "paypalClientId": "",
+    "shopifyDomain": "",
+    "shopifyStorefrontToken": "",
+    "printfulStoreId": "",
+    "externalLabel": "Visit Store"
   },
   "app": {
     "enabled": false,

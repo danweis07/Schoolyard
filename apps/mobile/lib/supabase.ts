@@ -1,12 +1,17 @@
 /**
- * Mobile-side Supabase client — AUTH ONLY.
+ * Mobile-side Supabase client — used for Auth and direct writes.
  *
- * This client is used exclusively for Supabase Auth operations:
+ * Auth operations:
  *   - signInWithOtp / signOut / getSession / onAuthStateChange
  *
- * ALL data reads go through the gateway edge function via the content-api
- * gateway adapter (see `./manifest.ts`). NEVER call `.from()` on this
- * client for data queries — the gateway is the single point of data access.
+ * Write operations (RSVP, volunteer hours, community flags, etc.)
+ *   go through `.from()` directly since the gateway is read-only.
+ *
+ * Content reads go through the gateway edge function via the
+ * content-api gateway adapter (see `./manifest.ts`).
+ *
+ * Auth sessions are persisted via AsyncStorage so they survive
+ * app restarts.
  *
  * Env:
  *   EXPO_PUBLIC_SUPABASE_URL
@@ -15,26 +20,9 @@
  * These are exposed to the Expo bundle at build time by Metro.
  */
 import { createBrowserClient, type Database, type SupabaseClient } from '@schoolyard/supabase'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export type SchoolyardSupabase = SupabaseClient<Database>
-
-/**
- * Best-effort storage adapter. In-memory by default — sessions won't
- * persist across app restarts. Swap in AsyncStorage once it's wired:
- *
- *   import AsyncStorage from '@react-native-async-storage/async-storage'
- *   const storage = AsyncStorage
- */
-const memoryStore = new Map<string, string>()
-const defaultStorage = {
-  getItem: (key: string) => memoryStore.get(key) ?? null,
-  setItem: (key: string, value: string) => {
-    memoryStore.set(key, value)
-  },
-  removeItem: (key: string) => {
-    memoryStore.delete(key)
-  },
-}
 
 let cached: SchoolyardSupabase | null = null
 
@@ -46,7 +34,7 @@ export function getSupabase(): SchoolyardSupabase | null {
   cached = createBrowserClient({
     url,
     anonKey,
-    storage: defaultStorage,
+    storage: AsyncStorage,
     storageKey: 'sy-auth-mobile',
   })
   return cached

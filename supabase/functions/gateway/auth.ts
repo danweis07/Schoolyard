@@ -71,9 +71,7 @@ export function satisfiesAuthLevel(
   const schoolMatch = auth.schoolId === targetSchoolId
 
   if (level === 'editor') {
-    return (
-      schoolMatch && ['editor', 'admin', 'district_admin'].includes(auth.role)
-    )
+    return schoolMatch && ['editor', 'admin', 'district_admin'].includes(auth.role)
   }
 
   if (level === 'admin') {

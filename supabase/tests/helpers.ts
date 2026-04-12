@@ -66,6 +66,23 @@ export interface TestContext {
     contactSubmissionA: string
     donationA: string
     pushTokenMemberA: string
+    spiritProductA: string
+    spiritProductInactive: string
+    spiritOrderMemberA: string
+    spiritOrderLineMemberA: string
+    directoryEntryVisible: string
+    directoryEntryHidden: string
+    // Forms
+    formPublished: string
+    formUnpublished: string
+    formResponseMemberA: string
+    // Conferences
+    conferenceWindowPublished: string
+    conferenceWindowUnpublished: string
+    conferenceSlotOpen: string
+    conferenceSlotOpen2: string // same teacher, different time — for "same teacher twice" test
+    conferenceSlotBooked: string
+    conferenceTeacherId: string
   }
 }
 
@@ -494,6 +511,236 @@ export async function setupTestContext(): Promise<TestContext> {
     .throwOnError()
   rows.pushTokenMemberA = pushToken!.id
 
+  // ── Spirit Store seed data ─────────────────────────────────────
+  const { data: spiritProduct } = await service
+    .from('spirit_store_products')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-eagle-tee',
+      name: 'Eagle T-Shirt',
+      price_cents: 1500,
+      active: true,
+      variants: [{ label: 'S' }, { label: 'M' }, { label: 'L' }],
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.spiritProductA = spiritProduct!.id
+
+  const { data: spiritProductInactive } = await service
+    .from('spirit_store_products')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-inactive-product',
+      name: 'Inactive Product',
+      price_cents: 999,
+      active: false,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.spiritProductInactive = spiritProductInactive!.id
+
+  // Order placed via service role (simulating edge function)
+  const { data: spiritOrder } = await service
+    .from('spirit_store_orders')
+    .insert({
+      school_id: schoolAId,
+      user_id: userIds.memberA,
+      customer_name: 'Member A',
+      customer_email: 'member-a@test.com',
+      total_cents: 1500,
+      status: 'pending',
+      payment_provider: 'collect',
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.spiritOrderMemberA = spiritOrder!.id
+
+  const { data: spiritOrderLine } = await service
+    .from('spirit_store_order_lines')
+    .insert({
+      order_id: spiritOrder!.id,
+      product_id: spiritProduct!.id,
+      variant_label: 'M',
+      quantity: 1,
+      unit_price_cents: 1500,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.spiritOrderLineMemberA = spiritOrderLine!.id
+
+  // ── Directory seed data ────────────────────────────────────────
+  const { data: dirVisible } = await service
+    .from('directory_entries')
+    .insert({
+      school_id: schoolAId,
+      user_id: userIds.editorA,
+      family_name: 'Editor Family',
+      parent_names: ['Editor A'],
+      student_grades: ['3rd'],
+      email: 'editor@test.com',
+      visible: true,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.directoryEntryVisible = dirVisible!.id
+
+  const { data: dirHidden } = await service
+    .from('directory_entries')
+    .insert({
+      school_id: schoolAId,
+      user_id: userIds.adminA,
+      family_name: 'Hidden Family',
+      parent_names: ['Admin A'],
+      student_grades: ['K'],
+      email: 'admin@test.com',
+      visible: false,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.directoryEntryHidden = dirHidden!.id
+
+  // ── Forms ─────────────────────────────────────────────────────
+  const { data: formPub } = await service
+    .from('forms')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-form-published',
+      title: 'Published Form',
+      fields: [{ name: 'student_name', label: 'Student Name', type: 'text', required: true }],
+      published: true,
+      created_by: userIds.editorA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.formPublished = formPub!.id
+
+  const { data: formUnpub } = await service
+    .from('forms')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-form-unpublished',
+      title: 'Unpublished Form',
+      fields: [{ name: 'note', label: 'Note', type: 'textarea', required: false }],
+      published: false,
+      created_by: userIds.editorA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.formUnpublished = formUnpub!.id
+
+  // Form response for member-a
+  const { data: formResp } = await service
+    .from('form_responses')
+    .insert({
+      form_id: rows.formPublished,
+      school_id: schoolAId,
+      user_id: userIds.memberA,
+      student_name: 'Test Student',
+      responses: { student_name: 'Test Student' },
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.formResponseMemberA = formResp!.id
+
+  // ── Conferences ──────────────────────────────────────────────
+  const { data: cwPub } = await service
+    .from('conference_windows')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-cw-published',
+      title: 'Published Conference Window',
+      starts_on: '2026-10-15',
+      ends_on: '2026-10-17',
+      published: true,
+      created_by: userIds.editorA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.conferenceWindowPublished = cwPub!.id
+
+  const { data: cwUnpub } = await service
+    .from('conference_windows')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-cw-unpublished',
+      title: 'Unpublished Conference Window',
+      starts_on: '2026-11-01',
+      ends_on: '2026-11-03',
+      published: false,
+      created_by: userIds.editorA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.conferenceWindowUnpublished = cwUnpub!.id
+
+  // We use editorA as a pseudo-teacher for conference slots
+  rows.conferenceTeacherId = userIds.editorA
+
+  const { data: slotOpen } = await service
+    .from('conference_slots')
+    .insert({
+      window_id: rows.conferenceWindowPublished,
+      school_id: schoolAId,
+      teacher_id: userIds.editorA,
+      teacher_name: 'Teacher A',
+      date: '2026-10-15',
+      start_time: '15:00',
+      end_time: '15:15',
+      duration_minutes: 15,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.conferenceSlotOpen = slotOpen!.id
+
+  const { data: slotOpen2 } = await service
+    .from('conference_slots')
+    .insert({
+      window_id: rows.conferenceWindowPublished,
+      school_id: schoolAId,
+      teacher_id: userIds.editorA,
+      teacher_name: 'Teacher A',
+      date: '2026-10-15',
+      start_time: '15:15',
+      end_time: '15:30',
+      duration_minutes: 15,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.conferenceSlotOpen2 = slotOpen2!.id
+
+  const { data: slotBooked } = await service
+    .from('conference_slots')
+    .insert({
+      window_id: rows.conferenceWindowPublished,
+      school_id: schoolAId,
+      teacher_id: userIds.editorA,
+      teacher_name: 'Teacher A',
+      date: '2026-10-15',
+      start_time: '15:30',
+      end_time: '15:45',
+      duration_minutes: 15,
+      booked_by: userIds.adminA,
+      booked_at: new Date().toISOString(),
+      student_name: 'Already Booked Student',
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.conferenceSlotBooked = slotBooked!.id
+
   // ── Sign in as each profile ──────────────────────────────────────
   const [memberA, editorA, editorB, adminA, districtAdmin] = await Promise.all([
     makeAuthedClient(TEST_USERS[0].email, TEST_PASSWORD),
@@ -531,6 +778,13 @@ export async function teardownTestContext(ctx: TestContext): Promise<void> {
   // Delete in reverse-dependency order to avoid FK violations.
   // Dynamic tables first, then content, then tenant.
   const dynamicTables = [
+    'spirit_store_order_lines',
+    'spirit_store_orders',
+    'directory_entries',
+    'conference_slots',
+    'conference_windows',
+    'form_responses',
+    'forms',
     'push_tokens',
     'community_flags',
     'volunteer_hours',
@@ -540,6 +794,7 @@ export async function teardownTestContext(ctx: TestContext): Promise<void> {
     'announcements',
   ]
   const contentTables = [
+    'spirit_store_products',
     'community_listings',
     'pta_newsletters',
     'programs',

@@ -1,0 +1,170 @@
+---
+/**
+ * Form for creating/editing a family's directory entry.
+ * Posts to the update-directory-listing edge function.
+ */
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = useTranslate(locale)
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const endpoint = supabaseUrl
+  ? `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/update-directory-listing`
+  : ''
+---
+
+<form
+  class="rounded-card border border-border bg-surface p-card"
+  data-sy-directory-form
+  data-endpoint={endpoint}
+>
+  <h3 class="text-xl font-bold">{t('directory.addYourFamily')}</h3>
+  <p class="mt-2 text-sm text-muted">{t('directory.privacyNote')}</p>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('directory.familyName')} *</span>
+    <input
+      type="text"
+      name="family_name"
+      required
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
+    />
+  </label>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('directory.parentNames')}</span>
+    <input
+      type="text"
+      name="parent_names"
+      placeholder="Jane Smith, John Smith"
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
+    />
+    <span class="text-xs text-muted">Comma-separated</span>
+  </label>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('directory.studentGrades')}</span>
+    <input
+      type="text"
+      name="student_grades"
+      placeholder="K, 3rd"
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
+    />
+    <span class="text-xs text-muted">Comma-separated</span>
+  </label>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('directory.email')}</span>
+    <input
+      type="email"
+      name="email"
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
+    />
+  </label>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('directory.phone')}</span>
+    <input
+      type="tel"
+      name="phone"
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
+    />
+  </label>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('directory.neighborhood')}</span>
+    <input
+      type="text"
+      name="neighborhood"
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
+    />
+  </label>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('directory.notes')}</span>
+    <textarea
+      name="notes"
+      rows="2"
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"></textarea>
+  </label>
+
+  <label class="mt-4 flex items-center gap-2">
+    <input type="checkbox" name="visible" checked class="rounded" />
+    <span class="text-sm font-semibold">{t('directory.visible')}</span>
+  </label>
+  <p class="mt-1 text-xs text-muted">{t('directory.visibleDescription')}</p>
+
+  <button
+    type="submit"
+    class="mt-6 rounded-button bg-primary px-6 py-2.5 font-semibold text-inverse hover:opacity-90 disabled:opacity-60"
+  >
+    {t('directory.save')}
+  </button>
+
+  <p role="status" aria-live="polite" class="mt-4 hidden text-sm" data-sy-directory-status></p>
+</form>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-sy-directory-form]')
+  if (form && form.dataset.endpoint) {
+    const endpoint = form.dataset.endpoint
+    const status = form.querySelector<HTMLElement>('[data-sy-directory-status]')
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      if (!status) return
+
+      const fd = new FormData(form)
+      const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')
+      if (submit) submit.disabled = true
+      status.classList.remove('hidden', 'text-error', 'text-success')
+      status.textContent = '…'
+
+      const parentNamesRaw = String(fd.get('parent_names') ?? '')
+      const studentGradesRaw = String(fd.get('student_grades') ?? '')
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            family_name: String(fd.get('family_name') ?? ''),
+            parent_names: parentNamesRaw
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean),
+            student_grades: studentGradesRaw
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean),
+            email: String(fd.get('email') ?? '') || undefined,
+            phone: String(fd.get('phone') ?? '') || undefined,
+            neighborhood: String(fd.get('neighborhood') ?? '') || undefined,
+            notes: String(fd.get('notes') ?? '') || undefined,
+            visible: fd.has('visible'),
+          }),
+        })
+
+        if (!res.ok) {
+          const text = await res.text()
+          status.classList.add('text-error')
+          status.textContent = `Failed: ${text}`
+          return
+        }
+
+        status.classList.add('text-success')
+        status.textContent = 'Saved!'
+      } catch {
+        status.classList.add('text-error')
+        status.textContent = 'Network error. Please try again.'
+      } finally {
+        if (submit) submit.disabled = false
+      }
+    })
+  }
+</script>

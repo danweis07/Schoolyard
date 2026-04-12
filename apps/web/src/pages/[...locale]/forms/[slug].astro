@@ -1,0 +1,91 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import FormFill from '@/modules/forms/components/FormFill.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import {
+  useTranslate,
+  getLocaleFromUrl,
+  localizedPath,
+  supportedLocales,
+  defaultLocale,
+} from '@/i18n/index'
+import type { SchoolForm } from '@schoolyard/content-api'
+
+export async function getStaticPaths() {
+  // In SSR / hybrid mode, Astro will call this but we return an empty
+  // array — the page is rendered on demand.  In static mode there is no
+  // forms data source, so returning [] is correct too.
+  return []
+}
+
+if (!isModuleEnabled(siteConfig, 'forms')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+const { slug } = Astro.params
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+
+let form: SchoolForm | undefined
+
+if (Astro.locals.contentClient) {
+  try {
+    const allForms = await Astro.locals.contentClient.fetchForms()
+    form = allForms.find((f) => f.slug === slug && f.published)
+  } catch {
+    // Gateway unavailable — fall through to 404
+  }
+}
+
+if (!form) {
+  return Astro.redirect('/404')
+}
+
+const dateFormatter = new Intl.DateTimeFormat(locale, {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+})
+---
+
+<BaseLayout title={form.title} description={form.description ?? t('forms.description')}>
+  <article class="mx-auto max-w-3xl px-4 py-12">
+    {
+      form.dueDate && (
+        <p class="text-sm font-semibold uppercase tracking-wide text-primary">
+          {t('forms.dueDate', { date: dateFormatter.format(new Date(form.dueDate)) })}
+        </p>
+      )
+    }
+    <h1 class="mt-2 text-4xl font-bold">{form.title}</h1>
+    {form.description && <p class="mt-4 text-lg">{form.description}</p>}
+
+    {
+      form.targetGrades.length > 0 && (
+        <p class="mt-2 text-sm text-muted">
+          {t('forms.targetGrades')}: {form.targetGrades.join(', ')}
+        </p>
+      )
+    }
+
+    <div class="mt-8">
+      <FormFill
+        form={form}
+        locale={locale}
+        supabaseUrl={supabaseUrl}
+        supabaseAnonKey={supabaseAnon}
+      />
+    </div>
+
+    <p class="mt-12">
+      <a href={localizedPath('/forms', locale)} class="text-primary">
+        &larr; {t('common.back')} {t('forms.title').toLowerCase()}
+      </a>
+    </p>
+  </article>
+</BaseLayout>

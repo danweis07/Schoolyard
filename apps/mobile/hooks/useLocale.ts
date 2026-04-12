@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { getLocales } from 'expo-localization'
-import { siteConfig } from '../lib/config'
+import { useSchoolConfig } from './useSchoolConfig'
 import { t as tRaw } from '@schoolyard/i18n'
 import type { Locale } from '@schoolyard/i18n'
 
@@ -10,8 +10,9 @@ import type { Locale } from '@schoolyard/i18n'
  * Falls back to the school's default locale.
  */
 export function useLocale(): Locale {
+  const config = useSchoolConfig()
   return useMemo(() => {
-    const supported = siteConfig.languages.supported as readonly string[]
+    const supported = config.languages.supported as readonly string[]
     const device = getLocales()
     for (const entry of device) {
       const code = (entry.languageTag || entry.languageCode || '').toLowerCase()
@@ -28,8 +29,8 @@ export function useLocale(): Locale {
         if (supported.includes('zh-hans')) return 'zh-hans'
       }
     }
-    return siteConfig.languages.default
-  }, [])
+    return config.languages.default
+  }, [config])
 }
 
 /**

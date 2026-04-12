@@ -1,0 +1,79 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import ProductCard from '@/modules/spirit-store/components/ProductCard.astro'
+import StoreStatus from '@/modules/spirit-store/components/StoreStatus.astro'
+import OrderForm from '@/modules/spirit-store/components/OrderForm.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
+import { createContentClient } from '@schoolyard/content-api'
+
+export const getStaticPaths = localeStaticPaths
+
+if (!isModuleEnabled(siteConfig, 'spirit-store')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+
+// Fetch products from content-api (Supabase adapter or static)
+let products: import('@schoolyard/content-api').SpiritStoreProduct[] = []
+try {
+  const client = createContentClient({
+    backend: (siteConfig.backend ?? 'static') as 'static' | 'supabase',
+    baseUrl: siteConfig.deployment.siteUrl || '',
+  })
+  products = await client.fetchSpiritStoreProducts()
+} catch {
+  // Graceful degradation — show empty store
+}
+
+const storeLabel = siteConfig.spiritStore.storeLabel || t('spiritStore.title')
+const isExternalAdapter = siteConfig.spiritStore.provider === 'external'
+const externalUrl = siteConfig.spiritStore.externalUrl
+const externalLabel = siteConfig.spiritStore.externalLabel || 'Visit Store'
+---
+
+<BaseLayout title={storeLabel} description={t('spiritStore.description')}>
+  <section class="mx-auto max-w-6xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{storeLabel}</h1>
+    <p class="mt-2 text-lg text-muted">{t('spiritStore.description')}</p>
+
+    <div class="mt-6">
+      <StoreStatus locale={locale} />
+    </div>
+
+    {
+      isExternalAdapter && externalUrl ? (
+        <div class="mt-8 rounded-card border border-border bg-surface p-card text-center">
+          <p class="text-lg">Our spirit wear is available through our partner store.</p>
+          <a
+            href={externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-4 inline-block rounded-button bg-primary px-8 py-3 font-semibold text-inverse hover:opacity-90"
+          >
+            {externalLabel} &rarr;
+          </a>
+        </div>
+      ) : (
+        <>
+          {products.length === 0 ? (
+            <p class="mt-8 text-muted">{t('spiritStore.noProducts')}</p>
+          ) : (
+            <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {products.map((product) => (
+                <ProductCard product={product} locale={locale} />
+              ))}
+            </div>
+          )}
+
+          <div class="mt-12">
+            <OrderForm locale={locale} />
+          </div>
+        </>
+      )
+    }
+  </section>
+</BaseLayout>

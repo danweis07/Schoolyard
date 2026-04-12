@@ -25,6 +25,12 @@ import type {
   Committee,
   Program,
   PtaNewsletter,
+  SchoolInfo,
+  SpiritStoreProduct,
+  DirectoryEntry,
+  SchoolForm,
+  ConferenceWindow,
+  ConferenceSlot,
 } from '../types.js'
 
 export interface GatewayAdapterOptions {
@@ -45,11 +51,7 @@ export function createGatewayAdapter(options: GatewayAdapterOptions): ContentAda
     return slug
   }
 
-  async function get<T>(
-    resource: string,
-    scope?: Scope,
-    fetchOptions?: FetchOptions,
-  ): Promise<T> {
+  async function get<T>(resource: string, scope?: Scope, fetchOptions?: FetchOptions): Promise<T> {
     const slug = resolveSlug(scope)
     const url = `${gatewayUrl}/functions/v1/gateway/content/${resource}?school=${encodeURIComponent(slug)}`
 
@@ -67,6 +69,15 @@ export function createGatewayAdapter(options: GatewayAdapterOptions): ContentAda
   }
 
   return {
+    async fetchSchools(_districtId, fetchOptions): Promise<SchoolInfo[]> {
+      const url = `${gatewayUrl}/functions/v1/gateway/content/schools`
+      const res = await fetch(url, {
+        signal: fetchOptions?.signal,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) return []
+      return (await res.json()) as SchoolInfo[]
+    },
     fetchManifest(scope, options) {
       return get<ManifestIndex>('manifest', scope, options)
     },
@@ -111,6 +122,33 @@ export function createGatewayAdapter(options: GatewayAdapterOptions): ContentAda
     },
     fetchPtaNewsletters(scope, options) {
       return get<PtaNewsletter[]>('newsletters', scope, options)
+    },
+    fetchSpiritStoreProducts(scope, options) {
+      return get<SpiritStoreProduct[]>('spirit-store-products', scope, options)
+    },
+    async fetchDirectory() {
+      // Directory requires auth — gateway doesn't forward auth headers yet.
+      // Return empty until gateway supports authed routes.
+      return [] as DirectoryEntry[]
+    },
+    fetchForms(scope, options) {
+      return get<SchoolForm[]>('forms', scope, options)
+    },
+    fetchConferenceWindows(scope, options) {
+      return get<ConferenceWindow[]>('conferences', scope, options)
+    },
+    async fetchConferenceSlots(windowSlug, scope, options) {
+      const slug = resolveSlug(scope)
+      const url = `${gatewayUrl}/functions/v1/gateway/content/conference-slots/${encodeURIComponent(windowSlug)}?school=${encodeURIComponent(slug)}`
+      const res = await fetch(url, {
+        signal: options?.signal,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(`[gateway-adapter] conference-slots failed (${res.status}): ${text}`)
+      }
+      return (await res.json()) as ConferenceSlot[]
     },
   }
 }

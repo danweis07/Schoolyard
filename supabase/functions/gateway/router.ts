@@ -19,49 +19,66 @@ interface RouteDefinition {
  */
 const ROUTES: Record<string, RouteDefinition> = {
   // ── Content (public reads) ──────────────────────────────────────
-  'content/manifest':        { methods: ['GET'], auth: 'none' },
-  'content/config':          { methods: ['GET'], auth: 'none' },
-  'content/events':          { methods: ['GET'], auth: 'none' },
-  'content/news':            { methods: ['GET'], auth: 'none' },
-  'content/board':           { methods: ['GET'], auth: 'none' },
-  'content/volunteers':      { methods: ['GET'], auth: 'none' },
-  'content/resources':       { methods: ['GET'], auth: 'none' },
-  'content/lunch-menus':     { methods: ['GET'], auth: 'none' },
-  'content/transportation':  { methods: ['GET'], auth: 'none' },
-  'content/community':       { methods: ['GET'], auth: 'none' },
-  'content/teachers':        { methods: ['GET'], auth: 'none' },
-  'content/budget':          { methods: ['GET'], auth: 'none' },
-  'content/committees':      { methods: ['GET'], auth: 'none' },
-  'content/programs':        { methods: ['GET'], auth: 'none' },
-  'content/newsletters':     { methods: ['GET'], auth: 'none' },
-  'content/announcements':   { methods: ['GET'], auth: 'none' },
-  'content/counts':          { methods: ['GET'], auth: 'none' },
+  'content/manifest': { methods: ['GET'], auth: 'none' },
+  'content/config': { methods: ['GET'], auth: 'none' },
+  'content/events': { methods: ['GET'], auth: 'none' },
+  'content/news': { methods: ['GET'], auth: 'none' },
+  'content/board': { methods: ['GET'], auth: 'none' },
+  'content/volunteers': { methods: ['GET'], auth: 'none' },
+  'content/resources': { methods: ['GET'], auth: 'none' },
+  'content/lunch-menus': { methods: ['GET'], auth: 'none' },
+  'content/transportation': { methods: ['GET'], auth: 'none' },
+  'content/community': { methods: ['GET'], auth: 'none' },
+  'content/teachers': { methods: ['GET'], auth: 'none' },
+  'content/budget': { methods: ['GET'], auth: 'none' },
+  'content/committees': { methods: ['GET'], auth: 'none' },
+  'content/programs': { methods: ['GET'], auth: 'none' },
+  'content/newsletters': { methods: ['GET'], auth: 'none' },
+  'content/announcements': { methods: ['GET'], auth: 'none' },
+  'content/counts': { methods: ['GET'], auth: 'none' },
+  'content/community-resources': { methods: ['GET'], auth: 'none' },
+  'content/forms': { methods: ['GET'], auth: 'none' },
+  'content/conferences': { methods: ['GET'], auth: 'none' },
 
   // ── Admin (authenticated CRUD) ─────────────────────────────────
-  'admin/profile':           { methods: ['GET'], auth: 'member' },
-  'admin/counts':            { methods: ['GET'], auth: 'editor' },
-  'admin/school':            { methods: ['GET', 'PUT'], auth: 'admin' },
+  'admin/profile': { methods: ['GET'], auth: 'member' },
+  'admin/counts': { methods: ['GET'], auth: 'editor' },
+  'admin/school': { methods: ['GET', 'PUT'], auth: 'admin' },
 
   // ── User actions ────────────────────────────────────────────────
-  'user/rsvp':               { methods: ['POST', 'DELETE'], auth: 'member' },
-  'user/rsvps':              { methods: ['GET'], auth: 'member' },
-  'user/volunteer-hours':    { methods: ['GET', 'POST'], auth: 'member' },
-  'user/push-token':         { methods: ['POST'], auth: 'member' },
-  'user/flag-listing':       { methods: ['POST'], auth: 'member' },
-  'user/community-listing':  { methods: ['POST'], auth: 'member' },
+  'user/rsvp': { methods: ['POST', 'DELETE'], auth: 'member' },
+  'user/rsvps': { methods: ['GET'], auth: 'member' },
+  'user/volunteer-hours': { methods: ['GET', 'POST'], auth: 'member' },
+  'user/push-token': { methods: ['POST'], auth: 'member' },
+  'user/flag-listing': { methods: ['POST'], auth: 'member' },
+  'user/community-listing': { methods: ['POST'], auth: 'member' },
+
+  // ── Forms (user actions) ────────────────────────────────────────
+  'user/form-response':      { methods: ['POST'], auth: 'member' },
+  'user/form-responses':     { methods: ['GET'], auth: 'member' },
+
+  // ── Conferences (user actions) ──────────────────────────────────
+  'user/book-conference':    { methods: ['POST'], auth: 'member' },
+  'user/my-conferences':     { methods: ['GET'], auth: 'member' },
+
+  // ── Calendar (user actions) ─────────────────────────────────────
+  'user/my-rsvp-events':     { methods: ['GET'], auth: 'member' },
 
   // ── Fundraising ─────────────────────────────────────────────────
-  'fundraising/donate':      { methods: ['POST'], auth: 'none' },
-  'fundraising/webhook':     { methods: ['POST'], auth: 'stripe-sig' },
+  'fundraising/donate': { methods: ['POST'], auth: 'none' },
+  'fundraising/webhook': { methods: ['POST'], auth: 'stripe-sig' },
 
   // ── Contact ─────────────────────────────────────────────────────
-  'contact/submit':          { methods: ['POST'], auth: 'none' },
+  'contact/submit': { methods: ['POST'], auth: 'none' },
 
   // ── Announce ────────────────────────────────────────────────────
-  'announce':                { methods: ['POST'], auth: 'admin' },
+  announce: { methods: ['POST'], auth: 'admin' },
 
   // ── Export ──────────────────────────────────────────────────────
-  'export/volunteer-hours':  { methods: ['POST'], auth: 'admin' },
+  'export/volunteer-hours': { methods: ['POST'], auth: 'admin' },
+
+  // ── Form admin ──────────────────────────────────────────────────
+  'admin/form-reminder': { methods: ['POST'], auth: 'admin' },
 }
 
 /**
@@ -116,6 +133,24 @@ export function matchRoute(req: Request): RouteMatch | null {
   // Try matching user/rsvp/{id}
   if (segments[0] === 'user' && segments[1] === 'rsvp' && segments[2]) {
     return { handler: 'user', resource: 'rsvp', id: segments[2], auth: 'member' }
+  }
+
+  // content/conference-slots/{windowSlug}
+  if (segments[0] === 'content' && segments[1] === 'conference-slots' && segments[2]) {
+    if (method !== 'OPTIONS' && method !== 'GET') return null
+    return { handler: 'content', resource: 'conference-slots', id: segments[2], auth: 'none' }
+  }
+
+  // user/cancel-conference/{slotId}
+  if (segments[0] === 'user' && segments[1] === 'cancel-conference' && segments[2]) {
+    if (method !== 'OPTIONS' && method !== 'DELETE') return null
+    return { handler: 'user', resource: 'cancel-conference', id: segments[2], auth: 'member' }
+  }
+
+  // admin/form-responses/{formId}
+  if (segments[0] === 'admin' && segments[1] === 'form-responses' && segments[2]) {
+    if (method !== 'OPTIONS' && method !== 'GET') return null
+    return { handler: 'admin', resource: 'form-responses', id: segments[2], auth: 'admin' }
   }
 
   return null

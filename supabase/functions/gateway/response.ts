@@ -35,11 +35,7 @@ export function jsonError(status: number, message: string, origin: string | null
   })
 }
 
-export function csvResponse(
-  body: string,
-  filename: string,
-  origin: string | null,
-): Response {
+export function csvResponse(body: string, filename: string, origin: string | null): Response {
   return new Response(body, {
     status: 200,
     headers: {

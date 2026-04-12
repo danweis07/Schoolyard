@@ -20,6 +20,8 @@ export interface SchoolEvent {
   registrationUrl?: string
   featured: boolean
   cancelled: boolean
+  targetGrades?: string[]
+  targetClassrooms?: string[]
 }
 
 export interface NewsPost {
@@ -58,6 +60,8 @@ export interface VolunteerRole {
 
 export type ResourceCategory = 'food' | 'health' | 'housing' | 'legal' | 'mental-health' | 'other'
 
+export type ResourceSource = 'curated' | '211' | 'usda' | 'hrsa'
+
 export interface SchoolResource {
   slug: string
   name: string
@@ -67,6 +71,10 @@ export interface SchoolResource {
   phone?: string
   url?: string
   languages: string[]
+  /** Where this resource came from. Absent or 'curated' for school-maintained entries. */
+  source?: ResourceSource
+  /** For external resources, link to the provider's detail page. */
+  externalUrl?: string
 }
 
 // ── Newly exposed shapes for modules that previously lived only in
@@ -181,4 +189,107 @@ export interface PtaNewsletter {
   title: string
   pdfUrl?: string
   publishedAt: string
+}
+
+/**
+ * Lightweight school record returned by `fetchSchools()`. Contains
+ * enough data to populate a school picker and construct a runtime
+ * config — branding, modules, and languages are the JSONB columns
+ * from the `schools` table.
+ */
+export interface SchoolInfo {
+  id: string
+  slug: string
+  name: string
+  shortName: string
+  branding: Record<string, unknown>
+  modules: Record<string, unknown>
+  languages: Record<string, unknown>
+  districtId: string | null
+}
+
+// ── Spirit Store ────────────────────────────────────────────────────
+
+export interface SpiritStoreVariant {
+  label: string
+}
+
+export interface SpiritStoreProduct {
+  slug: string
+  name: string
+  description?: string
+  priceCents: number
+  imageUrl?: string
+  category?: string
+  variants: SpiritStoreVariant[]
+  maxQuantity?: number
+  order: number
+}
+
+// ── School Directory ────────────────────────────────────────────────
+
+export interface DirectoryEntry {
+  familyName: string
+  parentNames: string[]
+  studentGrades: string[]
+  email?: string
+  phone?: string
+  neighborhood?: string
+  notes?: string
+}
+
+// ── Forms ────────────────────────────────────────────────────────
+
+export type FormFieldType = 'text' | 'textarea' | 'select' | 'checkbox' | 'date' | 'signature'
+
+export interface FormFieldDefinition {
+  name: string
+  label: string
+  type: FormFieldType
+  required: boolean
+  options?: string[]
+  placeholder?: string
+}
+
+export interface SchoolForm {
+  slug: string
+  title: string
+  description?: string
+  fields: FormFieldDefinition[]
+  targetGrades: string[]
+  targetClassrooms: string[]
+  dueDate?: string
+  published: boolean
+}
+
+export interface FormResponse {
+  id: string
+  formId: string
+  userId: string
+  studentName?: string
+  responses: Record<string, unknown>
+  signature?: { typedName: string; timestamp: string }
+  submittedAt: string
+}
+
+// ── Conferences ──────────────────────────────────────────────────
+
+export interface ConferenceWindow {
+  slug: string
+  title: string
+  description?: string
+  startsOn: string
+  endsOn: string
+}
+
+export interface ConferenceSlot {
+  id: string
+  windowId: string
+  teacherName: string
+  date: string
+  startTime: string
+  endTime: string
+  durationMinutes: number
+  location?: string
+  isBooked: boolean
 }

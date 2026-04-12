@@ -1,15 +1,21 @@
 import { useState, useEffect } from 'react'
 import { ScrollView, View, Text, Pressable, Alert, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { useSchoolConfig } from '../../hooks/useSchoolConfig'
 import { useLocale, useTranslate } from '../../hooks/useLocale'
+import { useSchoolContext } from '../../lib/school-context'
+import { clearClientCache } from '../../lib/manifest'
+import { isModuleEnabled } from '@schoolyard/config'
 import { getSupabase } from '../../lib/supabase'
+import { isModuleEnabled } from '@schoolyard/config'
 
 export default function MoreScreen() {
   const config = useSchoolConfig()
   const locale = useLocale()
   const t = useTranslate(locale)
   const router = useRouter()
+  const { clearSchool } = useSchoolContext()
   const [userEmail, setUserEmail] = useState<string | null>(null)
 
   useEffect(() => {
@@ -37,6 +43,19 @@ export default function MoreScreen() {
         onPress: async () => {
           await supabase.auth.signOut()
           setUserEmail(null)
+        },
+      },
+    ])
+  }
+
+  const handleChangeSchool = () => {
+    Alert.alert('Change School', 'Switch to a different school?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Change',
+        onPress: async () => {
+          clearClientCache()
+          await clearSchool()
         },
       },
     ])
@@ -100,13 +119,88 @@ export default function MoreScreen() {
             </Pressable>
           ) : null}
         </View>
+        <Pressable
+          onPress={handleChangeSchool}
+          className="border-t border-border px-4 py-3 active:bg-muted/10"
+        >
+          <Text className="text-sm font-medium text-primary">Change school</Text>
+        </Pressable>
       </View>
+
+      {/* Announcements */}
+      <View className="mt-4 rounded-xl border border-border bg-surface">
+        <Pressable
+          onPress={() => router.push('/announcements')}
+          className="flex-row items-center justify-between px-4 py-3 active:bg-muted/10"
+        >
+          <Text className="text-sm font-medium">{t('announcements.title')}</Text>
+          <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
+        </Pressable>
+      </View>
+
+      {/* Module shortcuts */}
+      {(isModuleEnabled(config, 'spirit-store') || isModuleEnabled(config, 'directory')) && (
+        <View className="mt-4 rounded-xl border border-border bg-surface">
+          <View className="border-b border-border px-4 py-3">
+            <Text className="text-xs font-semibold uppercase text-muted">Modules</Text>
+          </View>
+          {isModuleEnabled(config, 'spirit-store') && (
+            <Pressable
+              onPress={() => router.push('/store')}
+              className="border-b border-border px-4 py-3 active:bg-muted/10"
+            >
+              <Text className="text-sm font-medium">{t('nav.store')}</Text>
+              <Text className="text-xs text-muted">{t('spiritStore.description')}</Text>
+            </Pressable>
+          )}
+          {isModuleEnabled(config, 'directory') && (
+            <Pressable
+              onPress={() => router.push('/directory')}
+              className="px-4 py-3 active:bg-muted/10"
+            >
+              <Text className="text-sm font-medium">{t('nav.directory')}</Text>
+              <Text className="text-xs text-muted">{t('directory.description')}</Text>
+            </Pressable>
+          )}
+        </View>
+      )}
 
       {/* Links */}
       <View className="mt-4 rounded-xl border border-border bg-surface">
         <View className="border-b border-border px-4 py-3">
           <Text className="text-xs font-semibold uppercase text-muted">Links</Text>
         </View>
+        {isModuleEnabled(config, 'resources') ? (
+          <Pressable
+            onPress={() => router.push('/resources')}
+            className="flex-row items-center border-b border-border px-4 py-3 active:bg-muted/10"
+          >
+            <Ionicons name="heart-circle-outline" size={20} color="#1a4f8a" />
+            <View className="ml-3 flex-1">
+              <Text className="text-sm font-medium">{t('nav.resources')}</Text>
+              <Text className="text-xs text-muted">{t('resources.description')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#999" />
+          </Pressable>
+        ) : null}
+        {isModuleEnabled(config, 'forms') ? (
+          <Pressable
+            onPress={() => router.push('/forms')}
+            className="border-b border-border px-4 py-3 active:bg-muted/10"
+          >
+            <Text className="text-sm font-medium">{t('forms.title')}</Text>
+            <Text className="text-xs text-muted">{t('forms.description')}</Text>
+          </Pressable>
+        ) : null}
+        {isModuleEnabled(config, 'conferences') ? (
+          <Pressable
+            onPress={() => router.push('/conferences')}
+            className="border-b border-border px-4 py-3 active:bg-muted/10"
+          >
+            <Text className="text-sm font-medium">{t('conferences.title')}</Text>
+            <Text className="text-xs text-muted">{t('conferences.description')}</Text>
+          </Pressable>
+        ) : null}
         {config.deployment.siteUrl ? (
           <Pressable
             onPress={() => Linking.openURL(config.deployment.siteUrl)}
