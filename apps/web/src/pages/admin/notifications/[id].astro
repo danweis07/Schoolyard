@@ -1,0 +1,269 @@
+---
+/**
+ * Admin single notification detail — shows title, body, delivery stats,
+ * reply count, and a resend button. Fetches via the gateway.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+const notificationId = Astro.params.id ?? ''
+---
+
+<BaseLayout title="Admin - Notification Detail" description="View notification details">
+  <div
+    class="mx-auto max-w-3xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
+    data-notification-id={notificationId}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">You need to be signed in as an editor or admin to view notifications.</p>
+      <a
+        href={`/sign-in?redirect=/admin/notifications/${notificationId}`}
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Detail content -->
+    <div id="admin-content" class="hidden">
+      <nav class="text-sm text-muted" aria-label="Breadcrumb">
+        <a href="/admin/" class="hover:underline">Admin</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <a href="/admin/notifications/" class="hover:underline">Notifications</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <span id="breadcrumb-title">Detail</span>
+      </nav>
+      <h1 class="mt-1 text-2xl font-bold" id="notif-title">Notification Detail</h1>
+
+      <!-- Status messages -->
+      <div id="form-message" class="mt-4 hidden rounded-card p-4 text-sm" role="alert"></div>
+
+      <!-- Delivery stats -->
+      <div class="mt-6 grid gap-4 sm:grid-cols-4">
+        <div class="rounded-card border border-border bg-surface p-card">
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">Sent To</p>
+          <p class="mt-1 text-2xl font-bold" id="stat-sent-to">--</p>
+        </div>
+        <div class="rounded-card border border-border bg-surface p-card">
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">Delivered</p>
+          <p class="mt-1 text-2xl font-bold" id="stat-delivered">--</p>
+        </div>
+        <div class="rounded-card border border-border bg-surface p-card">
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">Failed</p>
+          <p class="mt-1 text-2xl font-bold" id="stat-failed">--</p>
+        </div>
+        <div class="rounded-card border border-border bg-surface p-card">
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">Replies</p>
+          <p class="mt-1 text-2xl font-bold" id="stat-replies">--</p>
+        </div>
+      </div>
+
+      <!-- Notification body -->
+      <div class="mt-6 rounded-card border border-border bg-surface p-card">
+        <h2 class="text-sm font-medium text-muted">Body</h2>
+        <p class="mt-2 whitespace-pre-wrap text-base" id="notif-body">Loading...</p>
+      </div>
+
+      <!-- Metadata -->
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        <div class="rounded-card border border-border bg-surface p-card">
+          <h2 class="text-sm font-medium text-muted">Audience</h2>
+          <p class="mt-1 text-base font-semibold" id="notif-audience">--</p>
+        </div>
+        <div class="rounded-card border border-border bg-surface p-card">
+          <h2 class="text-sm font-medium text-muted">Urgency</h2>
+          <p class="mt-1 text-base font-semibold" id="notif-urgency">--</p>
+        </div>
+        <div class="rounded-card border border-border bg-surface p-card">
+          <h2 class="text-sm font-medium text-muted">Sent At</h2>
+          <p class="mt-1 text-base font-semibold" id="notif-sent-at">--</p>
+        </div>
+        <div class="rounded-card border border-border bg-surface p-card">
+          <h2 class="text-sm font-medium text-muted">Status</h2>
+          <p class="mt-1 text-base font-semibold" id="notif-status">--</p>
+        </div>
+      </div>
+
+      <!-- Image preview -->
+      <div id="image-preview" class="mt-4 hidden rounded-card border border-border bg-surface p-card">
+        <h2 class="text-sm font-medium text-muted">Attached Image</h2>
+        <img id="notif-image" class="mt-2 max-h-48 rounded-card object-cover" alt="Notification image" />
+      </div>
+
+      <!-- Action buttons -->
+      <div class="mt-6 flex flex-wrap items-center gap-3 border-t border-border pt-6">
+        <button
+          type="button"
+          id="btn-resend"
+          class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+        >
+          Resend Notification
+        </button>
+        <a
+          href="/admin/notifications/"
+          class="rounded-button border border-border px-6 py-2.5 text-sm font-semibold hover:bg-muted/10"
+        >
+          Back to list
+        </a>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+  const notificationId = root.dataset.notificationId ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const msgEl = document.getElementById('form-message')!
+  const btnResend = document.getElementById('btn-resend') as HTMLButtonElement
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function showMsg(text: string, type: 'success' | 'error') {
+    msgEl.textContent = text
+    msgEl.className =
+      type === 'success'
+        ? 'mt-4 rounded-card p-4 text-sm bg-success/10 border border-success/30'
+        : 'mt-4 rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+  }
+
+  function formatDate(iso: string): string {
+    try {
+      return new Date(iso).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+    } catch {
+      return iso
+    }
+  }
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const authClient = createBrowserClient({ url, anonKey: anon })
+
+    let admin: ReturnType<typeof createAdminClient>
+
+    async function init() {
+      const {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
+        showView('auth')
+        return
+      }
+
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error: profileErr } = await admin.getProfile()
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (profileErr || !profile?.school_id || !allowed.includes(profile.role)) {
+        showView('auth')
+        return
+      }
+
+      showView('content')
+
+      // Load notification detail
+      const { data: notif, error } = await admin.get<{
+        id: string
+        title: string
+        body: string
+        image_url: string | null
+        audience: string
+        urgency: string
+        status: string
+        sent_at: string
+        sent_to_count: number
+        delivered_count: number
+        failed_count: number
+        reply_count: number
+      }>('notifications', notificationId)
+
+      if (error || !notif) {
+        showMsg(error ?? 'Notification not found', 'error')
+        return
+      }
+
+      document.getElementById('notif-title')!.textContent = notif.title
+      document.getElementById('breadcrumb-title')!.textContent = notif.title
+      document.getElementById('notif-body')!.textContent = notif.body
+      document.getElementById('notif-audience')!.textContent = notif.audience ?? 'All'
+      document.getElementById('notif-urgency')!.textContent = notif.urgency ?? 'Routine'
+      document.getElementById('notif-sent-at')!.textContent = formatDate(notif.sent_at)
+      document.getElementById('notif-status')!.textContent = notif.status ?? '--'
+
+      document.getElementById('stat-sent-to')!.textContent = String(notif.sent_to_count ?? 0)
+      document.getElementById('stat-delivered')!.textContent = String(notif.delivered_count ?? 0)
+      document.getElementById('stat-failed')!.textContent = String(notif.failed_count ?? 0)
+      document.getElementById('stat-replies')!.textContent = String(notif.reply_count ?? 0)
+
+      if (notif.image_url) {
+        const preview = document.getElementById('image-preview')!
+        const img = document.getElementById('notif-image') as HTMLImageElement
+        preview.classList.remove('hidden')
+        img.src = notif.image_url
+      }
+    }
+
+    // Resend handler
+    btnResend.addEventListener('click', async () => {
+      if (!confirm('Resend this notification to the same audience?')) return
+
+      btnResend.disabled = true
+      btnResend.textContent = 'Resending...'
+
+      const { error } = await admin.create('notifications', {
+        resend_id: notificationId,
+      })
+
+      btnResend.disabled = false
+      btnResend.textContent = 'Resend Notification'
+
+      if (error) {
+        showMsg(`Resend failed: ${error}`, 'error')
+        return
+      }
+
+      showMsg('Notification resent successfully.', 'success')
+    })
+
+    init()
+  }
+</script>

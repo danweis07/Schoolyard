@@ -1,9 +1,10 @@
-import { Tabs } from 'expo-router'
+import { Tabs, useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { useSchoolConfig } from '../../hooks/useSchoolConfig'
 import { useTranslate } from '../../hooks/useLocale'
 import { isModuleEnabled } from '@schoolyard/config'
 import { getSchoolTheme } from '../../lib/theme'
+import { NotificationBadge } from '../../components/NotificationBadge'
 
 /**
  * Tab navigator. Tabs are conditionally rendered based on enabled modules
@@ -14,6 +15,7 @@ export default function TabLayout() {
   const config = useSchoolConfig()
   const t = useTranslate()
   const theme = getSchoolTheme(config.branding.primaryColor, config.branding.accentColor)
+  const router = useRouter()
 
   return (
     <Tabs
@@ -23,6 +25,12 @@ export default function TabLayout() {
         headerStyle: { backgroundColor: theme.color.primary },
         headerTintColor: theme.color.text.inverse,
         headerTitleStyle: { fontWeight: '700' },
+        headerRight: () => (
+          <NotificationBadge
+            color={theme.color.text.inverse}
+            onPress={() => router.push('/notifications')}
+          />
+        ),
       }}
     >
       <Tabs.Screen

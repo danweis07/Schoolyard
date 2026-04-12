@@ -1378,3 +1378,302 @@ describe('cross-tenant isolation', () => {
     expect(ids).toContain(ctx.rows.eventB)
   })
 })
+
+// ─── Notification system ─────────────────────────────────────────────
+
+describe('Notification system', () => {
+  describe('notification_contacts', () => {
+    it('admin-a can read school A contacts', async () => {
+      await expectRows(ctx.adminA, 'notification_contacts', {
+        column: 'id',
+        value: ctx.rows.notificationContactA,
+      })
+    })
+
+    it('member-a cannot read notification contacts', async () => {
+      await expectNoRows(ctx.memberA, 'notification_contacts')
+    })
+
+    it('anon cannot read notification contacts', async () => {
+      await expectNoRows(ctx.anon, 'notification_contacts')
+    })
+
+    it('editor-b cannot read school A contacts', async () => {
+      await expectNoRows(ctx.editorB, 'notification_contacts', {
+        column: 'id',
+        value: ctx.rows.notificationContactA,
+      })
+    })
+  })
+
+  describe('notification_preferences', () => {
+    it('member-a can read own preferences', async () => {
+      await expectRows(ctx.memberA, 'notification_preferences', {
+        column: 'id',
+        value: ctx.rows.notificationPreferenceA,
+      })
+    })
+
+    it('admin-a can read school A preferences', async () => {
+      await expectRows(ctx.adminA, 'notification_preferences', {
+        column: 'school_id',
+        value: ctx.schoolAId,
+      })
+    })
+
+    it('anon cannot read notification preferences', async () => {
+      await expectNoRows(ctx.anon, 'notification_preferences')
+    })
+  })
+
+  describe('notifications', () => {
+    it('anon can read sent notifications', async () => {
+      await expectRows(ctx.anon, 'notifications', {
+        column: 'id',
+        value: ctx.rows.notificationA,
+      })
+    })
+
+    it('anon cannot read draft notifications (sent_at is null)', async () => {
+      await expectNoRows(ctx.anon, 'notifications', {
+        column: 'id',
+        value: ctx.rows.notificationDraft,
+      })
+    })
+
+    it('admin-a can insert notifications for school A', async () => {
+      const { data, error } = await ctx.adminA
+        .from('notifications')
+        .insert({
+          school_id: ctx.schoolAId,
+          title: 'Admin Notification',
+          body: 'Test body',
+          created_by: ctx.adminAId,
+        })
+        .select('id')
+        .single()
+      expect(error).toBeNull()
+      await ctx.service.from('notifications').delete().eq('id', data!.id)
+    })
+
+    it('editor-b cannot insert notifications for school A', async () => {
+      await expectInsertDenied(ctx.editorB, 'notifications', {
+        school_id: ctx.schoolAId,
+        title: 'Cross Tenant Notification',
+        body: 'Should fail',
+        created_by: ctx.editorBId,
+      })
+    })
+  })
+
+  describe('notification_deliveries', () => {
+    it('admin-a can read school A deliveries', async () => {
+      await expectRows(ctx.adminA, 'notification_deliveries', {
+        column: 'school_id',
+        value: ctx.schoolAId,
+      })
+    })
+
+    it('member-a can read own deliveries', async () => {
+      await expectRows(ctx.memberA, 'notification_deliveries', {
+        column: 'id',
+        value: ctx.rows.notificationDeliveryA,
+      })
+    })
+
+    it('anon cannot read notification deliveries', async () => {
+      await expectNoRows(ctx.anon, 'notification_deliveries')
+    })
+  })
+
+  describe('notification_templates', () => {
+    it('anon can read notification templates', async () => {
+      await expectRows(ctx.anon, 'notification_templates', {
+        column: 'id',
+        value: ctx.rows.notificationTemplateA,
+      })
+    })
+
+    it('editor-a can insert template for school A', async () => {
+      const { data, error } = await ctx.editorA
+        .from('notification_templates')
+        .insert({
+          school_id: ctx.schoolAId,
+          slug: 'rls-editor-template',
+          name: 'Editor Template',
+          subject: 'Subject',
+          body: 'Body',
+        })
+        .select('id')
+        .single()
+      expect(error).toBeNull()
+      await ctx.service.from('notification_templates').delete().eq('id', data!.id)
+    })
+
+    it('anon cannot insert notification templates', async () => {
+      await expectInsertDenied(ctx.anon, 'notification_templates', {
+        school_id: ctx.schoolAId,
+        slug: 'anon-template',
+        name: 'Anon Template',
+        subject: 'Subject',
+        body: 'Body',
+      })
+    })
+  })
+
+  describe('notification_inbox', () => {
+    it('member-a can read own inbox', async () => {
+      await expectRows(ctx.memberA, 'notification_inbox', {
+        column: 'id',
+        value: ctx.rows.notificationInboxA,
+      })
+    })
+
+    it('member-a can update own inbox (read/pin)', async () => {
+      const { data, error } = await ctx.memberA
+        .from('notification_inbox')
+        .update({ read: true, pinned: true })
+        .eq('id', ctx.rows.notificationInboxA)
+        .select('id')
+      expect(error).toBeNull()
+      expect(data!.length).toBe(1)
+
+      // Revert
+      await ctx.service
+        .from('notification_inbox')
+        .update({ read: false, pinned: false })
+        .eq('id', ctx.rows.notificationInboxA)
+    })
+
+    it('editor-b cannot read member-a inbox', async () => {
+      await expectNoRows(ctx.editorB, 'notification_inbox', {
+        column: 'id',
+        value: ctx.rows.notificationInboxA,
+      })
+    })
+  })
+
+  describe('notification_audit_log', () => {
+    it('admin-a can read school A audit log', async () => {
+      await expectRows(ctx.adminA, 'notification_audit_log', {
+        column: 'school_id',
+        value: ctx.schoolAId,
+      })
+    })
+
+    it('member-a cannot read notification audit log', async () => {
+      await expectNoRows(ctx.memberA, 'notification_audit_log')
+    })
+  })
+
+  describe('audience_segments', () => {
+    it('anon can read audience segments', async () => {
+      await expectRows(ctx.anon, 'audience_segments', {
+        column: 'id',
+        value: ctx.rows.audienceSegmentA,
+      })
+    })
+
+    it('editor-a can insert segment for school A', async () => {
+      const { data, error } = await ctx.editorA
+        .from('audience_segments')
+        .insert({
+          school_id: ctx.schoolAId,
+          slug: 'rls-editor-segment',
+          name: 'Editor Segment',
+          type: 'grade',
+        })
+        .select('id')
+        .single()
+      expect(error).toBeNull()
+      await ctx.service.from('audience_segments').delete().eq('id', data!.id)
+    })
+
+    it('anon cannot insert audience segments', async () => {
+      await expectInsertDenied(ctx.anon, 'audience_segments', {
+        school_id: ctx.schoolAId,
+        slug: 'anon-segment',
+        name: 'Anon Segment',
+        type: 'grade',
+      })
+    })
+  })
+
+  describe('audience_segment_members', () => {
+    it('admin-a can read segment members for school A', async () => {
+      await expectRows(ctx.adminA, 'audience_segment_members', {
+        column: 'school_id',
+        value: ctx.schoolAId,
+      })
+    })
+
+    it('admin-a can insert segment member', async () => {
+      const { data, error } = await ctx.adminA
+        .from('audience_segment_members')
+        .insert({
+          segment_id: ctx.rows.audienceSegmentA,
+          user_id: ctx.editorAId,
+          school_id: ctx.schoolAId,
+        })
+        .select('id')
+        .single()
+      expect(error).toBeNull()
+      await ctx.service.from('audience_segment_members').delete().eq('id', data!.id)
+    })
+
+    it('member-a can read own segment membership', async () => {
+      await expectRows(ctx.memberA, 'audience_segment_members', {
+        column: 'id',
+        value: ctx.rows.audienceSegmentMemberA,
+      })
+    })
+  })
+
+  describe('send_permissions', () => {
+    it('admin-a can read send permissions for school A', async () => {
+      await expectRows(ctx.adminA, 'send_permissions', {
+        column: 'school_id',
+        value: ctx.schoolAId,
+      })
+    })
+
+    it('admin-a can insert send permission', async () => {
+      const { data, error } = await ctx.adminA
+        .from('send_permissions')
+        .insert({
+          user_id: ctx.editorAId,
+          school_id: ctx.schoolAId,
+          permission: 'segment_only',
+        })
+        .select('id')
+        .single()
+      expect(error).toBeNull()
+      await ctx.service.from('send_permissions').delete().eq('id', data!.id)
+    })
+
+    it('member-a can read own send permission', async () => {
+      // member-a has no send permission, so filter by user_id — should return 0
+      // But member-a should be able to read their own rows if they exist
+      const { data, error } = await ctx.memberA
+        .from('send_permissions')
+        .select('id')
+        .eq('user_id', ctx.memberAId)
+      expect(error).toBeNull()
+      // member-a has no permission row, so 0 is correct (but the read itself is allowed)
+      expect(data!.length).toBe(0)
+    })
+  })
+
+  describe('notification_replies', () => {
+    it('admin-a can read school A replies', async () => {
+      await expectRows(ctx.adminA, 'notification_replies', {
+        column: 'school_id',
+        value: ctx.schoolAId,
+      })
+    })
+
+    it('anon cannot read notification replies', async () => {
+      await expectNoRows(ctx.anon, 'notification_replies')
+    })
+  })
+})

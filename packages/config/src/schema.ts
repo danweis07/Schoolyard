@@ -290,6 +290,20 @@ export const districtSchema = z
   })
   .optional()
 
+/**
+ * Notification system config — cross-cutting core feature (not a module).
+ * Controls multi-channel delivery (push, email, SMS via OneSignal).
+ * When `enabled` is false, no notification UI renders and the gateway
+ * notify handler returns 404.
+ */
+export const notificationsSchema = z.object({
+  enabled: z.boolean().default(false),
+  onesignalAppId: z.string().default(''),
+  smsEnabled: z.boolean().default(false),
+  emailEnabled: z.boolean().default(true),
+  defaultUrgency: z.enum(['routine', 'urgent']).default('routine'),
+})
+
 export const schoolConfigSchema = z.object({
   $schema: z.string().optional(),
   school: schoolSchema,
@@ -326,6 +340,12 @@ export const schoolConfigSchema = z.object({
    * target different Supabase projects per environment.
    */
   supabase: supabaseSchema.default({}),
+  /**
+   * Multi-channel notification system. Cross-cutting core feature —
+   * not a module (always present when enabled, independent of module toggles).
+   * Controls push + email + SMS delivery via OneSignal with Expo fallback.
+   */
+  notifications: notificationsSchema.default({}),
 })
 
 export type SchoolConfig = z.infer<typeof schoolConfigSchema>

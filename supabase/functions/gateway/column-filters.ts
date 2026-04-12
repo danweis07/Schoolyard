@@ -57,6 +57,14 @@ export const PUBLIC_SELECT: Record<string, string> = {
 
   conference_slots:
     'id, window_id, teacher_name, date, start_time, end_time, duration_minutes, location',
+
+  // created_by, onesignal_notification_id excluded — internal
+  notifications:
+    'id, title, body_text, body_html, image_url, urgency, topic, sent_at',
+
+  // created_by excluded — internal
+  notification_templates:
+    'id, slug, title, body_text, body_html, urgency, topic, locale_versions',
 }
 
 /**

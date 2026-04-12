@@ -1,0 +1,330 @@
+---
+/**
+ * Admin notification templates — list existing templates and create new ones.
+ *
+ * Templates have a slug, title, body, and urgency level. They can be
+ * selected when composing a notification for quick reuse.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+---
+
+<BaseLayout title="Admin - Notification Templates" description="Manage notification templates">
+  <div
+    class="mx-auto max-w-5xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">
+        You need to be signed in as an editor or admin to manage templates.
+      </p>
+      <a
+        href="/sign-in?redirect=/admin/notifications/templates"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Main content -->
+    <div id="admin-content" class="hidden">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <nav class="text-sm text-muted" aria-label="Breadcrumb">
+            <a href="/admin/" class="hover:underline">Admin</a>
+            <span class="mx-1" aria-hidden="true">/</span>
+            <a href="/admin/notifications/" class="hover:underline">Notifications</a>
+            <span class="mx-1" aria-hidden="true">/</span>
+            <span>Templates</span>
+          </nav>
+          <h1 class="mt-1 text-2xl font-bold">Notification Templates</h1>
+        </div>
+      </div>
+
+      <!-- Create template form -->
+      <div class="mt-6 rounded-card border border-border bg-surface p-card">
+        <h2 class="text-lg font-semibold">Create Template</h2>
+        <div id="template-message" class="mt-2 hidden rounded-card p-4 text-sm" role="alert"></div>
+        <form id="template-form" class="mt-4 space-y-4" novalidate>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="field-slug" class="block text-sm font-medium">
+                Slug <span class="text-error" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="field-slug"
+                type="text"
+                required
+                class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-sm font-mono placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="snow-day"
+              />
+            </div>
+            <div>
+              <label for="field-title" class="block text-sm font-medium">
+                Title <span class="text-error" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="field-title"
+                type="text"
+                required
+                class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Snow Day Alert"
+              />
+            </div>
+          </div>
+          <div>
+            <label for="field-body" class="block text-sm font-medium">
+              Body <span class="text-error" aria-hidden="true">*</span>
+            </label>
+            <textarea
+              id="field-body"
+              rows="4"
+              required
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="School is closed today due to weather..."></textarea>
+          </div>
+          <div>
+            <label for="field-urgency" class="block text-sm font-medium">Urgency</label>
+            <select
+              id="field-urgency"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="routine">Routine</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-3">
+            <button
+              type="submit"
+              id="btn-create"
+              class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+            >
+              Create Template
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Templates table -->
+      <h2 class="mt-8 text-lg font-bold">Existing Templates</h2>
+      <div class="mt-4 overflow-x-auto rounded-card border border-border">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-border bg-muted/5">
+              <th class="px-4 py-3 font-semibold" scope="col">Slug</th>
+              <th class="px-4 py-3 font-semibold" scope="col">Title</th>
+              <th class="hidden px-4 py-3 font-semibold md:table-cell" scope="col">Urgency</th>
+              <th class="px-4 py-3 text-right font-semibold" scope="col">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="templates-tbody">
+            <tr>
+              <td class="px-4 py-8 text-center text-muted" colspan="4">Loading templates...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const tbody = document.getElementById('templates-tbody')!
+  const form = document.getElementById('template-form') as HTMLFormElement
+  const msgEl = document.getElementById('template-message')!
+  const btnCreate = document.getElementById('btn-create') as HTMLButtonElement
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function showMsg(text: string, type: 'success' | 'error') {
+    msgEl.textContent = text
+    msgEl.className =
+      type === 'success'
+        ? 'mt-2 rounded-card p-4 text-sm bg-success/10 border border-success/30'
+        : 'mt-2 rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+  }
+
+  function escapeHtml(str: string): string {
+    const d = document.createElement('div')
+    d.textContent = str
+    return d.innerHTML
+  }
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const authClient = createBrowserClient({ url, anonKey: anon })
+
+    let admin: ReturnType<typeof createAdminClient>
+
+    async function checkAuth(): Promise<boolean> {
+      const {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
+        showView('auth')
+        return false
+      }
+
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error } = await admin.getProfile()
+      if (error || !profile?.school_id) {
+        showView('auth')
+        return false
+      }
+
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (!allowed.includes(profile.role)) {
+        showView('auth')
+        return false
+      }
+
+      return true
+    }
+
+    async function loadTemplates() {
+      const { data: templates, error } = await admin.list<{
+        id: string
+        slug: string
+        title: string
+        body: string
+        urgency: string
+      }>('notification_templates')
+
+      if (error || !templates) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-error" colspan="4">Failed to load templates: ${escapeHtml(error ?? 'Unknown error')}</td></tr>`
+        return
+      }
+
+      if (templates.length === 0) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-muted" colspan="4">No templates yet. Create one above.</td></tr>`
+        return
+      }
+
+      tbody.innerHTML = templates
+        .map((t) => {
+          const urgencyBadge =
+            t.urgency === 'urgent'
+              ? '<span class="inline-block rounded-button bg-error/15 px-2 py-0.5 text-xs font-medium">Urgent</span>'
+              : '<span class="inline-block rounded-button bg-muted/15 px-2 py-0.5 text-xs font-medium">Routine</span>'
+
+          return `<tr class="border-b border-border last:border-0 hover:bg-muted/5">
+          <td class="px-4 py-3 font-mono text-sm">${escapeHtml(t.slug)}</td>
+          <td class="px-4 py-3 font-medium">${escapeHtml(t.title)}</td>
+          <td class="hidden px-4 py-3 md:table-cell">${urgencyBadge}</td>
+          <td class="px-4 py-3 text-right">
+            <button type="button" data-delete="${t.id}" data-title="${escapeHtml(t.title)}" class="text-sm font-semibold text-error hover:underline">Delete</button>
+          </td>
+        </tr>`
+        })
+        .join('')
+
+      // Attach delete handlers
+      tbody.querySelectorAll<HTMLButtonElement>('[data-delete]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.delete!
+          const title = btn.dataset.title ?? 'this template'
+          if (!confirm(`Delete template "${title}"? This cannot be undone.`)) return
+
+          btn.disabled = true
+          btn.textContent = 'Deleting...'
+
+          const { error: delErr } = await admin.remove('notification_templates', id)
+          if (delErr) {
+            alert(`Failed to delete: ${delErr}`)
+            btn.disabled = false
+            btn.textContent = 'Delete'
+          } else {
+            loadTemplates()
+          }
+        })
+      })
+    }
+
+    // Create handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      const slug = (document.getElementById('field-slug') as HTMLInputElement).value.trim()
+      const title = (document.getElementById('field-title') as HTMLInputElement).value.trim()
+      const body = (document.getElementById('field-body') as HTMLTextAreaElement).value.trim()
+      const urgency = (document.getElementById('field-urgency') as HTMLSelectElement).value
+
+      if (!slug) {
+        showMsg('Slug is required.', 'error')
+        return
+      }
+      if (!title) {
+        showMsg('Title is required.', 'error')
+        return
+      }
+      if (!body) {
+        showMsg('Body is required.', 'error')
+        return
+      }
+
+      btnCreate.disabled = true
+      btnCreate.textContent = 'Creating...'
+
+      const { error } = await admin.create('notification_templates', { slug, title, body, urgency })
+
+      btnCreate.disabled = false
+      btnCreate.textContent = 'Create Template'
+
+      if (error) {
+        showMsg(`Failed to create: ${error}`, 'error')
+        return
+      }
+
+      showMsg('Template created.', 'success')
+      form.reset()
+      loadTemplates()
+    })
+
+    async function init() {
+      if (await checkAuth()) {
+        showView('content')
+        loadTemplates()
+      }
+    }
+
+    init()
+  }
+</script>

@@ -25,6 +25,14 @@ import { handleFundraising } from './handlers/fundraising.ts'
 import { handleContact } from './handlers/contact.ts'
 import { handleAnnounce } from './handlers/announce.ts'
 import { handleExport } from './handlers/export.ts'
+import { handleNotify } from './handlers/notify.ts'
+import { handleInbox } from './handlers/inbox.ts'
+import { handleNotificationPrefs } from './handlers/notification-prefs.ts'
+import { handleSegments } from './handlers/segments.ts'
+import { handleNotificationContacts } from './handlers/notification-contacts.ts'
+import { handleNotificationTemplates } from './handlers/notification-templates.ts'
+import { handleSmsReply } from './handlers/sms-reply.ts'
+import { handleAlertWebhook } from './handlers/alert-webhook.ts'
 
 const HANDLER_MAP: Record<string, (ctx: GatewayContext) => Promise<Response>> = {
   content: handleContent,
@@ -34,6 +42,14 @@ const HANDLER_MAP: Record<string, (ctx: GatewayContext) => Promise<Response>> = 
   contact: handleContact,
   announce: handleAnnounce,
   export: handleExport,
+  notify: handleNotify,
+  inbox: handleInbox,
+  'notification-prefs': handleNotificationPrefs,
+  segments: handleSegments,
+  'notification-contacts': handleNotificationContacts,
+  'notification-templates': handleNotificationTemplates,
+  'sms-reply': handleSmsReply,
+  'alert-webhook': handleAlertWebhook,
 }
 
 Deno.serve(async (req: Request) => {
@@ -64,7 +80,11 @@ Deno.serve(async (req: Request) => {
   const schoolSlug = getSchoolFromRequest(req)
   let schoolId = ''
 
-  const needsSchool = route.resource !== 'profile' && route.handler !== 'announce' // announce gets school from payload
+  const needsSchool =
+    route.resource !== 'profile' &&
+    route.handler !== 'announce' &&
+    route.handler !== 'sms-reply' &&
+    route.handler !== 'alert-webhook'
 
   if (needsSchool) {
     if (!schoolSlug) {

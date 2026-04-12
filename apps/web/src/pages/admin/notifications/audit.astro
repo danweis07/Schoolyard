@@ -1,0 +1,211 @@
+---
+/**
+ * Admin notification audit log — read-only list of all notification actions
+ * fetched from the gateway. Shows who sent what, when, and to whom.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+---
+
+<BaseLayout title="Admin - Notification Audit Log" description="Notification audit trail">
+  <div
+    class="mx-auto max-w-5xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">
+        You need to be signed in as an admin to view the audit log.
+      </p>
+      <a
+        href="/sign-in?redirect=/admin/notifications/audit"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Main content -->
+    <div id="admin-content" class="hidden">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <nav class="text-sm text-muted" aria-label="Breadcrumb">
+            <a href="/admin/" class="hover:underline">Admin</a>
+            <span class="mx-1" aria-hidden="true">/</span>
+            <a href="/admin/notifications/" class="hover:underline">Notifications</a>
+            <span class="mx-1" aria-hidden="true">/</span>
+            <span>Audit Log</span>
+          </nav>
+          <h1 class="mt-1 text-2xl font-bold">Notification Audit Log</h1>
+          <p class="mt-1 text-sm text-muted">Read-only record of all notification activity.</p>
+        </div>
+      </div>
+
+      <!-- Audit log table -->
+      <div class="mt-6 overflow-x-auto rounded-card border border-border">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-border bg-muted/5">
+              <th class="px-4 py-3 font-semibold" scope="col">Timestamp</th>
+              <th class="px-4 py-3 font-semibold" scope="col">Action</th>
+              <th class="hidden px-4 py-3 font-semibold sm:table-cell" scope="col">User</th>
+              <th class="hidden px-4 py-3 font-semibold md:table-cell" scope="col">Target</th>
+              <th class="hidden px-4 py-3 font-semibold lg:table-cell" scope="col">Detail</th>
+            </tr>
+          </thead>
+          <tbody id="audit-tbody">
+            <tr>
+              <td class="px-4 py-8 text-center text-muted" colspan="5">Loading audit log...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const tbody = document.getElementById('audit-tbody')!
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function formatDate(iso: string): string {
+    try {
+      return new Date(iso).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+    } catch {
+      return iso
+    }
+  }
+
+  function escapeHtml(str: string): string {
+    const d = document.createElement('div')
+    d.textContent = str
+    return d.innerHTML
+  }
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const authClient = createBrowserClient({ url, anonKey: anon })
+
+    let admin: ReturnType<typeof createAdminClient>
+
+    async function checkAuth(): Promise<boolean> {
+      const {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
+        showView('auth')
+        return false
+      }
+
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error } = await admin.getProfile()
+      if (error || !profile?.school_id) {
+        showView('auth')
+        return false
+      }
+
+      const allowed = ['admin', 'district_admin']
+      if (!allowed.includes(profile.role)) {
+        showView('auth')
+        return false
+      }
+
+      return true
+    }
+
+    async function loadAuditLog() {
+      const { data: entries, error } = await admin.list<{
+        id: string
+        timestamp: string
+        action: string
+        user_email: string | null
+        user_name: string | null
+        target: string | null
+        detail: string | null
+      }>('notification_audit')
+
+      if (error || !entries) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-error" colspan="5">Failed to load audit log: ${escapeHtml(error ?? 'Unknown error')}</td></tr>`
+        return
+      }
+
+      if (entries.length === 0) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-muted" colspan="5">No audit entries yet.</td></tr>`
+        return
+      }
+
+      tbody.innerHTML = entries
+        .map((e) => {
+          const actionBadge =
+            e.action === 'send'
+              ? '<span class="inline-block rounded-button bg-success/15 px-2 py-0.5 text-xs font-medium">Send</span>'
+              : e.action === 'resend'
+                ? '<span class="inline-block rounded-button bg-primary/15 px-2 py-0.5 text-xs font-medium">Resend</span>'
+                : e.action === 'delete'
+                  ? '<span class="inline-block rounded-button bg-error/15 px-2 py-0.5 text-xs font-medium">Delete</span>'
+                  : `<span class="inline-block rounded-button bg-muted/15 px-2 py-0.5 text-xs font-medium">${escapeHtml(e.action)}</span>`
+
+          return `<tr class="border-b border-border last:border-0 hover:bg-muted/5">
+          <td class="px-4 py-3 whitespace-nowrap text-muted">${formatDate(e.timestamp)}</td>
+          <td class="px-4 py-3">${actionBadge}</td>
+          <td class="hidden px-4 py-3 sm:table-cell">${escapeHtml(e.user_name ?? e.user_email ?? '--')}</td>
+          <td class="hidden px-4 py-3 text-muted md:table-cell">${escapeHtml(e.target ?? '--')}</td>
+          <td class="hidden px-4 py-3 text-muted lg:table-cell">${escapeHtml(e.detail ?? '--')}</td>
+        </tr>`
+        })
+        .join('')
+    }
+
+    async function init() {
+      if (await checkAuth()) {
+        showView('content')
+        loadAuditLog()
+      }
+    }
+
+    init()
+  }
+</script>

@@ -1,0 +1,372 @@
+---
+/**
+ * Admin notification composer — form to create and send a notification.
+ *
+ * Supports title, body, image URL, audience selector (all/grade/segment),
+ * urgency toggle (routine/urgent), schedule picker (now/future date),
+ * and a send button. Posts to the gateway /gateway/notify endpoint.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+---
+
+<BaseLayout title="Admin - Compose Notification" description="Send a notification">
+  <div
+    class="mx-auto max-w-3xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">You need to be signed in as an editor or admin to send notifications.</p>
+      <a
+        href="/sign-in?redirect=/admin/notifications/compose"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Form -->
+    <div id="admin-content" class="hidden">
+      <nav class="text-sm text-muted" aria-label="Breadcrumb">
+        <a href="/admin/" class="hover:underline">Admin</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <a href="/admin/notifications/" class="hover:underline">Notifications</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <span>Compose</span>
+      </nav>
+      <h1 class="mt-1 text-2xl font-bold">Compose Notification</h1>
+
+      <!-- Status messages -->
+      <div id="form-message" class="mt-4 hidden rounded-card p-4 text-sm" role="alert"></div>
+
+      <form id="notify-form" class="mt-6 space-y-6" novalidate>
+        <!-- Title -->
+        <div>
+          <label for="field-title" class="block text-sm font-medium">
+            Title <span class="text-error" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="field-title"
+            type="text"
+            required
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="School Closure Tomorrow"
+          />
+        </div>
+
+        <!-- Body -->
+        <div>
+          <label for="field-body" class="block text-sm font-medium">
+            Body <span class="text-error" aria-hidden="true">*</span>
+          </label>
+          <textarea
+            id="field-body"
+            rows="6"
+            required
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Write notification content..."></textarea>
+        </div>
+
+        <!-- Image URL -->
+        <div>
+          <label for="field-image" class="block text-sm font-medium">Image URL (optional)</label>
+          <input
+            id="field-image"
+            type="url"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="https://example.com/image.jpg"
+          />
+          <p class="mt-1 text-xs text-muted">Optional image attached to push notification.</p>
+        </div>
+
+        <!-- Audience selector -->
+        <div>
+          <label for="field-audience" class="block text-sm font-medium">Audience</label>
+          <select
+            id="field-audience"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="all">All families</option>
+            <option value="grade">By grade</option>
+            <option value="segment">By segment</option>
+          </select>
+        </div>
+
+        <!-- Grade selector (shown when audience = grade) -->
+        <div id="grade-picker" class="hidden">
+          <label for="field-grade" class="block text-sm font-medium">Grade</label>
+          <select
+            id="field-grade"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="K">Kindergarten</option>
+            <option value="1">1st Grade</option>
+            <option value="2">2nd Grade</option>
+            <option value="3">3rd Grade</option>
+            <option value="4">4th Grade</option>
+            <option value="5">5th Grade</option>
+            <option value="6">6th Grade</option>
+            <option value="7">7th Grade</option>
+            <option value="8">8th Grade</option>
+          </select>
+        </div>
+
+        <!-- Segment selector (shown when audience = segment) -->
+        <div id="segment-picker" class="hidden">
+          <label for="field-segment" class="block text-sm font-medium">Segment</label>
+          <select
+            id="field-segment"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">Loading segments...</option>
+          </select>
+        </div>
+
+        <!-- Urgency -->
+        <fieldset>
+          <legend class="text-sm font-medium">Urgency</legend>
+          <div class="mt-2 flex gap-6">
+            <label class="flex items-center gap-2">
+              <input
+                type="radio"
+                name="urgency"
+                value="routine"
+                checked
+                class="h-4 w-4 accent-primary"
+              />
+              <span class="text-sm">Routine</span>
+            </label>
+            <label class="flex items-center gap-2">
+              <input
+                type="radio"
+                name="urgency"
+                value="urgent"
+                class="h-4 w-4 accent-primary"
+              />
+              <span class="text-sm">Urgent</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Schedule -->
+        <fieldset>
+          <legend class="text-sm font-medium">Send Time</legend>
+          <div class="mt-2 flex gap-6">
+            <label class="flex items-center gap-2">
+              <input
+                type="radio"
+                name="schedule"
+                value="now"
+                checked
+                class="h-4 w-4 accent-primary"
+              />
+              <span class="text-sm">Send now</span>
+            </label>
+            <label class="flex items-center gap-2">
+              <input
+                type="radio"
+                name="schedule"
+                value="later"
+                class="h-4 w-4 accent-primary"
+              />
+              <span class="text-sm">Schedule for later</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Schedule date (shown when schedule = later) -->
+        <div id="schedule-picker" class="hidden">
+          <label for="field-scheduled-at" class="block text-sm font-medium">Scheduled Date/Time</label>
+          <input
+            id="field-scheduled-at"
+            type="datetime-local"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap items-center gap-3 border-t border-border pt-6">
+          <button
+            type="submit"
+            id="btn-send"
+            class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+          >
+            Send Notification
+          </button>
+          <a
+            href="/admin/notifications/"
+            class="rounded-button border border-border px-6 py-2.5 text-sm font-semibold hover:bg-muted/10"
+          >
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const form = document.getElementById('notify-form') as HTMLFormElement
+  const msgEl = document.getElementById('form-message')!
+  const btnSend = document.getElementById('btn-send') as HTMLButtonElement
+
+  const audienceSelect = document.getElementById('field-audience') as HTMLSelectElement
+  const gradePicker = document.getElementById('grade-picker')!
+  const segmentPicker = document.getElementById('segment-picker')!
+  const schedulePicker = document.getElementById('schedule-picker')!
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function showMsg(text: string, type: 'success' | 'error') {
+    msgEl.textContent = text
+    msgEl.className =
+      type === 'success'
+        ? 'mt-4 rounded-card p-4 text-sm bg-success/10 border border-success/30'
+        : 'mt-4 rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+  }
+
+  // Audience toggle
+  audienceSelect.addEventListener('change', () => {
+    gradePicker.classList.toggle('hidden', audienceSelect.value !== 'grade')
+    segmentPicker.classList.toggle('hidden', audienceSelect.value !== 'segment')
+  })
+
+  // Schedule toggle
+  document.querySelectorAll<HTMLInputElement>('input[name="schedule"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      schedulePicker.classList.toggle('hidden', radio.value !== 'later' || !radio.checked)
+    })
+  })
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const authClient = createBrowserClient({ url, anonKey: anon })
+
+    let admin: ReturnType<typeof createAdminClient>
+
+    async function init() {
+      const {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
+        showView('auth')
+        return
+      }
+
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error: profileErr } = await admin.getProfile()
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (profileErr || !profile?.school_id || !allowed.includes(profile.role)) {
+        showView('auth')
+        return
+      }
+
+      showView('content')
+
+      // Load segments for the segment picker
+      const { data: segments } = await admin.list<{ id: string; name: string }>('notification_segments')
+      if (segments && segments.length > 0) {
+        const segSelect = document.getElementById('field-segment') as HTMLSelectElement
+        segSelect.innerHTML = segments
+          .map((s) => `<option value="${s.id}">${s.name}</option>`)
+          .join('')
+      }
+    }
+
+    // Submit handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      const title = (document.getElementById('field-title') as HTMLInputElement).value.trim()
+      const body = (document.getElementById('field-body') as HTMLTextAreaElement).value.trim()
+      const imageUrl = (document.getElementById('field-image') as HTMLInputElement).value.trim()
+      const audience = audienceSelect.value
+      const grade = (document.getElementById('field-grade') as HTMLSelectElement).value
+      const segment = (document.getElementById('field-segment') as HTMLSelectElement).value
+      const urgency = (document.querySelector<HTMLInputElement>('input[name="urgency"]:checked'))?.value ?? 'routine'
+      const scheduleMode = (document.querySelector<HTMLInputElement>('input[name="schedule"]:checked'))?.value ?? 'now'
+      const scheduledAt = (document.getElementById('field-scheduled-at') as HTMLInputElement).value
+
+      if (!title) {
+        showMsg('Title is required.', 'error')
+        return
+      }
+      if (!body) {
+        showMsg('Body is required.', 'error')
+        return
+      }
+
+      btnSend.disabled = true
+      btnSend.textContent = 'Sending...'
+
+      const payload: Record<string, unknown> = {
+        title,
+        body,
+        image_url: imageUrl || null,
+        audience,
+        urgency,
+      }
+
+      if (audience === 'grade') payload.grade = grade
+      if (audience === 'segment') payload.segment_id = segment
+
+      if (scheduleMode === 'later' && scheduledAt) {
+        payload.scheduled_at = new Date(scheduledAt).toISOString()
+      }
+
+      const { data, error } = await admin.create('notifications', payload)
+
+      btnSend.disabled = false
+      btnSend.textContent = 'Send Notification'
+
+      if (error) {
+        showMsg(`Send failed: ${error}`, 'error')
+        return
+      }
+
+      showMsg('Notification sent successfully.', 'success')
+
+      setTimeout(() => {
+        window.location.href = '/admin/notifications/'
+      }, 1200)
+    })
+
+    init()
+  }
+</script>

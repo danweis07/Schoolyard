@@ -71,8 +71,36 @@ const ROUTES: Record<string, RouteDefinition> = {
   // ── Contact ─────────────────────────────────────────────────────
   'contact/submit': { methods: ['POST'], auth: 'none' },
 
-  // ── Announce ────────────────────────────────────────────────────
-  announce: { methods: ['POST'], auth: 'admin' },
+  // ── Announce (legacy, kept for backward compat) ─────────────────
+  'announce':                { methods: ['POST'], auth: 'admin' },
+
+  // ── Notify (multi-channel notification system) ─────────────────
+  'notify':                           { methods: ['POST'], auth: 'admin' },
+  'notify/history':                   { methods: ['GET'], auth: 'admin' },
+  'notify/translate':                 { methods: ['POST'], auth: 'admin' },
+
+  // ── Inbox (authenticated user inbox) ───────────────────────────
+  'inbox':                            { methods: ['GET'], auth: 'member' },
+  'inbox/unread-count':               { methods: ['GET'], auth: 'member' },
+
+  // ── Notification preferences ───────────────────────────────────
+  'notification-prefs':               { methods: ['GET', 'PUT'], auth: 'member' },
+
+  // ── Audience segments ──────────────────────────────────────────
+  'segments':                         { methods: ['GET', 'POST'], auth: 'editor' },
+
+  // ── Notification contacts (phone-only parents) ─────────────────
+  'notification-contacts':            { methods: ['GET', 'POST'], auth: 'admin' },
+
+  // ── Notification templates ─────────────────────────────────────
+  'notification-templates':           { methods: ['GET'], auth: 'none' },
+
+  // ── Content: sent notifications (public read) ──────────────────
+  'content/notifications':            { methods: ['GET'], auth: 'none' },
+
+  // ── Webhooks (no auth — use shared secret) ─────────────────────
+  'sms-reply':                        { methods: ['POST'], auth: 'none' },
+  'alert-webhook':                    { methods: ['POST'], auth: 'none' },
 
   // ── Export ──────────────────────────────────────────────────────
   'export/volunteer-hours': { methods: ['POST'], auth: 'admin' },
@@ -151,6 +179,37 @@ export function matchRoute(req: Request): RouteMatch | null {
   if (segments[0] === 'admin' && segments[1] === 'form-responses' && segments[2]) {
     if (method !== 'OPTIONS' && method !== 'GET') return null
     return { handler: 'admin', resource: 'form-responses', id: segments[2], auth: 'admin' }
+  }
+
+  // ── Notification system dynamic routes ──────────────────────────
+
+  // notify/{id}, notify/{id}/resend, notify/{id}/cancel
+  if (segments[0] === 'notify' && segments[1]) {
+    if (method !== 'OPTIONS' && !['GET', 'POST'].includes(method)) return null
+    return { handler: 'notify', resource: segments[1], id: segments[1], auth: 'admin' }
+  }
+
+  // inbox/{id} — update read/pin/archive
+  if (segments[0] === 'inbox' && segments[1]) {
+    if (method !== 'OPTIONS' && !['PUT'].includes(method)) return null
+    return { handler: 'inbox', resource: 'inbox', id: segments[1], auth: 'member' }
+  }
+
+  // segments/{id}, segments/{id}/members, segments/{id}/members/{memberId}
+  if (segments[0] === 'segments' && segments[1]) {
+    const authLevel: AuthLevel = segments[2] === 'members' ? 'admin' : 'editor'
+    return { handler: 'segments', resource: 'segments', id: segments[1], auth: authLevel }
+  }
+
+  // notification-contacts/{id}
+  if (segments[0] === 'notification-contacts' && segments[1]) {
+    if (method !== 'OPTIONS' && !['PUT', 'DELETE'].includes(method)) return null
+    return { handler: 'notification-contacts', resource: 'notification-contacts', id: segments[1], auth: 'admin' }
+  }
+
+  // notification-templates/{id}
+  if (segments[0] === 'notification-templates' && segments[1]) {
+    return { handler: 'notification-templates', resource: 'notification-templates', id: segments[1], auth: segments.length === 2 && method === 'GET' ? 'none' : 'editor' as AuthLevel }
   }
 
   return null

@@ -176,5 +176,12 @@ export function createStaticAdapter(options: StaticAdapterOptions): ContentAdapt
     async fetchConferenceSlots() {
       return []
     },
+    // Notifications require a backend — static adapter returns empty arrays.
+    async fetchNotifications() {
+      return []
+    },
+    async fetchNotificationTemplates() {
+      return []
+    },
   }
 }
