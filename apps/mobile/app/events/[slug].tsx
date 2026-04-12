@@ -2,6 +2,7 @@ import { ScrollView, View, Text, ActivityIndicator } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { useEvents } from '../../hooks/useEvents'
 import { useLocale, useTranslate } from '../../hooks/useLocale'
+import { RsvpButton } from '../../components/RsvpButton'
 
 export default function EventDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>()
@@ -87,11 +88,7 @@ export default function EventDetailScreen() {
 
       <Text className="mt-6 text-base leading-relaxed">{event.description}</Text>
 
-      {event.registrationUrl ? (
-        <View className="mt-6">
-          <Text className="text-sm text-primary underline">{event.registrationUrl}</Text>
-        </View>
-      ) : null}
+      {!event.cancelled ? <RsvpButton eventSlug={event.slug} /> : null}
     </ScrollView>
   )
 }

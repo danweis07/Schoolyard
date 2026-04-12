@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchCommunityListings } from '../../lib/manifest'
 import { useLocale, useTranslate } from '../../hooks/useLocale'
 import { useSchoolContext } from '../../lib/school-context'
+import { FlagButton } from '../../components/FlagButton'
 import type { CommunityListing } from '@schoolyard/content-api'
 
 export default function CommunityScreen() {
@@ -58,15 +59,20 @@ export default function CommunityScreen() {
       {visibleListings.map((listing) => (
         <View key={listing.slug} className="mb-3 rounded-xl border border-border bg-surface p-4">
           <View className="flex-row items-center justify-between">
-            <Text className="text-lg font-bold">{listing.title}</Text>
-            <Text className="rounded bg-muted/10 px-2 py-0.5 text-xs uppercase text-muted">
+            <Text className="flex-1 text-lg font-bold">{listing.title}</Text>
+            <Text className="ml-2 rounded bg-muted/10 px-2 py-0.5 text-xs uppercase text-muted">
               {listing.category}
             </Text>
           </View>
           {listing.description ? <Text className="mt-2 text-sm">{listing.description}</Text> : null}
-          {listing.neighborhood ? (
-            <Text className="mt-1 text-xs text-muted">{listing.neighborhood}</Text>
-          ) : null}
+          <View className="mt-3 flex-row items-center justify-between">
+            {listing.neighborhood ? (
+              <Text className="text-xs text-muted">{listing.neighborhood}</Text>
+            ) : (
+              <View />
+            )}
+            <FlagButton listingSlug={listing.slug} />
+          </View>
         </View>
       ))}
     </ScrollView>

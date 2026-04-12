@@ -1,4 +1,5 @@
-import { ScrollView, View, Text } from 'react-native'
+import { ScrollView, View, Text, Pressable, Linking } from 'react-native'
+import { useRouter } from 'expo-router'
 import { useSchoolConfig } from '../../hooks/useSchoolConfig'
 import { useLocale, useTranslate } from '../../hooks/useLocale'
 import { useNews } from '../../hooks/useNews'
@@ -11,6 +12,7 @@ export default function HomeScreen() {
   const config = useSchoolConfig()
   const locale = useLocale()
   const t = useTranslate(locale)
+  const router = useRouter()
   const { data: news } = useNews()
   const { data: events } = useEvents()
 
@@ -43,6 +45,16 @@ export default function HomeScreen() {
               percentOfGoal: (percent) => t('fundraising.percentRaised', { percent }),
             }}
           />
+          {config.fundraising.donateUrl ? (
+            <Pressable
+              onPress={() => Linking.openURL(config.fundraising.donateUrl)}
+              className="mt-3 rounded-lg bg-primary px-6 py-3"
+            >
+              <Text className="text-center font-semibold text-white">
+                {t('fundraising.giveNow')}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
 
@@ -50,10 +62,14 @@ export default function HomeScreen() {
         <View className="mt-6">
           <Text className="mb-2 text-lg font-bold">{t('events.upcoming')}</Text>
           {upcomingEvents.map((event) => (
-            <View key={event.slug} className="mb-2 rounded-lg border border-border bg-surface p-3">
+            <Pressable
+              key={event.slug}
+              onPress={() => router.push(`/events/${event.slug}`)}
+              className="mb-2 rounded-lg border border-border bg-surface p-3 active:bg-muted/10"
+            >
               <Text className="font-semibold">{event.title}</Text>
               <Text className="text-xs text-muted">{event.date}</Text>
-            </View>
+            </Pressable>
           ))}
         </View>
       ) : null}
@@ -62,10 +78,14 @@ export default function HomeScreen() {
         <View className="mt-6">
           <Text className="mb-2 text-lg font-bold">{t('news.latest')}</Text>
           {recentNews.map((post) => (
-            <View key={post.slug} className="mb-2 rounded-lg border border-border bg-surface p-3">
+            <Pressable
+              key={post.slug}
+              onPress={() => router.push(`/news/${post.slug}`)}
+              className="mb-2 rounded-lg border border-border bg-surface p-3 active:bg-muted/10"
+            >
               <Text className="font-semibold">{post.title}</Text>
               <Text className="mt-1 text-xs text-muted">{post.summary}</Text>
-            </View>
+            </Pressable>
           ))}
         </View>
       ) : null}

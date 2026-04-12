@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ScrollView, View, Text, Pressable, Alert, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { useSchoolConfig } from '../../hooks/useSchoolConfig'
 import { useLocale, useTranslate } from '../../hooks/useLocale'
 import { useSchoolContext } from '../../lib/school-context'
@@ -121,6 +122,17 @@ export default function MoreScreen() {
           className="border-t border-border px-4 py-3 active:bg-muted/10"
         >
           <Text className="text-sm font-medium text-primary">Change school</Text>
+        </Pressable>
+      </View>
+
+      {/* Announcements */}
+      <View className="mt-4 rounded-xl border border-border bg-surface">
+        <Pressable
+          onPress={() => router.push('/announcements')}
+          className="flex-row items-center justify-between px-4 py-3 active:bg-muted/10"
+        >
+          <Text className="text-sm font-medium">{t('announcements.title')}</Text>
+          <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
         </Pressable>
       </View>
 

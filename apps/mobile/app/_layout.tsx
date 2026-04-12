@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { View, ActivityIndicator } from 'react-native'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
@@ -25,6 +25,76 @@ if (backendMode === 'supabase') {
 }
 
 /**
+ * Sets up push notification handlers:
+ * - Foreground: show the notification as a banner
+ * - Tap response: deep link to the relevant screen
+ */
+function useNotificationHandlers() {
+  const router = useRouter()
+  const initialized = useRef(false)
+
+  useEffect(() => {
+    if (initialized.current) return
+    initialized.current = true
+
+    let cleanupHandler: (() => void) | undefined
+    let cleanupResponse: (() => void) | undefined
+    ;(async () => {
+      try {
+        // @ts-expect-error — optional dep
+        const Notifications = await import('expo-notifications')
+
+        // Show notification banner when app is in foreground
+        Notifications.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldShowBanner: true,
+            shouldShowList: true,
+            shouldPlaySound: true,
+            shouldSetBadge: false,
+          }),
+        })
+
+        // Handle notification taps — deep link to the target screen
+        const subscription = Notifications.addNotificationResponseReceivedListener(
+          (response: unknown) => {
+            const r = response as {
+              notification: { request: { content: { data?: Record<string, unknown> } } }
+            }
+            const data = r.notification.request.content.data
+            if (!data) return
+
+            // The announce edge function sends data with type + slug
+            const route = data.route as string | undefined
+            const type = data.type as string | undefined
+            const slug = data.slug as string | undefined
+
+            if (route) {
+              router.push(route)
+            } else if (type === 'event' && slug) {
+              router.push(`/events/${slug}`)
+            } else if (type === 'news' && slug) {
+              router.push(`/news/${slug}`)
+            } else if (type === 'announcement') {
+              router.push('/announcements')
+            }
+          },
+        )
+
+        cleanupResponse = () => subscription.remove()
+      } catch {
+        // expo-notifications not installed — silent noop
+      }
+    })()
+
+    return () => {
+      cleanupHandler?.()
+      cleanupResponse?.()
+    }
+  }, [router])
+}
+
+/**
  * Handles routing based on school selection state.
  * If no school is selected, redirects to the school picker.
  * Also registers for push notifications once a school is selected.
@@ -33,6 +103,8 @@ function SchoolGate() {
   const { schoolSlug, isLoading } = useSchoolContext()
   const router = useRouter()
   const segments = useSegments()
+
+  useNotificationHandlers()
 
   useEffect(() => {
     if (isLoading) return
