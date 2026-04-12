@@ -53,6 +53,11 @@
     "resources": true,
     "transparency": true
   },
+  "resourcesConfig": {
+    "zipCode": "94112",
+    "sources": ["211"],
+    "radiusMiles": 10
+  },
   "fundraising": {
     "provider": "paypal",
     "donateUrl": "https://paypal.me/longfellowsfpta",

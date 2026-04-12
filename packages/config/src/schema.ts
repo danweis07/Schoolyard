@@ -129,6 +129,26 @@ export const fundraisingSchema = z.object({
   stripePublishableKey: z.string().default(''),
 })
 
+/**
+ * Resource aggregation settings. Controls which external sources
+ * (211.org, USDA, HRSA) are queried and at what radius.
+ */
+export const RESOURCE_SOURCES = ['211', 'usda', 'hrsa'] as const
+export type ResourceSource = (typeof RESOURCE_SOURCES)[number]
+export const resourceSourceSchema = z.enum(RESOURCE_SOURCES)
+
+export const resourcesConfigSchema = z.object({
+  /** Explicit 5-digit zip code. Falls back to parsing school.address. */
+  zipCode: z
+    .string()
+    .regex(/^\d{5}$/, 'zipCode must be a 5-digit US zip code')
+    .optional(),
+  /** Which external resource databases to query. */
+  sources: z.array(resourceSourceSchema).default(['211']),
+  /** Search radius in miles from the zip code centroid. */
+  radiusMiles: z.number().positive().default(10),
+})
+
 export const appSchema = z.object({
   enabled: z.boolean().default(false),
   pushNotifications: z.boolean().default(false),
@@ -223,6 +243,11 @@ export const schoolConfigSchema = z.object({
   languages: languagesSchema.default({}),
   modules: modulesSchema.default({}),
   fundraising: fundraisingSchema.default({}),
+  /**
+   * External community resource aggregation (211.org, USDA, HRSA).
+   * Only consulted when `modules.resources` is enabled.
+   */
+  resourcesConfig: resourcesConfigSchema.default({}),
   app: appSchema.default({}),
   deployment: deploymentSchema.default({}),
   announcements: z.array(announcementSchema).default([]),
@@ -248,6 +273,7 @@ export const schoolConfigSchema = z.object({
 
 export type SchoolConfig = z.infer<typeof schoolConfigSchema>
 export type Modules = z.infer<typeof modulesSchema>
+export type ResourcesConfig = z.infer<typeof resourcesConfigSchema>
 export type TenantSchool = z.infer<typeof tenantSchoolSchema>
 export type District = NonNullable<z.infer<typeof districtSchema>>
 export type SupabaseConnection = z.infer<typeof supabaseSchema>

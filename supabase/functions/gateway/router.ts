@@ -36,6 +36,7 @@ const ROUTES: Record<string, RouteDefinition> = {
   'content/newsletters': { methods: ['GET'], auth: 'none' },
   'content/announcements': { methods: ['GET'], auth: 'none' },
   'content/counts': { methods: ['GET'], auth: 'none' },
+  'content/community-resources': { methods: ['GET'], auth: 'none' },
 
   // ── Admin (authenticated CRUD) ─────────────────────────────────
   'admin/profile': { methods: ['GET'], auth: 'member' },

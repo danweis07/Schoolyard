@@ -9,6 +9,7 @@
 import type { GatewayContext } from '../types.ts'
 import { jsonOk, jsonError } from '../response.ts'
 import { PUBLIC_SELECT } from '../column-filters.ts'
+import { handleCommunityResources } from './community-resources.ts'
 
 export async function handleContent(ctx: GatewayContext): Promise<Response> {
   const { supabase, route, schoolId, origin } = ctx
@@ -48,6 +49,8 @@ export async function handleContent(ctx: GatewayContext): Promise<Response> {
       return handleCollection(ctx, 'pta_newsletters', {}, 'published_at', false)
     case 'announcements':
       return handleAnnouncements(ctx)
+    case 'community-resources':
+      return handleCommunityResources(ctx)
     default:
       return jsonError(404, `unknown content resource: ${route.resource}`, origin)
   }
