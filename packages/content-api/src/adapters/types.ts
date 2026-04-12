@@ -23,6 +23,9 @@ import type {
   SchoolInfo,
   SpiritStoreProduct,
   DirectoryEntry,
+  SchoolForm,
+  ConferenceWindow,
+  ConferenceSlot,
 } from '../types.js'
 import type {
   ManifestEvent,
@@ -79,6 +82,13 @@ export interface ContentAdapter {
 
   // School Directory (requires auth — returns empty for anon)
   fetchDirectory(scope?: Scope, options?: FetchOptions): Promise<DirectoryEntry[]>
+
+  // Forms
+  fetchForms(scope?: Scope, options?: FetchOptions): Promise<SchoolForm[]>
+
+  // Conferences
+  fetchConferenceWindows(scope?: Scope, options?: FetchOptions): Promise<ConferenceWindow[]>
+  fetchConferenceSlots(windowSlug: string, scope?: Scope, options?: FetchOptions): Promise<ConferenceSlot[]>
 }
 
 /** Local aliases re-exported for convenience. */
@@ -99,4 +109,7 @@ export type {
   SchoolInfo,
   SpiritStoreProduct,
   DirectoryEntry,
+  SchoolForm,
+  ConferenceWindow,
+  ConferenceSlot,
 }

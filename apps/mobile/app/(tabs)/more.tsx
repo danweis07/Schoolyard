@@ -8,6 +8,7 @@ import { useSchoolContext } from '../../lib/school-context'
 import { clearClientCache } from '../../lib/manifest'
 import { isModuleEnabled } from '@schoolyard/config'
 import { getSupabase } from '../../lib/supabase'
+import { isModuleEnabled } from '@schoolyard/config'
 
 export default function MoreScreen() {
   const config = useSchoolConfig()
@@ -180,6 +181,24 @@ export default function MoreScreen() {
               <Text className="text-xs text-muted">{t('resources.description')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color="#999" />
+          </Pressable>
+        ) : null}
+        {isModuleEnabled(config, 'forms') ? (
+          <Pressable
+            onPress={() => router.push('/forms')}
+            className="border-b border-border px-4 py-3 active:bg-muted/10"
+          >
+            <Text className="text-sm font-medium">{t('forms.title')}</Text>
+            <Text className="text-xs text-muted">{t('forms.description')}</Text>
+          </Pressable>
+        ) : null}
+        {isModuleEnabled(config, 'conferences') ? (
+          <Pressable
+            onPress={() => router.push('/conferences')}
+            className="border-b border-border px-4 py-3 active:bg-muted/10"
+          >
+            <Text className="text-sm font-medium">{t('conferences.title')}</Text>
+            <Text className="text-xs text-muted">{t('conferences.description')}</Text>
           </Pressable>
         ) : null}
         {config.deployment.siteUrl ? (

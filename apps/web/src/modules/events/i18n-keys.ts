@@ -21,4 +21,11 @@ export const eventsI18nKeys = [
   'events.categories.volunteer',
   'events.categories.other',
   'events.cancelled',
+  'events.calendarView',
+  'events.listView',
+  'events.myCalendar',
+  'events.subscribeCalendar',
+  'events.gradeCalendar',
+  'events.filterByGrade',
+  'events.today',
 ] as const

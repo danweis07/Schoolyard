@@ -72,6 +72,17 @@ export interface TestContext {
     spiritOrderLineMemberA: string
     directoryEntryVisible: string
     directoryEntryHidden: string
+    // Forms
+    formPublished: string
+    formUnpublished: string
+    formResponseMemberA: string
+    // Conferences
+    conferenceWindowPublished: string
+    conferenceWindowUnpublished: string
+    conferenceSlotOpen: string
+    conferenceSlotOpen2: string // same teacher, different time — for "same teacher twice" test
+    conferenceSlotBooked: string
+    conferenceTeacherId: string
   }
 }
 
@@ -594,6 +605,142 @@ export async function setupTestContext(): Promise<TestContext> {
     .throwOnError()
   rows.directoryEntryHidden = dirHidden!.id
 
+  // ── Forms ─────────────────────────────────────────────────────
+  const { data: formPub } = await service
+    .from('forms')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-form-published',
+      title: 'Published Form',
+      fields: [{ name: 'student_name', label: 'Student Name', type: 'text', required: true }],
+      published: true,
+      created_by: userIds.editorA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.formPublished = formPub!.id
+
+  const { data: formUnpub } = await service
+    .from('forms')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-form-unpublished',
+      title: 'Unpublished Form',
+      fields: [{ name: 'note', label: 'Note', type: 'textarea', required: false }],
+      published: false,
+      created_by: userIds.editorA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.formUnpublished = formUnpub!.id
+
+  // Form response for member-a
+  const { data: formResp } = await service
+    .from('form_responses')
+    .insert({
+      form_id: rows.formPublished,
+      school_id: schoolAId,
+      user_id: userIds.memberA,
+      student_name: 'Test Student',
+      responses: { student_name: 'Test Student' },
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.formResponseMemberA = formResp!.id
+
+  // ── Conferences ──────────────────────────────────────────────
+  const { data: cwPub } = await service
+    .from('conference_windows')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-cw-published',
+      title: 'Published Conference Window',
+      starts_on: '2026-10-15',
+      ends_on: '2026-10-17',
+      published: true,
+      created_by: userIds.editorA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.conferenceWindowPublished = cwPub!.id
+
+  const { data: cwUnpub } = await service
+    .from('conference_windows')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-cw-unpublished',
+      title: 'Unpublished Conference Window',
+      starts_on: '2026-11-01',
+      ends_on: '2026-11-03',
+      published: false,
+      created_by: userIds.editorA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.conferenceWindowUnpublished = cwUnpub!.id
+
+  // We use editorA as a pseudo-teacher for conference slots
+  rows.conferenceTeacherId = userIds.editorA
+
+  const { data: slotOpen } = await service
+    .from('conference_slots')
+    .insert({
+      window_id: rows.conferenceWindowPublished,
+      school_id: schoolAId,
+      teacher_id: userIds.editorA,
+      teacher_name: 'Teacher A',
+      date: '2026-10-15',
+      start_time: '15:00',
+      end_time: '15:15',
+      duration_minutes: 15,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.conferenceSlotOpen = slotOpen!.id
+
+  const { data: slotOpen2 } = await service
+    .from('conference_slots')
+    .insert({
+      window_id: rows.conferenceWindowPublished,
+      school_id: schoolAId,
+      teacher_id: userIds.editorA,
+      teacher_name: 'Teacher A',
+      date: '2026-10-15',
+      start_time: '15:15',
+      end_time: '15:30',
+      duration_minutes: 15,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.conferenceSlotOpen2 = slotOpen2!.id
+
+  const { data: slotBooked } = await service
+    .from('conference_slots')
+    .insert({
+      window_id: rows.conferenceWindowPublished,
+      school_id: schoolAId,
+      teacher_id: userIds.editorA,
+      teacher_name: 'Teacher A',
+      date: '2026-10-15',
+      start_time: '15:30',
+      end_time: '15:45',
+      duration_minutes: 15,
+      booked_by: userIds.adminA,
+      booked_at: new Date().toISOString(),
+      student_name: 'Already Booked Student',
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.conferenceSlotBooked = slotBooked!.id
+
   // ── Sign in as each profile ──────────────────────────────────────
   const [memberA, editorA, editorB, adminA, districtAdmin] = await Promise.all([
     makeAuthedClient(TEST_USERS[0].email, TEST_PASSWORD),
@@ -634,6 +781,10 @@ export async function teardownTestContext(ctx: TestContext): Promise<void> {
     'spirit_store_order_lines',
     'spirit_store_orders',
     'directory_entries',
+    'conference_slots',
+    'conference_windows',
+    'form_responses',
+    'forms',
     'push_tokens',
     'community_flags',
     'volunteer_hours',

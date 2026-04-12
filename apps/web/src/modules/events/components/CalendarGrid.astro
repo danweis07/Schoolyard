@@ -1,0 +1,157 @@
+---
+import { useTranslate, localizedPath } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  events: CollectionEntry<'events'>[]
+  locale: Locale
+  currentMonth: Date
+}
+
+const { events, locale, currentMonth } = Astro.props
+const t = useTranslate(locale)
+
+const year = currentMonth.getFullYear()
+const month = currentMonth.getMonth()
+
+// First and last day of the month
+const firstDay = new Date(year, month, 1)
+const lastDay = new Date(year, month + 1, 0)
+const daysInMonth = lastDay.getDate()
+
+// Day of week the month starts on (0 = Sunday)
+const startDow = firstDay.getDay()
+
+// Build day headers using locale-aware names
+const dayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'short' })
+const dayHeaders: string[] = []
+for (let i = 0; i < 7; i++) {
+  // Jan 4 2026 is a Sunday
+  const ref = new Date(2026, 0, 4 + i)
+  dayHeaders.push(dayFormatter.format(ref))
+}
+
+// Month/year header
+const monthFormatter = new Intl.DateTimeFormat(locale, {
+  month: 'long',
+  year: 'numeric',
+})
+const monthLabel = monthFormatter.format(currentMonth)
+
+// Map events by day-of-month for quick lookup
+const eventsByDay = new Map<number, CollectionEntry<'events'>[]>()
+for (const event of events) {
+  const d = event.data.date
+  if (d.getFullYear() === year && d.getMonth() === month) {
+    const day = d.getDate()
+    if (!eventsByDay.has(day)) eventsByDay.set(day, [])
+    eventsByDay.get(day)!.push(event)
+  }
+}
+
+// Build prev/next month strings
+const prevMonth = new Date(year, month - 1, 1)
+const nextMonth = new Date(year, month + 1, 1)
+const prevParam = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`
+const nextParam = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`
+
+const today = new Date()
+const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month
+const todayDate = today.getDate()
+---
+
+<div class="calendar-grid-container">
+  <!-- Month navigation -->
+  <div class="mb-4 flex items-center justify-between">
+    <button
+      type="button"
+      data-calendar-nav={prevParam}
+      class="rounded-button px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10"
+      aria-label={t('common.previous')}
+    >
+      &larr;
+    </button>
+    <h3 class="text-lg font-bold capitalize">{monthLabel}</h3>
+    <button
+      type="button"
+      data-calendar-nav={nextParam}
+      class="rounded-button px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10"
+      aria-label={t('common.next')}
+    >
+      &rarr;
+    </button>
+  </div>
+
+  <!-- Day-of-week headers -->
+  <div class="grid grid-cols-7 gap-px text-center text-xs font-semibold uppercase text-muted">
+    {dayHeaders.map((dh) => (
+      <div class="py-2">{dh}</div>
+    ))}
+  </div>
+
+  <!-- Day cells -->
+  <div class="grid grid-cols-7 gap-px rounded-card border border-border bg-border">
+    {/* Empty cells before first day */}
+    {Array.from({ length: startDow }).map((_, i) => (
+      <div class="min-h-[80px] bg-surface/50 p-1" />
+    ))}
+
+    {/* Day cells */}
+    {Array.from({ length: daysInMonth }).map((_, i) => {
+      const day = i + 1
+      const dayEvents = eventsByDay.get(day) ?? []
+      const isToday = isCurrentMonth && day === todayDate
+      return (
+        <div
+          class:list={[
+            'min-h-[80px] bg-surface p-1',
+            isToday && 'ring-2 ring-inset ring-primary',
+          ]}
+        >
+          <span
+            class:list={[
+              'inline-block rounded-full px-1.5 text-xs font-medium',
+              isToday ? 'bg-primary text-inverse' : 'text-muted',
+            ]}
+          >
+            {day}
+          </span>
+          <div class="mt-1 flex flex-col gap-0.5">
+            {dayEvents.slice(0, 3).map((ev) => (
+              <a
+                href={localizedPath(`/events/${ev.slug}`, locale)}
+                class="group flex items-center gap-1 truncate text-xs no-underline"
+                title={ev.data.title}
+              >
+                <span
+                  class:list={[
+                    'inline-block h-2 w-2 flex-shrink-0 rounded-full',
+                    ev.data.cancelled ? 'bg-error' : 'bg-[var(--sy-color-primary)]',
+                  ]}
+                />
+                <span class="truncate group-hover:underline">{ev.data.title}</span>
+              </a>
+            ))}
+            {dayEvents.length > 3 && (
+              <span class="text-xs text-muted">+{dayEvents.length - 3}</span>
+            )}
+          </div>
+        </div>
+      )
+    })}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('click', (e) => {
+    const target = (e.target as HTMLElement).closest('[data-calendar-nav]') as HTMLElement | null
+    if (!target) return
+    const monthParam = target.dataset.calendarNav
+    if (!monthParam) return
+    const url = new URL(window.location.href)
+    url.searchParams.set('month', monthParam)
+    url.searchParams.set('view', 'calendar')
+    window.location.href = url.toString()
+  })
+</script>

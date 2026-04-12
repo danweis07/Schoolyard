@@ -24,6 +24,9 @@ const TABLE_MAP: Record<string, string> = {
   programs: 'programs',
   newsletters: 'pta_newsletters',
   announcements: 'announcements',
+  forms: 'forms',
+  'conference-windows': 'conference_windows',
+  'conference-slots': 'conference_slots',
 }
 
 export async function handleAdmin(ctx: GatewayContext): Promise<Response> {
@@ -40,6 +43,24 @@ export async function handleAdmin(ctx: GatewayContext): Promise<Response> {
     if (error) return jsonError(500, error.message, origin)
     if (!data) return jsonError(404, 'profile not found', origin)
     return jsonOk(data, origin)
+  }
+
+  // ── /admin/form-responses/{formId} — read responses for a form ──
+  if (route.resource === 'form-responses') {
+    if (!route.id) return jsonError(400, 'form id required', origin)
+    const { data, error } = await supabase
+      .from('form_responses')
+      .select('id, form_id, user_id, student_name, responses, signature, submitted_at')
+      .eq('form_id', route.id)
+      .eq('school_id', schoolId)
+      .order('submitted_at', { ascending: false })
+    if (error) return jsonError(500, error.message, origin)
+    return jsonOk(data ?? [], origin)
+  }
+
+  // ── /admin/form-reminder — send push to non-submitters ─────────
+  if (route.resource === 'form-reminder') {
+    return handleFormReminder(ctx)
   }
 
   // ── /admin/counts — dashboard counts (incl. unpublished) ───────
@@ -142,4 +163,69 @@ export async function handleAdmin(ctx: GatewayContext): Promise<Response> {
   }
 
   return jsonError(405, 'method not allowed', origin)
+}
+
+// ── Form reminder — push notification to non-submitters ──────────
+
+async function handleFormReminder(ctx: GatewayContext): Promise<Response> {
+  const { req, supabase, schoolId, origin } = ctx
+
+  let body: { form_id: string }
+  try {
+    body = (await req.json()) as { form_id: string }
+  } catch {
+    return jsonError(400, 'invalid json', origin)
+  }
+
+  if (!body.form_id) return jsonError(400, 'form_id required', origin)
+
+  // Find push tokens for users who haven't submitted this form
+  const { data: tokens, error: tokenErr } = await supabase
+    .from('push_tokens')
+    .select('expo_token, user_id')
+    .eq('school_id', schoolId)
+    .not(
+      'user_id',
+      'in',
+      `(select distinct user_id from form_responses where form_id = '${body.form_id}')`,
+    )
+
+  if (tokenErr) return jsonError(500, tokenErr.message, origin)
+  if (!tokens || tokens.length === 0) return jsonOk({ sent: 0 }, origin)
+
+  // Get form title for the notification
+  const { data: form } = await supabase
+    .from('forms')
+    .select('title')
+    .eq('id', body.form_id)
+    .maybeSingle()
+
+  const title = form?.title ?? 'Form Reminder'
+
+  // Fan out push notifications (best-effort, fire-and-forget)
+  const messages = tokens
+    .filter((t: { expo_token: string }) => t.expo_token)
+    .map((t: { expo_token: string }) => ({
+      to: t.expo_token,
+      title: 'Form Reminder',
+      body: `Please complete: ${title}`,
+      sound: 'default' as const,
+    }))
+
+  if (messages.length > 0) {
+    const batches = []
+    for (let i = 0; i < messages.length; i += 100) {
+      batches.push(messages.slice(i, i + 100))
+    }
+    // Fire-and-forget to Expo Push API
+    for (const batch of batches) {
+      fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(batch),
+      }).catch(() => {})
+    }
+  }
+
+  return jsonOk({ sent: messages.length }, origin)
 }

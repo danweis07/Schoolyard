@@ -9,7 +9,7 @@
 /** Columns to SELECT for public content reads. */
 export const PUBLIC_SELECT: Record<string, string> = {
   events:
-    'slug, title, description, body_html, starts_at, ends_at, location, category, capacity, rsvp_enabled, featured, cancelled',
+    'slug, title, description, body_html, starts_at, ends_at, location, category, capacity, rsvp_enabled, featured, cancelled, target_grades, target_classrooms',
 
   news: 'slug, title, excerpt, body_html, author, tags, image, image_alt, published_at, featured',
 
@@ -46,6 +46,17 @@ export const PUBLIC_SELECT: Record<string, string> = {
 
   // created_by excluded — internal
   announcements: 'title, body, sent_at',
+
+  // created_by excluded — PII
+  forms:
+    'slug, title, description, fields, target_grades, target_classrooms, published, due_date',
+
+  // booked_by, student_name, teacher_id excluded — PII
+  conference_windows:
+    'slug, title, description, starts_on, ends_on',
+
+  conference_slots:
+    'id, window_id, teacher_name, date, start_time, end_time, duration_minutes, location',
 }
 
 /**
@@ -65,4 +76,6 @@ export const PII_FIELDS = [
   'reporter_id',
   'expo_token',
   'stripe_payment_intent',
+  'booked_by',
+  'teacher_id',
 ] as const

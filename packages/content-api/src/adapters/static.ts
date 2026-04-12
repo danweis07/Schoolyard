@@ -167,5 +167,14 @@ export function createStaticAdapter(options: StaticAdapterOptions): ContentAdapt
     async fetchDirectory() {
       return []
     },
+    async fetchForms() {
+      return []
+    },
+    async fetchConferenceWindows() {
+      return []
+    },
+    async fetchConferenceSlots() {
+      return []
+    },
   }
 }

@@ -24,6 +24,9 @@ import type {
   CommunityListing,
   SpiritStoreProduct,
   DirectoryEntry,
+  SchoolForm,
+  ConferenceWindow,
+  ConferenceSlot,
 } from '@schoolyard/content-api'
 
 export function getBaseUrl(): string {
@@ -131,4 +134,16 @@ export function fetchSpiritStoreProducts(signal?: AbortSignal): Promise<SpiritSt
 
 export function fetchDirectory(signal?: AbortSignal): Promise<DirectoryEntry[]> {
   return getClient().fetchDirectory(undefined, { signal })
+}
+
+export function fetchForms(signal?: AbortSignal): Promise<SchoolForm[]> {
+  return getClient().fetchForms(undefined, { signal })
+}
+
+export function fetchConferenceWindows(signal?: AbortSignal): Promise<ConferenceWindow[]> {
+  return getClient().fetchConferenceWindows(undefined, { signal })
+}
+
+export function fetchConferenceSlots(windowSlug: string, signal?: AbortSignal): Promise<ConferenceSlot[]> {
+  return getClient().fetchConferenceSlots(windowSlug, undefined, { signal })
 }

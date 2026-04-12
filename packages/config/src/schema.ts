@@ -103,6 +103,8 @@ export const MODULE_NAMES = [
   'transparency',
   'spirit-store',
   'directory',
+  'forms',
+  'conferences',
 ] as const
 
 export type ModuleName = (typeof MODULE_NAMES)[number]
@@ -122,6 +124,8 @@ export const modulesSchema = z.object({
   transparency: z.boolean().default(false),
   'spirit-store': z.boolean().default(false),
   directory: z.boolean().default(false),
+  forms: z.boolean().default(false),
+  conferences: z.boolean().default(false),
 })
 
 export const fundraisingSchema = z.object({

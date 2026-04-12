@@ -1,0 +1,48 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import FormCard from '@/modules/forms/components/FormCard.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
+
+export const getStaticPaths = localeStaticPaths
+
+if (!isModuleEnabled(siteConfig, 'forms')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+
+const backendMode = import.meta.env.SCHOOLYARD_BACKEND ?? 'supabase'
+
+let forms: import('@schoolyard/content-api').SchoolForm[] = []
+
+if (backendMode === 'supabase' && Astro.locals.contentClient) {
+  try {
+    const allForms = await Astro.locals.contentClient.fetchForms()
+    forms = allForms.filter((f) => f.published)
+  } catch {
+    // Gateway unavailable at build time — render empty state
+  }
+}
+---
+
+<BaseLayout title={t('forms.title')} description={t('forms.description')}>
+  <section class="mx-auto max-w-6xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{t('forms.title')}</h1>
+    <p class="mt-2 text-lg text-muted">{t('forms.description')}</p>
+
+    {
+      forms.length === 0 ? (
+        <p class="mt-8 text-muted">{t('forms.noForms')}</p>
+      ) : (
+        <div class="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {forms.map((form) => (
+            <FormCard form={form} locale={locale} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

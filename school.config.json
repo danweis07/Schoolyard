@@ -53,7 +53,9 @@
     "resources": true,
     "transparency": true,
     "spirit-store": true,
-    "directory": true
+    "directory": true,
+    "forms": true,
+    "conferences": true
   },
   "resourcesConfig": {
     "zipCode": "94112",

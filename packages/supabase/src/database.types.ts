@@ -153,6 +153,29 @@ export interface Database {
         }
         Update: Partial<AnnouncementRow>
       }
+      forms: {
+        Row: FormRow
+        Insert: ContentInsert<FormRow>
+        Update: Partial<FormRow>
+      }
+      form_responses: {
+        Row: FormResponseRow
+        Insert: Omit<FormResponseRow, 'id' | 'submitted_at'> & {
+          id?: string
+          submitted_at?: string
+        }
+        Update: Partial<FormResponseRow>
+      }
+      conference_windows: {
+        Row: ConferenceWindowRow
+        Insert: ContentInsert<ConferenceWindowRow>
+        Update: Partial<ConferenceWindowRow>
+      }
+      conference_slots: {
+        Row: ConferenceSlotRow
+        Insert: ContentInsert<ConferenceSlotRow>
+        Update: Partial<ConferenceSlotRow>
+      }
     }
     Views: {
       fundraising_program_totals: {
@@ -160,6 +183,12 @@ export interface Database {
           program_id: string | null
           school_id: string
           raised_cents: number
+        }
+      }
+      my_rsvp_events: {
+        Row: EventRow & {
+          rsvp_status: 'going' | 'maybe' | 'canceled'
+          rsvp_guests: number
         }
       }
     }
@@ -175,6 +204,10 @@ export interface Database {
       event_capacity_remaining: {
         Args: { p_event: string }
         Returns: number
+      }
+      book_conference_slot: {
+        Args: { p_slot_id: string; p_student_name?: string }
+        Returns: boolean
       }
     }
     Enums: Record<string, never>
@@ -243,6 +276,8 @@ export interface EventRow extends ContentBase {
   published: boolean
   featured: boolean
   cancelled: boolean
+  target_grades: string[]
+  target_classrooms: string[]
 }
 
 export interface NewsRow extends ContentBase {
@@ -446,4 +481,49 @@ export interface AnnouncementRow {
   sent_at: string | null
   created_by: string | null
   created_at: string
+}
+
+export interface FormRow extends ContentBase {
+  title: string
+  description: string | null
+  fields: Record<string, unknown>[]
+  target_grades: string[]
+  target_classrooms: string[]
+  published: boolean
+  due_date: string | null
+  created_by: string | null
+}
+
+export interface FormResponseRow {
+  id: string
+  form_id: string
+  school_id: string
+  user_id: string
+  student_name: string | null
+  responses: Record<string, unknown>
+  signature: Record<string, unknown> | null
+  submitted_at: string
+}
+
+export interface ConferenceWindowRow extends ContentBase {
+  title: string
+  description: string | null
+  starts_on: string
+  ends_on: string
+  published: boolean
+  created_by: string | null
+}
+
+export interface ConferenceSlotRow extends ContentBase {
+  window_id: string
+  teacher_id: string
+  teacher_name: string
+  date: string
+  start_time: string
+  end_time: string
+  duration_minutes: number
+  location: string | null
+  booked_by: string | null
+  booked_at: string | null
+  student_name: string | null
 }

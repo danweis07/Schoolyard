@@ -53,7 +53,9 @@
     "resources": false,
     "transparency": false,
     "spirit-store": false,
-    "directory": false
+    "directory": false,
+    "forms": false,
+    "conferences": false
   },
   "fundraising": {
     "provider": "paypal",
