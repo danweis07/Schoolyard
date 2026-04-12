@@ -11,22 +11,17 @@ export const PUBLIC_SELECT: Record<string, string> = {
   events:
     'slug, title, description, body_html, starts_at, ends_at, location, category, capacity, rsvp_enabled, featured, cancelled',
 
-  news:
-    'slug, title, excerpt, body_html, author, tags, image, image_alt, published_at, featured',
+  news: 'slug, title, excerpt, body_html, author, tags, image, image_alt, published_at, featured',
 
   // email excluded — PII
-  board_members:
-    'slug, name, role, photo_url, bio_html, term_start, term_end, sort_order',
+  board_members: 'slug, name, role, photo_url, bio_html, term_start, term_end, sort_order',
 
   // contact_email excluded — PII
-  volunteer_roles:
-    'slug, title, description_html, commitment, capacity, filled, sort_order',
+  volunteer_roles: 'slug, title, description_html, commitment, capacity, filled, sort_order',
 
-  resources:
-    'slug, name, category, description, address, phone, url, languages',
+  resources: 'slug, name, category, description, address, phone, url, languages',
 
-  lunch_menus:
-    'slug, week_of, week_end, meals, allergens, free_reduced_note, pdf_url',
+  lunch_menus: 'slug, week_of, week_end, meals, allergens, free_reduced_note, pdf_url',
 
   // driver excluded — PII (staff name)
   transportation_routes:
@@ -40,21 +35,17 @@ export const PUBLIC_SELECT: Record<string, string> = {
   classroom_teachers:
     'slug, name, grade, subject, photo_url, bio_md, wishlist, reading_list, sort_order',
 
-  budget_years:
-    'slug, year, total_raised, total_spent, categories, summary, sort_order',
+  budget_years: 'slug, year, total_raised, total_spent, categories, summary, sort_order',
 
-  committees:
-    'slug, name, icon, description_md, meets, members, sort_order',
+  committees: 'slug, name, icon, description_md, meets, members, sort_order',
 
   programs:
     'slug, name, grades, schedule, description_md, funding, partner, goal_cents, raised_cents, sort_order',
 
-  pta_newsletters:
-    'slug, title, pdf_url, published_at',
+  pta_newsletters: 'slug, title, pdf_url, published_at',
 
   // created_by excluded — internal
-  announcements:
-    'title, body, sent_at',
+  announcements: 'title, body, sent_at',
 }
 
 /**

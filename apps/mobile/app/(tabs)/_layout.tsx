@@ -3,15 +3,17 @@ import { Ionicons } from '@expo/vector-icons'
 import { useSchoolConfig } from '../../hooks/useSchoolConfig'
 import { useTranslate } from '../../hooks/useLocale'
 import { isModuleEnabled } from '@schoolyard/config'
-import { theme } from '../../lib/theme'
+import { getSchoolTheme } from '../../lib/theme'
 
 /**
  * Tab navigator. Tabs are conditionally rendered based on enabled modules
- * in school.config.json — disabled modules don't even appear in the tab bar.
+ * from the selected school's config — disabled modules don't appear in
+ * the tab bar.
  */
 export default function TabLayout() {
   const config = useSchoolConfig()
   const t = useTranslate()
+  const theme = getSchoolTheme(config.branding.primaryColor, config.branding.accentColor)
 
   return (
     <Tabs

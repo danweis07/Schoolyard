@@ -40,9 +40,5 @@ export async function resolveSchool(
 
 export function getSchoolFromRequest(req: Request): string | null {
   const url = new URL(req.url)
-  return (
-    url.searchParams.get('school') ??
-    req.headers.get('x-school-slug') ??
-    null
-  )
+  return url.searchParams.get('school') ?? req.headers.get('x-school-slug') ?? null
 }

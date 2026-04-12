@@ -27,42 +27,42 @@ The goal is a **single gateway edge function** that all frontends route through.
 
 These tables contain school-published content with no PII. The gateway returns them freely, applying only `published`/`hidden` filters.
 
-| Table | Public columns | Excluded from public response |
-|-------|---------------|-------------------------------|
-| `events` | slug, title, description, body_html, starts_at, ends_at, location, category, featured, cancelled | — (no PII) |
-| `news` | slug, title, excerpt, body_html, author, tags, image, image_alt, published_at, featured | — |
-| `board_members` | slug, name, role, photo_url, bio_html, term_start, term_end, sort_order | `email` (PII — only via admin) |
-| `volunteer_roles` | slug, title, description_html, commitment, capacity, filled, sort_order | `contact_email` (PII — only via admin) |
-| `resources` | slug, name, category, description, address, phone, url, languages | — (org contact info, not personal) |
-| `lunch_menus` | all columns | — |
-| `transportation_routes` | slug, route_number, route_name, morning_arrival, afternoon_departure, stops, notes, sort_order | `driver` (PII — staff name, admin only) |
-| `community_listings` (hidden=false) | slug, title, category, description, neighborhood, posted_date, expires_date, url, sort_order | `contact` (PII), `created_by` (user ID), `flagged_count` (moderation) |
-| `classroom_teachers` | slug, name, grade, subject, photo_url, bio_md, wishlist, reading_list, sort_order | `email` (PII — only via admin) |
-| `budget_years` | all columns | — |
-| `committees` | all columns | — |
-| `programs` | all columns | — |
-| `pta_newsletters` | all columns | — |
-| `announcements` (sent_at not null) | title, body, sent_at | `created_by` (user ID) |
-| `schools` | slug, name, short_name, branding, languages, modules | `domain`, `path_slug` (infra) |
-| `districts` | slug, name | `settings` (internal config) |
-| `fundraising_program_totals` (view) | program_id, school_id, raised_cents | — (aggregate only, no donor info) |
+| Table                               | Public columns                                                                                   | Excluded from public response                                         |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `events`                            | slug, title, description, body_html, starts_at, ends_at, location, category, featured, cancelled | — (no PII)                                                            |
+| `news`                              | slug, title, excerpt, body_html, author, tags, image, image_alt, published_at, featured          | —                                                                     |
+| `board_members`                     | slug, name, role, photo_url, bio_html, term_start, term_end, sort_order                          | `email` (PII — only via admin)                                        |
+| `volunteer_roles`                   | slug, title, description_html, commitment, capacity, filled, sort_order                          | `contact_email` (PII — only via admin)                                |
+| `resources`                         | slug, name, category, description, address, phone, url, languages                                | — (org contact info, not personal)                                    |
+| `lunch_menus`                       | all columns                                                                                      | —                                                                     |
+| `transportation_routes`             | slug, route_number, route_name, morning_arrival, afternoon_departure, stops, notes, sort_order   | `driver` (PII — staff name, admin only)                               |
+| `community_listings` (hidden=false) | slug, title, category, description, neighborhood, posted_date, expires_date, url, sort_order     | `contact` (PII), `created_by` (user ID), `flagged_count` (moderation) |
+| `classroom_teachers`                | slug, name, grade, subject, photo_url, bio_md, wishlist, reading_list, sort_order                | `email` (PII — only via admin)                                        |
+| `budget_years`                      | all columns                                                                                      | —                                                                     |
+| `committees`                        | all columns                                                                                      | —                                                                     |
+| `programs`                          | all columns                                                                                      | —                                                                     |
+| `pta_newsletters`                   | all columns                                                                                      | —                                                                     |
+| `announcements` (sent_at not null)  | title, body, sent_at                                                                             | `created_by` (user ID)                                                |
+| `schools`                           | slug, name, short_name, branding, languages, modules                                             | `domain`, `path_slug` (infra)                                         |
+| `districts`                         | slug, name                                                                                       | `settings` (internal config)                                          |
+| `fundraising_program_totals` (view) | program_id, school_id, raised_cents                                                              | — (aggregate only, no donor info)                                     |
 
 ### Auth required — contains PII or confidential data
 
-| Table | Auth level | Reason |
-|-------|-----------|--------|
-| `profiles` | Self (own) or Admin (school) | User PII: display_name, email (via auth), role, school_id |
-| `event_rsvps` | Self (own) or Admin (school) | User action data: who is attending, guest counts |
-| `volunteer_hours` | Self (own) or Admin (school) | User PII: who volunteered, when, how long |
-| `contact_submissions` | Admin only | PII: name, email, message content, IP hash |
-| `fundraising_donations` | Admin only | PII: donor_name, donor_email, payment amounts |
-| `community_flags` | Admin only | Moderation data: reporter identity, reasons |
-| `push_tokens` | Self (own) or Admin (school) | Device identifiers tied to user accounts |
-| Board member `email` | Admin only | Personal email, not for public display |
-| Volunteer role `contact_email` | Admin only | Staff/volunteer personal contact |
-| Teacher `email` | Admin only | Staff personal contact |
-| Transportation `driver` | Admin only | Staff name |
-| Community listing `contact` | Authenticated | Poster's contact info (visible to logged-in community members) |
+| Table                          | Auth level                   | Reason                                                         |
+| ------------------------------ | ---------------------------- | -------------------------------------------------------------- |
+| `profiles`                     | Self (own) or Admin (school) | User PII: display_name, email (via auth), role, school_id      |
+| `event_rsvps`                  | Self (own) or Admin (school) | User action data: who is attending, guest counts               |
+| `volunteer_hours`              | Self (own) or Admin (school) | User PII: who volunteered, when, how long                      |
+| `contact_submissions`          | Admin only                   | PII: name, email, message content, IP hash                     |
+| `fundraising_donations`        | Admin only                   | PII: donor_name, donor_email, payment amounts                  |
+| `community_flags`              | Admin only                   | Moderation data: reporter identity, reasons                    |
+| `push_tokens`                  | Self (own) or Admin (school) | Device identifiers tied to user accounts                       |
+| Board member `email`           | Admin only                   | Personal email, not for public display                         |
+| Volunteer role `contact_email` | Admin only                   | Staff/volunteer personal contact                               |
+| Teacher `email`                | Admin only                   | Staff personal contact                                         |
+| Transportation `driver`        | Admin only                   | Staff name                                                     |
+| Community listing `contact`    | Authenticated                | Poster's contact info (visible to logged-in community members) |
 
 ---
 
@@ -101,6 +101,7 @@ These tables contain school-published content with no PII. The gateway returns t
 ```
 
 All frontends (web, mobile, admin) call:
+
 ```
 POST/GET  <supabase-url>/functions/v1/gateway/<domain>/<resource>
 ```
@@ -181,6 +182,7 @@ ROUTE                                METHOD    AUTH         HANDLER
 ```
 
 Auth levels:
+
 - `none` — no token required, passes through
 - `auth(member)` — any authenticated user
 - `auth(editor)` — editor, admin, or district_admin for the target school
@@ -193,20 +195,66 @@ The gateway uses per-table allowlists for public responses, stripping PII:
 
 ```typescript
 export const PUBLIC_COLUMNS = {
-  board_members: ['slug', 'name', 'role', 'photo_url', 'bio_html', 'term_start', 'term_end', 'sort_order'],
+  board_members: [
+    'slug',
+    'name',
+    'role',
+    'photo_url',
+    'bio_html',
+    'term_start',
+    'term_end',
+    'sort_order',
+  ],
   // email excluded — PII
 
-  volunteer_roles: ['slug', 'title', 'description_html', 'commitment', 'capacity', 'filled', 'sort_order'],
+  volunteer_roles: [
+    'slug',
+    'title',
+    'description_html',
+    'commitment',
+    'capacity',
+    'filled',
+    'sort_order',
+  ],
   // contact_email excluded — PII
 
-  transportation_routes: ['slug', 'route_number', 'route_name', 'morning_arrival', 'afternoon_departure', 'stops', 'notes', 'sort_order'],
+  transportation_routes: [
+    'slug',
+    'route_number',
+    'route_name',
+    'morning_arrival',
+    'afternoon_departure',
+    'stops',
+    'notes',
+    'sort_order',
+  ],
   // driver excluded — PII
 
-  community_listings: ['slug', 'title', 'category', 'description', 'neighborhood', 'posted_date', 'expires_date', 'url', 'sort_order'],
+  community_listings: [
+    'slug',
+    'title',
+    'category',
+    'description',
+    'neighborhood',
+    'posted_date',
+    'expires_date',
+    'url',
+    'sort_order',
+  ],
   // contact excluded — PII (returned only to authenticated users)
   // created_by, flagged_count excluded — internal
 
-  classroom_teachers: ['slug', 'name', 'grade', 'subject', 'photo_url', 'bio_md', 'wishlist', 'reading_list', 'sort_order'],
+  classroom_teachers: [
+    'slug',
+    'name',
+    'grade',
+    'subject',
+    'photo_url',
+    'bio_md',
+    'wishlist',
+    'reading_list',
+    'sort_order',
+  ],
   // email excluded — PII
 
   announcements: ['title', 'body', 'sent_at'],
@@ -228,7 +276,7 @@ Implements the existing `ContentAdapter` interface via HTTP `fetch()`. Each meth
 
 ```typescript
 export interface GatewayAdapterOptions {
-  gatewayUrl: string           // Supabase project URL
+  gatewayUrl: string // Supabase project URL
   defaultSchoolSlug?: string
 }
 
@@ -246,9 +294,9 @@ export type ContentBackend = 'static' | 'supabase' | 'gateway'
 
 export interface ContentClientOptions {
   backend: ContentBackend
-  baseUrl?: string                        // static mode
-  supabase?: SupabaseClient<Database>     // supabase mode (scripts only)
-  gatewayUrl?: string                     // gateway mode
+  baseUrl?: string // static mode
+  supabase?: SupabaseClient<Database> // supabase mode (scripts only)
+  gatewayUrl?: string // gateway mode
   defaultSchoolSlug?: string
 }
 ```
@@ -275,13 +323,15 @@ locals.contentClient = createContentClient({
 
 **Current pattern**: browser creates `createBrowserClient()`, queries tables directly via `.from()`.
 
-**New pattern**: 
+**New pattern**:
+
 - Supabase Auth client stays in browser for sign-in/sign-out/getSession ONLY
 - Extract access token from session
 - All data calls go through `fetch()` to `gateway/admin/*`
 - New `apps/web/src/lib/admin-client.ts` wraps these calls
 
 **Files to modify:**
+
 - `apps/web/src/pages/admin/index.astro`
 - `apps/web/src/pages/admin/events/index.astro`
 - `apps/web/src/pages/admin/events/edit.astro`
@@ -319,13 +369,13 @@ Replace direct `push_tokens` upsert with `fetch()` to `gateway/user/push-token`.
 
 The 5 existing edge functions are **absorbed** into the single gateway:
 
-| Current function | Becomes gateway handler | Notes |
-|-----------------|------------------------|-------|
-| `contact-submit/index.ts` | `handlers/contact.ts` | Honeypot + rate limiting preserved |
-| `donate/index.ts` | `handlers/fundraising.ts` | Stripe PaymentIntent creation |
-| `stripe-webhook/index.ts` | `handlers/fundraising.ts` | Signature verification preserved |
-| `announce/index.ts` | `handlers/announce.ts` | Expo push fan-out preserved |
-| `volunteer-hours-export/index.ts` | `handlers/export.ts` | CSV generation preserved |
+| Current function                  | Becomes gateway handler   | Notes                              |
+| --------------------------------- | ------------------------- | ---------------------------------- |
+| `contact-submit/index.ts`         | `handlers/contact.ts`     | Honeypot + rate limiting preserved |
+| `donate/index.ts`                 | `handlers/fundraising.ts` | Stripe PaymentIntent creation      |
+| `stripe-webhook/index.ts`         | `handlers/fundraising.ts` | Signature verification preserved   |
+| `announce/index.ts`               | `handlers/announce.ts`    | Expo push fan-out preserved        |
+| `volunteer-hours-export/index.ts` | `handlers/export.ts`      | CSV generation preserved           |
 
 After the gateway is deployed and all clients are switched, the old function directories can be removed.
 
@@ -334,6 +384,7 @@ After the gateway is deployed and all clients are switched, the old function dir
 ## What Changes vs What Stays
 
 ### Unchanged (reused as-is)
+
 - `packages/content-api/src/adapters/types.ts` — ContentAdapter interface
 - `packages/content-api/src/types.ts` — all domain types
 - `packages/content-api/src/adapters/static.ts` — static adapter
@@ -345,6 +396,7 @@ After the gateway is deployed and all clients are switched, the old function dir
 - `packages/config/*`, `packages/i18n/*`, `packages/tokens/*`, `packages/ui/*`
 
 ### Modified (minor changes)
+
 - `packages/content-api/src/client.ts` — add `'gateway'` backend
 - `packages/content-api/src/index.ts` — export gateway adapter
 - `apps/web/src/middleware.ts` — swap supabase client for gateway adapter
@@ -354,6 +406,7 @@ After the gateway is deployed and all clients are switched, the old function dir
 - `apps/mobile/lib/notifications.ts` — use gateway for push token
 
 ### New code (~1,600 lines)
+
 - `supabase/functions/gateway/index.ts` — entry point (~80 lines)
 - `supabase/functions/gateway/router.ts` — route table + URL parser (~100 lines)
 - `supabase/functions/gateway/auth.ts` — token verify + role resolve (~80 lines)
@@ -372,6 +425,7 @@ After the gateway is deployed and all clients are switched, the old function dir
 - `apps/web/src/lib/admin-client.ts` — admin API wrapper (~100 lines)
 
 ### Rewritten (significant changes)
+
 - 10 admin `.astro` files — replace browser Supabase CRUD with gateway calls
 - 5 existing edge functions — logic absorbed into gateway handlers, old dirs removed
 
@@ -380,6 +434,7 @@ After the gateway is deployed and all clients are switched, the old function dir
 ## Implementation Phases
 
 ### Phase 1: Gateway foundation + public content reads
+
 1. Create `supabase/functions/gateway/` with index.ts, router.ts, auth.ts, school.ts, response.ts, types.ts, column-filters.ts
 2. Create `handlers/content.ts` — port mapping logic from `packages/content-api/src/adapters/supabase.ts`, apply column filters for PII
 3. Create `packages/content-api/src/adapters/gateway.ts`
@@ -387,6 +442,7 @@ After the gateway is deployed and all clients are switched, the old function dir
 5. Deploy gateway, test with `EXPO_PUBLIC_SCHOOLYARD_BACKEND=gateway`
 
 ### Phase 2: Absorb existing write functions
+
 6. Port `contact-submit` → `handlers/contact.ts`
 7. Port `donate` + `stripe-webhook` → `handlers/fundraising.ts`
 8. Port `announce` → `handlers/announce.ts`
@@ -394,22 +450,26 @@ After the gateway is deployed and all clients are switched, the old function dir
 10. Deploy, verify all write flows work through gateway
 
 ### Phase 3: Admin gateway + page refactoring
+
 11. Create `handlers/admin.ts` with full CRUD for all content tables
 12. Create `apps/web/src/lib/admin-client.ts`
 13. Convert admin pages one by one (events first, then news, board, volunteers, resources)
 
 ### Phase 4: User actions
+
 14. Create `handlers/user.ts` — RSVP, volunteer hours, push tokens, flags, community listings
 15. Update mobile push token registration
 16. Update community flag button
 
 ### Phase 5: Switch frontends to gateway
+
 17. Update `apps/web/src/middleware.ts` — gateway adapter
 18. Update `apps/web/src/components/ContactForm.astro` — new endpoint
 19. Change mobile default backend to `gateway`
 20. Verify all flows end-to-end
 
 ### Phase 6: Cleanup
+
 21. Remove old edge function directories (`contact-submit/`, `donate/`, `stripe-webhook/`, `announce/`, `volunteer-hours-export/`)
 22. Remove `data-supabase-anon` from admin page HTML
 23. Add lint rule to prevent `.from()` on browser Supabase client
@@ -420,14 +480,14 @@ After the gateway is deployed and all clients are switched, the old function dir
 
 ## Risks and Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| **Single function = single point of failure** | Supabase Edge Functions auto-scale on Deno Deploy. The function is stateless. Monitoring via Supabase logs. |
-| **Function size** | All handlers are imported but only the matched route executes. Deno tree-shakes unused code paths at runtime. |
-| **Added latency** (browser→gateway→DB vs browser→DB) | Gateway and DB are co-located in same Supabase region. Add `Cache-Control` headers to public content responses. |
-| **Auth token expiration** in admin pages | Admin client listens for `onAuthStateChange`, retries on 401 with refreshed token. |
-| **PII leaking through public endpoints** | Column-filter allowlists are the enforced contract. Integration tests verify no PII columns appear in public responses. |
-| **Backward compat during migration** | `ContentBackend` union allows per-deployment switching via env var. Old edge functions stay deployed until Phase 6. |
+| Risk                                                 | Mitigation                                                                                                              |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Single function = single point of failure**        | Supabase Edge Functions auto-scale on Deno Deploy. The function is stateless. Monitoring via Supabase logs.             |
+| **Function size**                                    | All handlers are imported but only the matched route executes. Deno tree-shakes unused code paths at runtime.           |
+| **Added latency** (browser→gateway→DB vs browser→DB) | Gateway and DB are co-located in same Supabase region. Add `Cache-Control` headers to public content responses.         |
+| **Auth token expiration** in admin pages             | Admin client listens for `onAuthStateChange`, retries on 401 with refreshed token.                                      |
+| **PII leaking through public endpoints**             | Column-filter allowlists are the enforced contract. Integration tests verify no PII columns appear in public responses. |
+| **Backward compat during migration**                 | `ContentBackend` union allows per-deployment switching via env var. Old edge functions stay deployed until Phase 6.     |
 
 ---
 

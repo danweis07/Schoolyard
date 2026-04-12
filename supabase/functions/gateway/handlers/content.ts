@@ -160,10 +160,20 @@ async function handleCounts(ctx: GatewayContext): Promise<Response> {
   const { supabase, schoolId, origin } = ctx
 
   const tables = [
-    'events', 'news', 'board_members', 'volunteer_roles', 'resources',
-    'announcements', 'lunch_menus', 'transportation_routes',
-    'community_listings', 'classroom_teachers', 'budget_years',
-    'committees', 'programs', 'pta_newsletters',
+    'events',
+    'news',
+    'board_members',
+    'volunteer_roles',
+    'resources',
+    'announcements',
+    'lunch_menus',
+    'transportation_routes',
+    'community_listings',
+    'classroom_teachers',
+    'budget_years',
+    'committees',
+    'programs',
+    'pta_newsletters',
   ] as const
 
   const results = await Promise.all(

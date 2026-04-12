@@ -26,10 +26,7 @@ import { handleContact } from './handlers/contact.ts'
 import { handleAnnounce } from './handlers/announce.ts'
 import { handleExport } from './handlers/export.ts'
 
-const HANDLER_MAP: Record<
-  string,
-  (ctx: GatewayContext) => Promise<Response>
-> = {
+const HANDLER_MAP: Record<string, (ctx: GatewayContext) => Promise<Response>> = {
   content: handleContent,
   admin: handleAdmin,
   user: handleUser,
@@ -67,9 +64,7 @@ Deno.serve(async (req: Request) => {
   const schoolSlug = getSchoolFromRequest(req)
   let schoolId = ''
 
-  const needsSchool =
-    route.resource !== 'profile' &&
-    route.handler !== 'announce' // announce gets school from payload
+  const needsSchool = route.resource !== 'profile' && route.handler !== 'announce' // announce gets school from payload
 
   if (needsSchool) {
     if (!schoolSlug) {

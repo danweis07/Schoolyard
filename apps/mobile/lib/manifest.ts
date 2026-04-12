@@ -1,17 +1,17 @@
 /**
- * Mobile-side content client — one shared instance that routes reads
- * to the configured backend (static JSON or Supabase).
+ * Mobile-side content client — one shared instance per school slug that
+ * routes reads to the configured backend (gateway, direct Supabase, or
+ * static JSON).
  *
  * Backend selection order:
  *
  *   1. `EXPO_PUBLIC_SCHOOLYARD_BACKEND` env var, if set
- *   2. `supabase` when a Supabase URL + anon key are present
+ *   2. `gateway` when a Supabase URL is present (default)
  *   3. `static` otherwise (reads from the school's deployed JSON API)
  *
- * The exported `fetch*` helpers keep their original signatures so the
- * existing hooks (`useEvents`, `useNews`, …) don't need to change.
+ * The exported `fetch*` helpers accept an optional school slug so that
+ * hooks can scope queries to the currently selected school.
  */
-import { siteConfig } from './config'
 import { getSupabase } from './supabase'
 import { createContentClient, type ContentAdapter } from '@schoolyard/content-api'
 import type {
@@ -27,7 +27,7 @@ import type {
 export function getBaseUrl(): string {
   const envUrl =
     typeof process !== 'undefined' ? (process.env?.EXPO_PUBLIC_MANIFEST_BASE_URL ?? '') : ''
-  return envUrl || siteConfig.deployment.siteUrl || ''
+  return envUrl || ''
 }
 
 export function hasBaseUrl(): boolean {
@@ -42,29 +42,28 @@ function resolveBackend(): 'static' | 'supabase' | 'gateway' {
   return supabaseUrl ? 'gateway' : 'static'
 }
 
-function resolveSchoolSlug(): string {
-  const envSlug = process.env?.EXPO_PUBLIC_SCHOOLYARD_SCHOOL_SLUG
-  if (envSlug) return envSlug
-  return siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-}
+// Cache clients by school slug so we don't recreate on every call
+const clientCache = new Map<string, ContentAdapter>()
 
-let client: ContentAdapter | null = null
+function getClient(schoolSlug?: string): ContentAdapter {
+  const cacheKey = schoolSlug ?? '__default__'
+  const cached = clientCache.get(cacheKey)
+  if (cached) return cached
 
-function getClient(): ContentAdapter {
-  if (client) return client
   const backend = resolveBackend()
+  let client: ContentAdapter
   if (backend === 'gateway') {
     client = createContentClient({
       backend: 'gateway',
       gatewayUrl: process.env.EXPO_PUBLIC_SUPABASE_URL!,
-      defaultSchoolSlug: resolveSchoolSlug(),
+      defaultSchoolSlug: schoolSlug,
     })
   } else if (backend === 'supabase') {
     const supabase = getSupabase()!
     client = createContentClient({
       backend: 'supabase',
       supabase,
-      defaultSchoolSlug: resolveSchoolSlug(),
+      defaultSchoolSlug: schoolSlug,
     })
   } else {
     client = createContentClient({
@@ -72,35 +71,54 @@ function getClient(): ContentAdapter {
       baseUrl: getBaseUrl(),
     })
   }
+
+  clientCache.set(cacheKey, client)
   return client
 }
 
-// ── Back-compat helpers keeping the old signature ──────────────────
-
-export function fetchManifest(signal?: AbortSignal): Promise<ManifestIndex> {
-  return getClient().fetchManifest(undefined, { signal })
+/** Clear cached clients when switching schools. */
+export function clearClientCache() {
+  clientCache.clear()
 }
 
-export function fetchEvents(signal?: AbortSignal): Promise<ManifestEvent[]> {
-  return getClient().fetchEvents(undefined, { signal })
+// ── Fetch helpers scoped by school slug ──────────────────────────
+
+export function fetchManifest(signal?: AbortSignal, schoolSlug?: string): Promise<ManifestIndex> {
+  return getClient(schoolSlug).fetchManifest(undefined, { signal })
 }
 
-export function fetchNews(signal?: AbortSignal): Promise<ManifestNewsPost[]> {
-  return getClient().fetchNews(undefined, { signal })
+export function fetchEvents(signal?: AbortSignal, schoolSlug?: string): Promise<ManifestEvent[]> {
+  return getClient(schoolSlug).fetchEvents(undefined, { signal })
 }
 
-export function fetchBoard(signal?: AbortSignal): Promise<ManifestBoardMember[]> {
-  return getClient().fetchBoard(undefined, { signal })
+export function fetchNews(signal?: AbortSignal, schoolSlug?: string): Promise<ManifestNewsPost[]> {
+  return getClient(schoolSlug).fetchNews(undefined, { signal })
 }
 
-export function fetchVolunteers(signal?: AbortSignal): Promise<ManifestVolunteerRole[]> {
-  return getClient().fetchVolunteers(undefined, { signal })
+export function fetchBoard(
+  signal?: AbortSignal,
+  schoolSlug?: string,
+): Promise<ManifestBoardMember[]> {
+  return getClient(schoolSlug).fetchBoard(undefined, { signal })
 }
 
-export function fetchResources(signal?: AbortSignal): Promise<ManifestResource[]> {
-  return getClient().fetchResources(undefined, { signal })
+export function fetchVolunteers(
+  signal?: AbortSignal,
+  schoolSlug?: string,
+): Promise<ManifestVolunteerRole[]> {
+  return getClient(schoolSlug).fetchVolunteers(undefined, { signal })
 }
 
-export function fetchCommunityListings(signal?: AbortSignal): Promise<CommunityListing[]> {
-  return getClient().fetchCommunityListings(undefined, { signal })
+export function fetchResources(
+  signal?: AbortSignal,
+  schoolSlug?: string,
+): Promise<ManifestResource[]> {
+  return getClient(schoolSlug).fetchResources(undefined, { signal })
+}
+
+export function fetchCommunityListings(
+  signal?: AbortSignal,
+  schoolSlug?: string,
+): Promise<CommunityListing[]> {
+  return getClient(schoolSlug).fetchCommunityListings(undefined, { signal })
 }

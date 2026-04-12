@@ -27,7 +27,7 @@ type BudgetYearRow = Tables['budget_years']['Row']
 type CommitteeRow = Tables['committees']['Row']
 type ProgramRow = Tables['programs']['Row']
 type PtaNewsletterRow = Tables['pta_newsletters']['Row']
-import type { ContentAdapter, FetchOptions, Scope } from './types.js'
+import type { ContentAdapter, FetchOptions, Scope, SchoolInfo } from './types.js'
 import type {
   LunchMenu,
   TransportationRoute,
@@ -90,6 +90,30 @@ export function createSupabaseAdapter(options: SupabaseAdapterOptions): ContentA
   }
 
   return {
+    async fetchSchools(districtId, fetchOptions): Promise<SchoolInfo[]> {
+      let query = client
+        .from('schools')
+        .select('id, slug, name, short_name, branding, languages, modules, district_id')
+        .order('name', { ascending: true })
+      if (districtId) {
+        query = query.eq('district_id', districtId)
+      }
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as SchoolLookupRow[]).map((row) => ({
+        id: row.id,
+        slug: row.slug,
+        name: row.name,
+        shortName: row.short_name ?? row.name,
+        branding: (row.branding ?? {}) as Record<string, unknown>,
+        modules: (row.modules ?? {}) as Record<string, unknown>,
+        languages: (row.languages ?? {}) as Record<string, unknown>,
+        districtId: row.district_id,
+      }))
+    },
+
     async fetchManifest(scope, fetchOptions): Promise<ManifestIndex> {
       const school = await resolveSchool(scope)
       const languages = (school.languages ?? {}) as { supported?: string[] }

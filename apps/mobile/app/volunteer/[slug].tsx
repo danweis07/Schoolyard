@@ -1,7 +1,9 @@
-import { ScrollView, View, Text, ActivityIndicator } from 'react-native'
+import { ScrollView, View, Text, Pressable, ActivityIndicator, Linking } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { useVolunteers } from '../../hooks/useVolunteers'
 import { useLocale, useTranslate } from '../../hooks/useLocale'
+import { HoursLogForm } from '../../components/HoursLogForm'
 
 export default function VolunteerDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>()
@@ -64,12 +66,41 @@ export default function VolunteerDetailScreen() {
         <Text className="mt-1 text-base leading-relaxed">{role.description}</Text>
       </View>
 
+      {/* Contact coordinator — actionable button */}
       {role.contact ? (
-        <View className="mt-6 rounded-xl border border-border bg-surface p-4">
-          <Text className="text-sm font-semibold text-muted">{t('volunteer.contact')}</Text>
-          <Text className="mt-1 text-base text-primary">{role.contact}</Text>
-        </View>
+        <Pressable
+          onPress={() => Linking.openURL(`mailto:${role.contact}`)}
+          className="mt-6 flex-row items-center gap-3 rounded-xl border border-border bg-surface p-4 active:bg-muted/10"
+        >
+          <View className="h-10 w-10 items-center justify-center rounded-full bg-primary">
+            <Ionicons name="mail" size={20} color="#ffffff" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-sm font-semibold">{t('volunteer.contactCoordinator')}</Text>
+            <Text className="text-sm text-primary">{role.contact}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+        </Pressable>
       ) : null}
+
+      {/* Sign up button for open roles */}
+      {!role.filled && role.contact ? (
+        <Pressable
+          onPress={() => {
+            const subject = encodeURIComponent(`Volunteer: ${role.title}`)
+            const body = encodeURIComponent(
+              `Hi, I'd like to sign up for the "${role.title}" volunteer role.`,
+            )
+            Linking.openURL(`mailto:${role.contact}?subject=${subject}&body=${body}`)
+          }}
+          className="mt-3 rounded-lg bg-primary px-6 py-3"
+        >
+          <Text className="text-center font-semibold text-white">{t('volunteer.signUp')}</Text>
+        </Pressable>
+      ) : null}
+
+      {/* Hours logging form */}
+      <HoursLogForm roleSlug={slug} />
     </ScrollView>
   )
 }

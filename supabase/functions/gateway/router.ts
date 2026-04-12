@@ -19,48 +19,48 @@ interface RouteDefinition {
  */
 const ROUTES: Record<string, RouteDefinition> = {
   // ── Content (public reads) ──────────────────────────────────────
-  'content/manifest':        { methods: ['GET'], auth: 'none' },
-  'content/config':          { methods: ['GET'], auth: 'none' },
-  'content/events':          { methods: ['GET'], auth: 'none' },
-  'content/news':            { methods: ['GET'], auth: 'none' },
-  'content/board':           { methods: ['GET'], auth: 'none' },
-  'content/volunteers':      { methods: ['GET'], auth: 'none' },
-  'content/resources':       { methods: ['GET'], auth: 'none' },
-  'content/lunch-menus':     { methods: ['GET'], auth: 'none' },
-  'content/transportation':  { methods: ['GET'], auth: 'none' },
-  'content/community':       { methods: ['GET'], auth: 'none' },
-  'content/teachers':        { methods: ['GET'], auth: 'none' },
-  'content/budget':          { methods: ['GET'], auth: 'none' },
-  'content/committees':      { methods: ['GET'], auth: 'none' },
-  'content/programs':        { methods: ['GET'], auth: 'none' },
-  'content/newsletters':     { methods: ['GET'], auth: 'none' },
-  'content/announcements':   { methods: ['GET'], auth: 'none' },
-  'content/counts':          { methods: ['GET'], auth: 'none' },
+  'content/manifest': { methods: ['GET'], auth: 'none' },
+  'content/config': { methods: ['GET'], auth: 'none' },
+  'content/events': { methods: ['GET'], auth: 'none' },
+  'content/news': { methods: ['GET'], auth: 'none' },
+  'content/board': { methods: ['GET'], auth: 'none' },
+  'content/volunteers': { methods: ['GET'], auth: 'none' },
+  'content/resources': { methods: ['GET'], auth: 'none' },
+  'content/lunch-menus': { methods: ['GET'], auth: 'none' },
+  'content/transportation': { methods: ['GET'], auth: 'none' },
+  'content/community': { methods: ['GET'], auth: 'none' },
+  'content/teachers': { methods: ['GET'], auth: 'none' },
+  'content/budget': { methods: ['GET'], auth: 'none' },
+  'content/committees': { methods: ['GET'], auth: 'none' },
+  'content/programs': { methods: ['GET'], auth: 'none' },
+  'content/newsletters': { methods: ['GET'], auth: 'none' },
+  'content/announcements': { methods: ['GET'], auth: 'none' },
+  'content/counts': { methods: ['GET'], auth: 'none' },
 
   // ── Admin (authenticated CRUD) ─────────────────────────────────
-  'admin/profile':           { methods: ['GET'], auth: 'member' },
-  'admin/counts':            { methods: ['GET'], auth: 'editor' },
+  'admin/profile': { methods: ['GET'], auth: 'member' },
+  'admin/counts': { methods: ['GET'], auth: 'editor' },
 
   // ── User actions ────────────────────────────────────────────────
-  'user/rsvp':               { methods: ['POST', 'DELETE'], auth: 'member' },
-  'user/rsvps':              { methods: ['GET'], auth: 'member' },
-  'user/volunteer-hours':    { methods: ['GET', 'POST'], auth: 'member' },
-  'user/push-token':         { methods: ['POST'], auth: 'member' },
-  'user/flag-listing':       { methods: ['POST'], auth: 'member' },
-  'user/community-listing':  { methods: ['POST'], auth: 'member' },
+  'user/rsvp': { methods: ['POST', 'DELETE'], auth: 'member' },
+  'user/rsvps': { methods: ['GET'], auth: 'member' },
+  'user/volunteer-hours': { methods: ['GET', 'POST'], auth: 'member' },
+  'user/push-token': { methods: ['POST'], auth: 'member' },
+  'user/flag-listing': { methods: ['POST'], auth: 'member' },
+  'user/community-listing': { methods: ['POST'], auth: 'member' },
 
   // ── Fundraising ─────────────────────────────────────────────────
-  'fundraising/donate':      { methods: ['POST'], auth: 'none' },
-  'fundraising/webhook':     { methods: ['POST'], auth: 'stripe-sig' },
+  'fundraising/donate': { methods: ['POST'], auth: 'none' },
+  'fundraising/webhook': { methods: ['POST'], auth: 'stripe-sig' },
 
   // ── Contact ─────────────────────────────────────────────────────
-  'contact/submit':          { methods: ['POST'], auth: 'none' },
+  'contact/submit': { methods: ['POST'], auth: 'none' },
 
   // ── Announce ────────────────────────────────────────────────────
-  'announce':                { methods: ['POST'], auth: 'admin' },
+  announce: { methods: ['POST'], auth: 'admin' },
 
   // ── Export ──────────────────────────────────────────────────────
-  'export/volunteer-hours':  { methods: ['POST'], auth: 'admin' },
+  'export/volunteer-hours': { methods: ['POST'], auth: 'admin' },
 }
 
 /**

@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import { ScrollView, View, Text, Pressable, Alert, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { useSchoolConfig } from '../../hooks/useSchoolConfig'
 import { useLocale, useTranslate } from '../../hooks/useLocale'
+import { useSchoolContext } from '../../lib/school-context'
+import { clearClientCache } from '../../lib/manifest'
 import { getSupabase } from '../../lib/supabase'
 
 export default function MoreScreen() {
@@ -10,6 +13,7 @@ export default function MoreScreen() {
   const locale = useLocale()
   const t = useTranslate(locale)
   const router = useRouter()
+  const { clearSchool } = useSchoolContext()
   const [userEmail, setUserEmail] = useState<string | null>(null)
 
   useEffect(() => {
@@ -37,6 +41,19 @@ export default function MoreScreen() {
         onPress: async () => {
           await supabase.auth.signOut()
           setUserEmail(null)
+        },
+      },
+    ])
+  }
+
+  const handleChangeSchool = () => {
+    Alert.alert('Change School', 'Switch to a different school?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Change',
+        onPress: async () => {
+          clearClientCache()
+          await clearSchool()
         },
       },
     ])
@@ -100,6 +117,23 @@ export default function MoreScreen() {
             </Pressable>
           ) : null}
         </View>
+        <Pressable
+          onPress={handleChangeSchool}
+          className="border-t border-border px-4 py-3 active:bg-muted/10"
+        >
+          <Text className="text-sm font-medium text-primary">Change school</Text>
+        </Pressable>
+      </View>
+
+      {/* Announcements */}
+      <View className="mt-4 rounded-xl border border-border bg-surface">
+        <Pressable
+          onPress={() => router.push('/announcements')}
+          className="flex-row items-center justify-between px-4 py-3 active:bg-muted/10"
+        >
+          <Text className="text-sm font-medium">{t('announcements.title')}</Text>
+          <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
+        </Pressable>
       </View>
 
       {/* Links */}

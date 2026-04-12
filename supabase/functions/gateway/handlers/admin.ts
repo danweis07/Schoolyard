@@ -45,8 +45,12 @@ export async function handleAdmin(ctx: GatewayContext): Promise<Response> {
   // ── /admin/counts — dashboard counts (incl. unpublished) ───────
   if (route.resource === 'counts') {
     const tables = [
-      'events', 'news', 'board_members', 'volunteer_roles',
-      'resources', 'announcements',
+      'events',
+      'news',
+      'board_members',
+      'volunteer_roles',
+      'resources',
+      'announcements',
     ] as const
     const results = await Promise.all(
       tables.map((t) =>
@@ -101,11 +105,7 @@ export async function handleAdmin(ctx: GatewayContext): Promise<Response> {
       return jsonError(400, 'invalid json', origin)
     }
     body.school_id = schoolId
-    const { data, error } = await supabase
-      .from(pgTable)
-      .insert(body)
-      .select('id')
-      .single()
+    const { data, error } = await supabase.from(pgTable).insert(body).select('id').single()
     if (error) return jsonError(500, error.message, origin)
     return jsonCreated(data, origin)
   }

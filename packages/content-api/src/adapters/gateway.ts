@@ -25,6 +25,7 @@ import type {
   Committee,
   Program,
   PtaNewsletter,
+  SchoolInfo,
 } from '../types.js'
 
 export interface GatewayAdapterOptions {
@@ -45,11 +46,7 @@ export function createGatewayAdapter(options: GatewayAdapterOptions): ContentAda
     return slug
   }
 
-  async function get<T>(
-    resource: string,
-    scope?: Scope,
-    fetchOptions?: FetchOptions,
-  ): Promise<T> {
+  async function get<T>(resource: string, scope?: Scope, fetchOptions?: FetchOptions): Promise<T> {
     const slug = resolveSlug(scope)
     const url = `${gatewayUrl}/functions/v1/gateway/content/${resource}?school=${encodeURIComponent(slug)}`
 
@@ -67,6 +64,15 @@ export function createGatewayAdapter(options: GatewayAdapterOptions): ContentAda
   }
 
   return {
+    async fetchSchools(_districtId, fetchOptions): Promise<SchoolInfo[]> {
+      const url = `${gatewayUrl}/functions/v1/gateway/content/schools`
+      const res = await fetch(url, {
+        signal: fetchOptions?.signal,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) return []
+      return (await res.json()) as SchoolInfo[]
+    },
     fetchManifest(scope, options) {
       return get<ManifestIndex>('manifest', scope, options)
     },
