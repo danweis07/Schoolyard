@@ -1,0 +1,167 @@
+---
+/**
+ * Sign-in page — magic-link OTP via Supabase Auth.
+ *
+ * Flow: user enters email → Supabase sends a magic link → user clicks
+ * the link → redirected back here with session set → redirect to the
+ * `redirect` query param (or home).
+ *
+ * This page is NOT under [...locale]/ — auth always renders in the
+ * user's browser locale via Supabase's built-in email templates.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const siteUrl = siteConfig.deployment.siteUrl || Astro.url.origin
+---
+
+<BaseLayout title="Sign In">
+  <main class="mx-auto max-w-md px-4 py-16">
+    <h1 class="text-3xl font-bold">Sign in</h1>
+    <p class="mt-2 text-muted">
+      Enter your email to receive a magic sign-in link. No password needed.
+    </p>
+
+    <form
+      id="signin-form"
+      class="mt-8 space-y-4"
+      data-supabase-url={supabaseUrl}
+      data-supabase-anon={supabaseAnon}
+      data-site-url={siteUrl}
+    >
+      <div>
+        <label for="email" class="block text-sm font-medium">Email address</label>
+        <input
+          id="email"
+          type="email"
+          name="email"
+          required
+          autocomplete="email"
+          placeholder="parent@example.com"
+          class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-3 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="w-full rounded-button bg-primary px-4 py-3 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+      >
+        Send magic link
+      </button>
+
+      <div id="signin-message" class="hidden rounded-lg p-4 text-sm" role="alert"></div>
+    </form>
+
+    <div
+      id="signin-success"
+      class="mt-8 hidden rounded-lg border border-accent bg-accent/5 p-6 text-center"
+    >
+      <p class="text-lg font-semibold">Check your email</p>
+      <p class="mt-2 text-sm text-muted">
+        We sent a magic link to <strong id="signin-email-display"></strong>. Click the link in your
+        email to sign in.
+      </p>
+    </div>
+
+    <div id="signed-in-state" class="mt-8 hidden text-center">
+      <p class="text-lg font-semibold">You're signed in</p>
+      <p class="mt-2 text-sm text-muted" id="signed-in-email"></p>
+      <div class="mt-6 flex justify-center gap-4">
+        <a
+          href="/"
+          class="rounded-button bg-primary px-6 py-2 text-sm font-semibold text-inverse hover:opacity-90"
+        >
+          Go to home
+        </a>
+        <button
+          type="button"
+          id="signout-btn"
+          class="rounded-button border border-border px-6 py-2 text-sm font-semibold hover:bg-muted"
+        >
+          Sign out
+        </button>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+
+  const form = document.getElementById('signin-form') as HTMLFormElement | null
+  if (form) {
+    const url = form.dataset.supabaseUrl ?? ''
+    const anon = form.dataset.supabaseAnon ?? ''
+    const siteUrl = form.dataset.siteUrl ?? window.location.origin
+    const msg = document.getElementById('signin-message')!
+    const successPanel = document.getElementById('signin-success')!
+    const emailDisplay = document.getElementById('signin-email-display')!
+    const signedInState = document.getElementById('signed-in-state')!
+    const signedInEmail = document.getElementById('signed-in-email')!
+    const signoutBtn = document.getElementById('signout-btn')!
+
+    if (!url || !anon) {
+      msg.textContent = 'Sign-in is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY.'
+      msg.className = 'rounded-lg p-4 text-sm bg-red-50 text-red-700 border border-red-200'
+    } else {
+      const supabase = createBrowserClient({ url, anonKey: anon })
+
+      // Check if already signed in
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          form.classList.add('hidden')
+          signedInState.classList.remove('hidden')
+          signedInEmail.textContent = user.email ?? ''
+        }
+      })
+
+      // Handle auth callback (magic link redirect)
+      supabase.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_IN') {
+          const params = new URLSearchParams(window.location.search)
+          const redirect = params.get('redirect') || '/'
+          window.location.href = redirect
+        }
+      })
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault()
+        const emailInput = form.querySelector<HTMLInputElement>('input[type="email"]')!
+        const email = emailInput.value.trim()
+        const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!
+
+        submitBtn.disabled = true
+        submitBtn.textContent = 'Sending...'
+        msg.className = 'hidden'
+
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: `${siteUrl}/sign-in?redirect=${encodeURIComponent(
+              new URLSearchParams(window.location.search).get('redirect') || '/',
+            )}`,
+          },
+        })
+
+        if (error) {
+          msg.textContent = error.message
+          msg.className = 'rounded-lg p-4 text-sm bg-red-50 text-red-700 border border-red-200'
+          submitBtn.disabled = false
+          submitBtn.textContent = 'Send magic link'
+        } else {
+          form.classList.add('hidden')
+          emailDisplay.textContent = email
+          successPanel.classList.remove('hidden')
+        }
+      })
+
+      signoutBtn.addEventListener('click', async () => {
+        await supabase.auth.signOut()
+        window.location.reload()
+      })
+    }
+  }
+</script>

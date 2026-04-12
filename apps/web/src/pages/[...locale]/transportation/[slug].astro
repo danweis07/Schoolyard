@@ -1,0 +1,95 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { getCollection } from 'astro:content'
+import StopList from '@/modules/transportation/components/StopList.astro'
+import {
+  useTranslate,
+  getLocaleFromUrl,
+  localizedPath,
+  supportedLocales,
+  defaultLocale,
+} from '@/i18n/index'
+
+export async function getStaticPaths() {
+  const routes = await getCollection('transportationRoutes')
+  return routes.flatMap((route) =>
+    supportedLocales.map((code) => ({
+      params: {
+        locale: code === defaultLocale ? undefined : code,
+        slug: route.slug,
+      },
+      props: { route },
+    })),
+  )
+}
+
+const { route } = Astro.props
+
+if (!isModuleEnabled(siteConfig, 'transportation')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+---
+
+<BaseLayout title={`${t('transportation.route')} ${route.data.routeNumber}`}>
+  <article class="mx-auto max-w-3xl px-4 py-12">
+    <a href={localizedPath('/transportation', locale)} class="text-sm text-primary hover:underline">
+      &larr; {t('transportation.title')}
+    </a>
+
+    <h1 class="mt-4 text-4xl font-bold">
+      {t('transportation.route')}
+      {route.data.routeNumber}: {route.data.routeName}
+    </h1>
+
+    <dl class="mt-6 grid gap-4 sm:grid-cols-2">
+      {
+        route.data.driver ? (
+          <div>
+            <dt class="text-sm font-semibold text-muted">{t('transportation.driver')}</dt>
+            <dd class="mt-1">{route.data.driver}</dd>
+          </div>
+        ) : null
+      }
+      {
+        route.data.morningArrival ? (
+          <div>
+            <dt class="text-sm font-semibold text-muted">{t('transportation.morningArrival')}</dt>
+            <dd class="mt-1">{route.data.morningArrival}</dd>
+          </div>
+        ) : null
+      }
+      {
+        route.data.afternoonDeparture ? (
+          <div>
+            <dt class="text-sm font-semibold text-muted">
+              {t('transportation.afternoonDeparture')}
+            </dt>
+            <dd class="mt-1">{route.data.afternoonDeparture}</dd>
+          </div>
+        ) : null
+      }
+    </dl>
+
+    {
+      route.data.stops && route.data.stops.length > 0 ? (
+        <div class="mt-8">
+          <h2 class="text-lg font-bold">{t('transportation.stops')}</h2>
+          <StopList stops={route.data.stops} />
+        </div>
+      ) : null
+    }
+
+    {
+      route.data.notes ? (
+        <div class="mt-8 rounded-card border border-border bg-muted/5 p-card">
+          <p class="text-sm">{route.data.notes}</p>
+        </div>
+      ) : null
+    }
+  </article>
+</BaseLayout>

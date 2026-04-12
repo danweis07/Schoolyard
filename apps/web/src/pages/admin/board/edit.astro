@@ -1,0 +1,395 @@
+---
+/**
+ * Admin board member editor — create or edit a single board member.
+ *
+ * When `?id=<uuid>` is present, loads the existing member for editing.
+ * Otherwise renders a blank form for creating a new member.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+---
+
+<BaseLayout title="Admin - Edit Board Member" description="Create or edit a board member">
+  <div
+    class="mx-auto max-w-3xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">
+        You need to be signed in as an editor or admin to edit board members.
+      </p>
+      <a
+        href="/sign-in?redirect=/admin/board/edit"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Form -->
+    <div id="admin-content" class="hidden">
+      <nav class="text-sm text-muted" aria-label="Breadcrumb">
+        <a href="/admin/" class="hover:underline">Admin</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <a href="/admin/board/" class="hover:underline">Board Members</a>
+        <span class="mx-1" aria-hidden="true">/</span>
+        <span id="breadcrumb-action">New</span>
+      </nav>
+      <h1 class="mt-1 text-2xl font-bold" id="page-title">New Board Member</h1>
+
+      <div id="form-message" class="mt-4 hidden rounded-card p-4 text-sm" role="alert"></div>
+
+      <form id="board-form" class="mt-6 space-y-6" novalidate>
+        <!-- Name -->
+        <div>
+          <label for="field-name" class="block text-sm font-medium"
+            >Name <span class="text-error" aria-hidden="true">*</span></label
+          >
+          <input
+            id="field-name"
+            type="text"
+            required
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Jane Smith"
+          />
+        </div>
+
+        <!-- Slug -->
+        <div>
+          <label for="field-slug" class="block text-sm font-medium">Slug</label>
+          <input
+            id="field-slug"
+            type="text"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-sm font-mono placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="jane-smith"
+          />
+          <p class="mt-1 text-xs text-muted">Auto-generated from name. You can edit it.</p>
+        </div>
+
+        <!-- Role -->
+        <div>
+          <label for="field-role" class="block text-sm font-medium"
+            >Role <span class="text-error" aria-hidden="true">*</span></label
+          >
+          <input
+            id="field-role"
+            type="text"
+            required
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="President"
+          />
+        </div>
+
+        <!-- Bio (Markdown) -->
+        <div>
+          <label for="field-bio" class="block text-sm font-medium">Bio (Markdown)</label>
+          <textarea
+            id="field-bio"
+            rows="6"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-sm font-mono placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="A short bio of the board member..."></textarea>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="field-email" class="block text-sm font-medium">Email</label>
+          <input
+            id="field-email"
+            type="email"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="jane@example.com"
+          />
+        </div>
+
+        <!-- Photo URL -->
+        <div>
+          <label for="field-photo" class="block text-sm font-medium">Photo URL</label>
+          <input
+            id="field-photo"
+            type="url"
+            class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="https://example.com/photo.jpg"
+          />
+        </div>
+
+        <!-- Term dates row -->
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="field-term-start" class="block text-sm font-medium">Term Start</label>
+            <input
+              id="field-term-start"
+              type="date"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <div>
+            <label for="field-term-end" class="block text-sm font-medium">Term End</label>
+            <input
+              id="field-term-end"
+              type="date"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+        </div>
+
+        <!-- Sort Order -->
+        <div>
+          <label for="field-sort-order" class="block text-sm font-medium">Sort Order</label>
+          <input
+            id="field-sort-order"
+            type="number"
+            min="0"
+            value="99"
+            class="mt-1 block w-32 rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+          <p class="mt-1 text-xs text-muted">Lower numbers appear first.</p>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap items-center gap-3 border-t border-border pt-6">
+          <button
+            type="submit"
+            id="btn-save"
+            class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+          >
+            Save Member
+          </button>
+          <a
+            href="/admin/board/"
+            class="rounded-button border border-border px-6 py-2.5 text-sm font-semibold hover:bg-muted/10"
+          >
+            Cancel
+          </a>
+          <button
+            type="button"
+            id="btn-delete"
+            class="ml-auto hidden rounded-button border border-error px-6 py-2.5 text-sm font-semibold text-error hover:bg-error/10 disabled:opacity-60"
+          >
+            Delete
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const form = document.getElementById('board-form') as HTMLFormElement
+  const msgEl = document.getElementById('form-message')!
+  const pageTitle = document.getElementById('page-title')!
+  const breadcrumbAction = document.getElementById('breadcrumb-action')!
+  const btnSave = document.getElementById('btn-save') as HTMLButtonElement
+  const btnDelete = document.getElementById('btn-delete') as HTMLButtonElement
+
+  const f = {
+    name: document.getElementById('field-name') as HTMLInputElement,
+    slug: document.getElementById('field-slug') as HTMLInputElement,
+    role: document.getElementById('field-role') as HTMLInputElement,
+    bio: document.getElementById('field-bio') as HTMLTextAreaElement,
+    email: document.getElementById('field-email') as HTMLInputElement,
+    photo: document.getElementById('field-photo') as HTMLInputElement,
+    termStart: document.getElementById('field-term-start') as HTMLInputElement,
+    termEnd: document.getElementById('field-term-end') as HTMLInputElement,
+    sortOrder: document.getElementById('field-sort-order') as HTMLInputElement,
+  }
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function showMsg(text: string, type: 'success' | 'error') {
+    msgEl.textContent = text
+    msgEl.className =
+      type === 'success'
+        ? 'mt-4 rounded-card p-4 text-sm bg-success/10 border border-success/30'
+        : 'mt-4 rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+  }
+
+  function slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+
+  let slugManuallyEdited = false
+  f.slug.addEventListener('input', () => {
+    slugManuallyEdited = true
+  })
+  f.name.addEventListener('input', () => {
+    if (!slugManuallyEdited) {
+      f.slug.value = slugify(f.name.value)
+    }
+  })
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const supabase = createBrowserClient({ url, anonKey: anon })
+    const params = new URLSearchParams(window.location.search)
+    const editId = params.get('id')
+    let schoolId = ''
+
+    async function init() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        showView('auth')
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('school_id, role')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (!profile?.school_id || !allowed.includes(profile.role)) {
+        showView('auth')
+        return
+      }
+
+      schoolId = profile.school_id
+      showView('content')
+
+      if (editId) {
+        pageTitle.textContent = 'Edit Board Member'
+        breadcrumbAction.textContent = 'Edit'
+        btnDelete.classList.remove('hidden')
+        slugManuallyEdited = true
+
+        const { data: member, error } = await supabase
+          .from('board_members')
+          .select('*')
+          .eq('id', editId)
+          .eq('school_id', schoolId)
+          .maybeSingle()
+
+        if (error || !member) {
+          showMsg(error?.message ?? 'Board member not found', 'error')
+          return
+        }
+
+        f.name.value = member.name ?? ''
+        f.slug.value = member.slug ?? ''
+        f.role.value = member.role ?? ''
+        f.bio.value = member.bio_md ?? ''
+        f.email.value = member.email ?? ''
+        f.photo.value = member.photo_url ?? ''
+        f.termStart.value = member.term_start ?? ''
+        f.termEnd.value = member.term_end ?? ''
+        f.sortOrder.value = String(member.sort_order ?? 99)
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      if (!f.name.value.trim()) {
+        showMsg('Name is required.', 'error')
+        f.name.focus()
+        return
+      }
+      if (!f.role.value.trim()) {
+        showMsg('Role is required.', 'error')
+        f.role.focus()
+        return
+      }
+
+      btnSave.disabled = true
+      btnSave.textContent = 'Saving...'
+
+      const slug = f.slug.value.trim() || slugify(f.name.value)
+      const row = {
+        school_id: schoolId,
+        name: f.name.value.trim(),
+        slug,
+        role: f.role.value.trim(),
+        bio_md: f.bio.value.trim() || null,
+        email: f.email.value.trim() || null,
+        photo_url: f.photo.value.trim() || null,
+        term_start: f.termStart.value || null,
+        term_end: f.termEnd.value || null,
+        sort_order: parseInt(f.sortOrder.value, 10) || 99,
+      }
+
+      let result
+      if (editId) {
+        result = await supabase
+          .from('board_members')
+          .update(row)
+          .eq('id', editId)
+          .eq('school_id', schoolId)
+      } else {
+        result = await supabase.from('board_members').insert(row).select('id').single()
+      }
+
+      btnSave.disabled = false
+      btnSave.textContent = 'Save Member'
+
+      if (result.error) {
+        showMsg(`Save failed: ${result.error.message}`, 'error')
+        return
+      }
+
+      showMsg('Board member saved successfully.', 'success')
+
+      if (!editId && result.data?.id) {
+        setTimeout(() => {
+          window.location.href = `/admin/board/edit?id=${result.data.id}`
+        }, 600)
+      }
+    })
+
+    btnDelete.addEventListener('click', async () => {
+      if (!editId) return
+      if (!confirm('Remove this board member? This cannot be undone.')) return
+
+      btnDelete.disabled = true
+      btnDelete.textContent = 'Deleting...'
+
+      const { error } = await supabase
+        .from('board_members')
+        .delete()
+        .eq('id', editId)
+        .eq('school_id', schoolId)
+
+      if (error) {
+        showMsg(`Delete failed: ${error.message}`, 'error')
+        btnDelete.disabled = false
+        btnDelete.textContent = 'Delete'
+        return
+      }
+
+      window.location.href = '/admin/board/'
+    })
+
+    init()
+  }
+</script>

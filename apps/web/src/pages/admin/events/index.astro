@@ -1,0 +1,229 @@
+---
+/**
+ * Admin events list — table of all events for the current school with
+ * create, edit, and delete actions. All CRUD happens client-side via
+ * the browser Supabase client; RLS enforces editor/admin access.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+---
+
+<BaseLayout title="Admin - Events" description="Manage school events">
+  <div
+    class="mx-auto max-w-5xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">
+        You need to be signed in as an editor or admin to manage events.
+      </p>
+      <a
+        href="/sign-in?redirect=/admin/events/"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Main content -->
+    <div id="admin-content" class="hidden">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <nav class="text-sm text-muted" aria-label="Breadcrumb">
+            <a href="/admin/" class="hover:underline">Admin</a>
+            <span class="mx-1" aria-hidden="true">/</span>
+            <span>Events</span>
+          </nav>
+          <h1 class="mt-1 text-2xl font-bold">Events</h1>
+        </div>
+        <a
+          href="/admin/events/edit"
+          class="rounded-button bg-primary px-4 py-2 text-sm font-bold text-inverse hover:opacity-90"
+        >
+          New Event
+        </a>
+      </div>
+
+      <div class="mt-6 overflow-x-auto rounded-card border border-border">
+        <table class="w-full text-left text-sm" id="events-table">
+          <thead>
+            <tr class="border-b border-border bg-muted/5">
+              <th class="px-4 py-3 font-semibold" scope="col">Title</th>
+              <th class="hidden px-4 py-3 font-semibold sm:table-cell" scope="col">Date</th>
+              <th class="hidden px-4 py-3 font-semibold md:table-cell" scope="col">Category</th>
+              <th class="px-4 py-3 font-semibold" scope="col">Status</th>
+              <th class="px-4 py-3 text-right font-semibold" scope="col">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="events-tbody">
+            <tr>
+              <td class="px-4 py-8 text-center text-muted" colspan="5">Loading events...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const tbody = document.getElementById('events-tbody')!
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const supabase = createBrowserClient({ url, anonKey: anon })
+
+    let schoolId = ''
+
+    async function checkAuth(): Promise<boolean> {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        showView('auth')
+        return false
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('school_id, role')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (!profile?.school_id || !allowed.includes(profile.role)) {
+        showView('auth')
+        return false
+      }
+
+      schoolId = profile.school_id
+      return true
+    }
+
+    function formatDate(iso: string): string {
+      try {
+        return new Date(iso).toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
+      } catch {
+        return iso
+      }
+    }
+
+    function escapeHtml(str: string): string {
+      const d = document.createElement('div')
+      d.textContent = str
+      return d.innerHTML
+    }
+
+    async function loadEvents() {
+      const { data: events, error } = await supabase
+        .from('events')
+        .select('id, title, slug, starts_at, category, published, featured, cancelled')
+        .eq('school_id', schoolId)
+        .order('starts_at', { ascending: false })
+
+      if (error || !events) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-error" colspan="5">Failed to load events: ${escapeHtml(error?.message ?? 'Unknown error')}</td></tr>`
+        return
+      }
+
+      if (events.length === 0) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-muted" colspan="5">No events yet. <a href="/admin/events/edit" class="font-semibold underline">Create your first event</a></td></tr>`
+        return
+      }
+
+      tbody.innerHTML = events
+        .map((ev) => {
+          const statusBadge = ev.published
+            ? '<span class="inline-block rounded-button bg-success/15 px-2 py-0.5 text-xs font-medium">Published</span>'
+            : '<span class="inline-block rounded-button bg-warning/15 px-2 py-0.5 text-xs font-medium">Draft</span>'
+          const cancelledBadge = ev.cancelled
+            ? ' <span class="inline-block rounded-button bg-error/15 px-2 py-0.5 text-xs font-medium">Cancelled</span>'
+            : ''
+
+          return `<tr class="border-b border-border last:border-0 hover:bg-muted/5">
+          <td class="px-4 py-3">
+            <span class="font-medium">${escapeHtml(ev.title)}</span>
+            ${ev.featured ? '<span class="ml-1 text-xs text-muted">(featured)</span>' : ''}
+          </td>
+          <td class="hidden px-4 py-3 text-muted sm:table-cell">${formatDate(ev.starts_at)}</td>
+          <td class="hidden px-4 py-3 text-muted md:table-cell">${escapeHtml(ev.category ?? '--')}</td>
+          <td class="px-4 py-3">${statusBadge}${cancelledBadge}</td>
+          <td class="px-4 py-3 text-right">
+            <a href="/admin/events/edit?id=${ev.id}" class="text-sm font-semibold hover:underline">Edit</a>
+            <button type="button" data-delete="${ev.id}" data-title="${escapeHtml(ev.title)}" class="ml-3 text-sm font-semibold text-error hover:underline">Delete</button>
+          </td>
+        </tr>`
+        })
+        .join('')
+
+      // Attach delete handlers
+      tbody.querySelectorAll<HTMLButtonElement>('[data-delete]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.delete!
+          const title = btn.dataset.title ?? 'this event'
+          if (!confirm(`Delete "${title}"? This cannot be undone.`)) return
+
+          btn.disabled = true
+          btn.textContent = 'Deleting...'
+
+          const { error: delErr } = await supabase
+            .from('events')
+            .delete()
+            .eq('id', id)
+            .eq('school_id', schoolId)
+          if (delErr) {
+            alert(`Failed to delete: ${delErr.message}`)
+            btn.disabled = false
+            btn.textContent = 'Delete'
+          } else {
+            loadEvents()
+          }
+        })
+      })
+    }
+
+    async function init() {
+      if (await checkAuth()) {
+        showView('content')
+        loadEvents()
+      }
+    }
+
+    init()
+  }
+</script>

@@ -1,4 +1,5 @@
-import { ScrollView, View, Text, ActivityIndicator } from 'react-native'
+import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native'
+import { useRouter } from 'expo-router'
 import { EventCard } from '@schoolyard/ui'
 import { getUpcomingEvents } from '@schoolyard/content-api'
 import { useEvents } from '../../hooks/useEvents'
@@ -7,6 +8,7 @@ import { useLocale, useTranslate } from '../../hooks/useLocale'
 export default function EventsScreen() {
   const locale = useLocale()
   const t = useTranslate(locale)
+  const router = useRouter()
   const { data: events, isLoading, error } = useEvents()
 
   const upcoming = events ? getUpcomingEvents(events) : []
@@ -42,7 +44,9 @@ export default function EventsScreen() {
     <ScrollView className="flex-1 bg-surface" contentContainerClassName="p-4">
       <Text className="mb-4 text-2xl font-bold">{t('events.upcoming')}</Text>
       {upcoming.map((event) => (
-        <EventCard key={event.slug} event={event} />
+        <Pressable key={event.slug} onPress={() => router.push(`/events/${event.slug}`)}>
+          <EventCard event={event} />
+        </Pressable>
       ))}
     </ScrollView>
   )

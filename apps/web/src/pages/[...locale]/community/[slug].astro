@@ -1,0 +1,109 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { getCollection } from 'astro:content'
+import FlagButton from '@/modules/community/components/FlagButton.astro'
+import {
+  useTranslate,
+  getLocaleFromUrl,
+  localizedPath,
+  supportedLocales,
+  defaultLocale,
+} from '@/i18n/index'
+
+export async function getStaticPaths() {
+  const listings = await getCollection('communityListings')
+  return listings.flatMap((listing) =>
+    supportedLocales.map((code) => ({
+      params: {
+        locale: code === defaultLocale ? undefined : code,
+        slug: listing.slug,
+      },
+      props: { listing },
+    })),
+  )
+}
+
+const { listing } = Astro.props
+
+if (!isModuleEnabled(siteConfig, 'community')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+const dateFormatter = new Intl.DateTimeFormat(locale, {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+})
+---
+
+<BaseLayout title={listing.data.title} description={listing.data.description}>
+  <article class="mx-auto max-w-3xl px-4 py-12">
+    <a href={localizedPath('/community', locale)} class="text-sm text-primary hover:underline">
+      &larr; {t('community.title')}
+    </a>
+
+    <h1 class="mt-4 text-4xl font-bold">{listing.data.title}</h1>
+
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+      <span class="rounded bg-muted px-2 py-1 text-xs font-semibold uppercase">
+        {t(`community.categories.${listing.data.category}`)}
+      </span>
+      {
+        listing.data.neighborhood ? (
+          <span class="text-sm text-muted">{listing.data.neighborhood}</span>
+        ) : null
+      }
+    </div>
+
+    <div class="mt-6 prose max-w-none">
+      <p>{listing.data.description}</p>
+    </div>
+
+    <dl class="mt-8 space-y-3 text-sm">
+      {
+        listing.data.contact ? (
+          <div>
+            <dt class="font-semibold text-muted">{t('community.contact')}</dt>
+            <dd class="mt-0.5">{listing.data.contact}</dd>
+          </div>
+        ) : null
+      }
+      {
+        listing.data.postedDate ? (
+          <div>
+            <dt class="font-semibold text-muted">{t('community.posted')}</dt>
+            <dd class="mt-0.5">{dateFormatter.format(listing.data.postedDate)}</dd>
+          </div>
+        ) : null
+      }
+      {
+        listing.data.expiresDate ? (
+          <div>
+            <dt class="font-semibold text-muted">Expires</dt>
+            <dd class="mt-0.5">{dateFormatter.format(listing.data.expiresDate)}</dd>
+          </div>
+        ) : null
+      }
+      {
+        listing.data.url ? (
+          <div>
+            <dt class="font-semibold text-muted">Link</dt>
+            <dd class="mt-0.5">
+              <a href={listing.data.url} class="text-primary hover:underline" rel="noopener">
+                {listing.data.url}
+              </a>
+            </dd>
+          </div>
+        ) : null
+      }
+    </dl>
+
+    <div class="mt-8">
+      <FlagButton listingId={listing.slug} locale={locale} />
+    </div>
+  </article>
+</BaseLayout>

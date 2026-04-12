@@ -3,6 +3,7 @@ import { siteConfig } from '@/lib/site'
 import { getNavModules } from '@/lib/modules'
 import { useTranslate, localizedPath } from '@/i18n/index'
 import LanguageSwitcher from '@/components/LanguageSwitcher.astro'
+import UserMenu from '@/components/UserMenu.astro'
 import type { Locale } from '@schoolyard/i18n'
 
 interface Props {
@@ -88,6 +89,7 @@ function isCurrent(href: string): boolean {
     </nav>
 
     <div class="flex items-center gap-2">
+      <UserMenu />
       {siteConfig.languages.supported.length > 1 && <LanguageSwitcher locale={locale} />}
       <button
         type="button"
