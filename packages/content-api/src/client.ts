@@ -11,8 +11,9 @@ import type { SupabaseClient, Database } from '@schoolyard/supabase'
 import type { ContentAdapter } from './adapters/types.js'
 import { createStaticAdapter } from './adapters/static.js'
 import { createSupabaseAdapter } from './adapters/supabase.js'
+import { createGatewayAdapter } from './adapters/gateway.js'
 
-export type ContentBackend = 'static' | 'supabase'
+export type ContentBackend = 'static' | 'supabase' | 'gateway'
 
 export interface ContentClientOptions {
   backend: ContentBackend
@@ -20,11 +21,23 @@ export interface ContentClientOptions {
   baseUrl?: string
   /** Supabase mode: the typed client. */
   supabase?: SupabaseClient<Database>
-  /** Supabase mode: fallback slug when the scope omits one. */
+  /** Supabase / gateway mode: fallback slug when the scope omits one. */
   defaultSchoolSlug?: string
+  /** Gateway mode: the Supabase project URL (e.g. https://xyz.supabase.co). */
+  gatewayUrl?: string
 }
 
 export function createContentClient(options: ContentClientOptions): ContentAdapter {
+  if (options.backend === 'gateway') {
+    if (!options.gatewayUrl) {
+      throw new Error('createContentClient: backend "gateway" requires a `gatewayUrl`')
+    }
+    return createGatewayAdapter({
+      gatewayUrl: options.gatewayUrl,
+      defaultSchoolSlug: options.defaultSchoolSlug,
+    })
+  }
+
   if (options.backend === 'supabase') {
     if (!options.supabase) {
       throw new Error('createContentClient: backend "supabase" requires a `supabase` client')

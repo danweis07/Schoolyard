@@ -1,8 +1,12 @@
 /**
- * Mobile-side Supabase client — one browser/anon client for reads and
- * auth, backed by in-memory storage for now. When `@react-native-async-
- * storage/async-storage` or `expo-secure-store` is installed, plug it
- * in via the `storage` option to persist sessions across launches.
+ * Mobile-side Supabase client — AUTH ONLY.
+ *
+ * This client is used exclusively for Supabase Auth operations:
+ *   - signInWithOtp / signOut / getSession / onAuthStateChange
+ *
+ * ALL data reads go through the gateway edge function via the content-api
+ * gateway adapter (see `./manifest.ts`). NEVER call `.from()` on this
+ * client for data queries — the gateway is the single point of data access.
  *
  * Env:
  *   EXPO_PUBLIC_SUPABASE_URL

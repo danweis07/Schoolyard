@@ -5,15 +5,16 @@
  * When `?id=<uuid>` is present, loads the existing role for editing.
  * Otherwise renders a blank form for creating a new role.
  *
- * All mutations happen client-side via the browser Supabase client.
- * RLS on the volunteer_roles table enforces that only editors/admins for
- * the matching school_id can insert or update rows.
+ * All mutations go through the gateway edge function.
+ * The Supabase client is only used for auth (sign-in/session).
  */
 import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
 const supabaseAnon =
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 ---
 
 <BaseLayout title="Admin - Edit Volunteer Role" description="Create or edit a volunteer role">
@@ -22,6 +23,7 @@ const supabaseAnon =
     data-sy-admin
     data-supabase-url={supabaseUrl}
     data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
   >
     <!-- Auth gate -->
     <div id="admin-auth-gate" class="hidden py-16 text-center">
@@ -189,6 +191,7 @@ const supabaseAnon =
 <script>
   // @ts-nocheck
   import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
 
   const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
   const url = root.dataset.supabaseUrl ?? ''
@@ -251,33 +254,35 @@ const supabaseAnon =
   if (!url || !anon) {
     showView('auth')
   } else {
-    const supabase = createBrowserClient({ url, anonKey: anon })
+    // Auth-only client — NEVER used for data queries
+    const authClient = createBrowserClient({ url, anonKey: anon })
     const params = new URLSearchParams(window.location.search)
     const editId = params.get('id')
-    let schoolId = ''
+
+    let admin: ReturnType<typeof createAdminClient>
 
     async function init() {
       const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
         showView('auth')
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('school_id, role')
-        .eq('id', user.id)
-        .maybeSingle()
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
 
+      const { data: profile, error: profileErr } = await admin.getProfile()
       const allowed = ['editor', 'admin', 'district_admin']
-      if (!profile?.school_id || !allowed.includes(profile.role)) {
+      if (profileErr || !profile?.school_id || !allowed.includes(profile.role)) {
         showView('auth')
         return
       }
 
-      schoolId = profile.school_id
       showView('content')
 
       // If editing, load the role
@@ -287,25 +292,20 @@ const supabaseAnon =
         btnDelete.classList.remove('hidden')
         slugManuallyEdited = true // don't overwrite existing slug
 
-        const { data: role, error } = await supabase
-          .from('volunteer_roles')
-          .select('*')
-          .eq('id', editId)
-          .eq('school_id', schoolId)
-          .maybeSingle()
+        const { data: role, error } = await admin.get<Record<string, unknown>>('volunteers', editId)
 
         if (error || !role) {
-          showMsg(error?.message ?? 'Volunteer role not found', 'error')
+          showMsg(error ?? 'Volunteer role not found', 'error')
           return
         }
 
-        f.title.value = role.title ?? ''
-        f.slug.value = role.slug ?? ''
-        f.description.value = role.description_md ?? ''
-        f.commitment.value = role.commitment ?? ''
+        f.title.value = (role.title as string) ?? ''
+        f.slug.value = (role.slug as string) ?? ''
+        f.description.value = (role.description_md as string) ?? ''
+        f.commitment.value = (role.commitment as string) ?? ''
         f.capacity.value = role.capacity != null ? String(role.capacity) : ''
         f.filled.value = role.filled != null ? String(role.filled) : ''
-        f.contactEmail.value = role.contact_email ?? ''
+        f.contactEmail.value = (role.contact_email as string) ?? ''
         f.sortOrder.value = role.sort_order != null ? String(role.sort_order) : ''
       }
     }
@@ -326,7 +326,6 @@ const supabaseAnon =
 
       const slug = f.slug.value.trim() || slugify(f.title.value)
       const row = {
-        school_id: schoolId,
         title: f.title.value.trim(),
         slug,
         description_md: f.description.value.trim() || null,
@@ -337,22 +336,18 @@ const supabaseAnon =
         sort_order: f.sortOrder.value ? parseInt(f.sortOrder.value, 10) : 0,
       }
 
-      let result
+      let result: { data: { id?: string } | null; error: string | null }
       if (editId) {
-        result = await supabase
-          .from('volunteer_roles')
-          .update(row)
-          .eq('id', editId)
-          .eq('school_id', schoolId)
+        result = await admin.update('volunteers', editId, row)
       } else {
-        result = await supabase.from('volunteer_roles').insert(row).select('id').single()
+        result = await admin.create('volunteers', row)
       }
 
       btnSave.disabled = false
       btnSave.textContent = 'Save Role'
 
       if (result.error) {
-        showMsg(`Save failed: ${result.error.message}`, 'error')
+        showMsg(`Save failed: ${result.error}`, 'error')
         return
       }
 
@@ -374,14 +369,10 @@ const supabaseAnon =
       btnDelete.disabled = true
       btnDelete.textContent = 'Deleting...'
 
-      const { error } = await supabase
-        .from('volunteer_roles')
-        .delete()
-        .eq('id', editId)
-        .eq('school_id', schoolId)
+      const { error } = await admin.remove('volunteers', editId)
 
       if (error) {
-        showMsg(`Delete failed: ${error.message}`, 'error')
+        showMsg(`Delete failed: ${error}`, 'error')
         btnDelete.disabled = false
         btnDelete.textContent = 'Delete'
         return

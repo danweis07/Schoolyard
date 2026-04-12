@@ -1,14 +1,16 @@
 ---
 /**
  * Admin volunteer roles list — table of all volunteer roles for the current
- * school with create, edit, and delete actions. All CRUD happens client-side
- * via the browser Supabase client; RLS enforces editor/admin access.
+ * school with create, edit, and delete actions. All CRUD goes through the
+ * gateway edge function; the Supabase client is only used for auth.
  */
 import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
 const supabaseAnon =
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 ---
 
 <BaseLayout title="Admin - Volunteers" description="Manage volunteer roles">
@@ -17,6 +19,7 @@ const supabaseAnon =
     data-sy-admin
     data-supabase-url={supabaseUrl}
     data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
   >
     <!-- Auth gate -->
     <div id="admin-auth-gate" class="hidden py-16 text-center">
@@ -85,6 +88,7 @@ const supabaseAnon =
 <script>
   // @ts-nocheck
   import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
 
   const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
   const url = root.dataset.supabaseUrl ?? ''
@@ -104,32 +108,38 @@ const supabaseAnon =
   if (!url || !anon) {
     showView('auth')
   } else {
-    const supabase = createBrowserClient({ url, anonKey: anon })
+    // Auth-only client — NEVER used for data queries
+    const authClient = createBrowserClient({ url, anonKey: anon })
 
-    let schoolId = ''
+    let admin: ReturnType<typeof createAdminClient>
 
     async function checkAuth(): Promise<boolean> {
       const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
         showView('auth')
         return false
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('school_id, role')
-        .eq('id', user.id)
-        .maybeSingle()
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error } = await admin.getProfile()
+      if (error || !profile?.school_id) {
+        showView('auth')
+        return false
+      }
 
       const allowed = ['editor', 'admin', 'district_admin']
-      if (!profile?.school_id || !allowed.includes(profile.role)) {
+      if (!allowed.includes(profile.role)) {
         showView('auth')
         return false
       }
 
-      schoolId = profile.school_id
       return true
     }
 
@@ -140,14 +150,17 @@ const supabaseAnon =
     }
 
     async function loadVolunteers() {
-      const { data: roles, error } = await supabase
-        .from('volunteer_roles')
-        .select('id, title, commitment, capacity, filled, sort_order')
-        .eq('school_id', schoolId)
-        .order('sort_order', { ascending: true })
+      const { data: roles, error } = await admin.list<{
+        id: string
+        title: string
+        commitment: string | null
+        capacity: number | null
+        filled: number | null
+        sort_order: number | null
+      }>('volunteers')
 
       if (error || !roles) {
-        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-error" colspan="5">Failed to load volunteer roles: ${escapeHtml(error?.message ?? 'Unknown error')}</td></tr>`
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-error" colspan="5">Failed to load volunteer roles: ${escapeHtml(error ?? 'Unknown error')}</td></tr>`
         return
       }
 
@@ -191,13 +204,9 @@ const supabaseAnon =
           btn.disabled = true
           btn.textContent = 'Deleting...'
 
-          const { error: delErr } = await supabase
-            .from('volunteer_roles')
-            .delete()
-            .eq('id', id)
-            .eq('school_id', schoolId)
+          const { error: delErr } = await admin.remove('volunteers', id)
           if (delErr) {
-            alert(`Failed to delete: ${delErr.message}`)
+            alert(`Failed to delete: ${delErr}`)
             btn.disabled = false
             btn.textContent = 'Delete'
           } else {

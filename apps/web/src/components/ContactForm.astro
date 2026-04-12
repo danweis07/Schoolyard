@@ -9,8 +9,8 @@
  *     picks it up at build time.
  *
  *   - When JS is enabled: intercepts the submit, POSTs to the
- *     `contact-submit` Supabase edge function, and renders inline
- *     success/error messaging without reloading the page.
+ *     gateway edge function (`/gateway/contact/submit`), and renders
+ *     inline success/error messaging without reloading the page.
  *
  * The honeypot is a real input with CSS applied to hide it from humans
  * and screen readers. Bots fill it anyway → the edge function rejects.
@@ -28,7 +28,7 @@ const t = useTranslate(locale)
 const school = resolveRequestSchool(Astro.locals)
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
 const contactEndpoint = supabaseUrl
-  ? `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/contact-submit`
+  ? `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/gateway/contact/submit`
   : ''
 ---
 
