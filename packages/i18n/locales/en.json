@@ -189,7 +189,14 @@
     "title": "About Our School",
     "founded": "Founded {year}",
     "grades": "Grades {grades}",
-    "enrollment": "{count} students"
+    "enrollment": "{count} students",
+    "foundedLabel": "Founded",
+    "gradesLabel": "Grades",
+    "enrollmentLabel": "Enrollment",
+    "districtLabel": "District",
+    "contactInfo": "Contact Information",
+    "socialLinks": "Follow Us",
+    "viewOnMap": "View on map"
   },
   "contact": {
     "title": "Contact Us",

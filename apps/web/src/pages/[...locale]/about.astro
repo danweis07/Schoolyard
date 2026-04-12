@@ -7,22 +7,48 @@ export const getStaticPaths = localeStaticPaths
 
 const locale = getLocaleFromUrl(Astro.url)
 const t = useTranslate(locale)
+
+const hasSocial =
+  siteConfig.social.instagram ||
+  siteConfig.social.facebook ||
+  siteConfig.social.twitter ||
+  siteConfig.social.youtube
+
+const hasContact =
+  siteConfig.school.address || siteConfig.school.phone || siteConfig.school.email
 ---
 
 <BaseLayout title={t('about.title')}>
   <section class="mx-auto max-w-3xl px-4 py-12">
-    <h1 class="text-4xl font-bold">{siteConfig.school.name}</h1>
+    {/* Hero: logo + name + tagline */}
+    {
+      siteConfig.branding.logo && (
+        <div class="flex justify-center">
+          <img
+            src={siteConfig.branding.logo}
+            alt={`${siteConfig.school.name} logo`}
+            class="h-24 w-auto"
+            width="96"
+            height="96"
+          />
+        </div>
+      )
+    }
+    <h1 class="mt-4 text-center text-4xl font-bold">{siteConfig.school.name}</h1>
     {
       siteConfig.school.tagline && (
-        <p class="mt-2 text-xl text-muted">{siteConfig.school.tagline}</p>
+        <p class="mt-2 text-center text-xl text-muted">{siteConfig.school.tagline}</p>
       )
     }
 
+    {/* Quick facts */}
     <dl class="mt-12 grid gap-4 sm:grid-cols-2">
       {
         siteConfig.school.founded && (
           <div>
-            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">Founded</dt>
+            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">
+              {t('about.foundedLabel')}
+            </dt>
             <dd class="mt-1 text-lg">{t('about.founded', { year: siteConfig.school.founded })}</dd>
           </div>
         )
@@ -30,7 +56,9 @@ const t = useTranslate(locale)
       {
         siteConfig.school.grades && (
           <div>
-            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">Grades</dt>
+            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">
+              {t('about.gradesLabel')}
+            </dt>
             <dd class="mt-1 text-lg">{t('about.grades', { grades: siteConfig.school.grades })}</dd>
           </div>
         )
@@ -38,7 +66,9 @@ const t = useTranslate(locale)
       {
         siteConfig.school.enrollment > 0 && (
           <div>
-            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">Enrollment</dt>
+            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">
+              {t('about.enrollmentLabel')}
+            </dt>
             <dd class="mt-1 text-lg">
               {t('about.enrollment', { count: siteConfig.school.enrollment })}
             </dd>
@@ -48,7 +78,9 @@ const t = useTranslate(locale)
       {
         siteConfig.school.district && (
           <div>
-            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">District</dt>
+            <dt class="text-sm font-semibold uppercase tracking-wide text-muted">
+              {t('about.districtLabel')}
+            </dt>
             <dd class="mt-1 text-lg">
               {siteConfig.school.districtUrl ? (
                 <a href={siteConfig.school.districtUrl}>{siteConfig.school.district}</a>
@@ -60,5 +92,173 @@ const t = useTranslate(locale)
         )
       }
     </dl>
+
+    {/* Contact information */}
+    {
+      hasContact && (
+        <section class="mt-12" aria-labelledby="contact-heading">
+          <h2 id="contact-heading" class="text-2xl font-bold">
+            {t('about.contactInfo')}
+          </h2>
+          <ul class="mt-4 space-y-3">
+            {siteConfig.school.address && (
+              <li class="flex items-start gap-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  class="mt-0.5 h-5 w-5 shrink-0 text-muted"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.274 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                <div>
+                  <span>{siteConfig.school.address}</span>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteConfig.school.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="ms-2 text-sm text-primary hover:underline"
+                    aria-label={t('about.viewOnMap')}
+                  >
+                    {t('about.viewOnMap')}
+                  </a>
+                </div>
+              </li>
+            )}
+            {siteConfig.school.phone && (
+              <li class="flex items-center gap-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  class="h-5 w-5 shrink-0 text-muted"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 012.43 8.326 13.019 13.019 0 012 5V3.5z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                <a href={`tel:${siteConfig.school.phone}`}>{siteConfig.school.phone}</a>
+              </li>
+            )}
+            {siteConfig.school.email && (
+              <li class="flex items-center gap-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  class="h-5 w-5 shrink-0 text-muted"
+                  aria-hidden="true"
+                >
+                  <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+                  <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+                </svg>
+                <a href={`mailto:${siteConfig.school.email}`}>{siteConfig.school.email}</a>
+              </li>
+            )}
+          </ul>
+        </section>
+      )
+    }
+
+    {/* Social links */}
+    {
+      hasSocial && (
+        <section class="mt-12" aria-labelledby="social-heading">
+          <h2 id="social-heading" class="text-2xl font-bold">
+            {t('about.socialLinks')}
+          </h2>
+          <div class="mt-4 flex flex-wrap gap-3">
+            {siteConfig.social.instagram && (
+              <a
+                href={siteConfig.social.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                class="flex items-center gap-2 rounded-button border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                </svg>
+                Instagram
+              </a>
+            )}
+            {siteConfig.social.facebook && (
+              <a
+                href={siteConfig.social.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                class="flex items-center gap-2 rounded-button border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+                Facebook
+              </a>
+            )}
+            {siteConfig.social.twitter && (
+              <a
+                href={siteConfig.social.twitter}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="X / Twitter"
+                class="flex items-center gap-2 rounded-button border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+                X
+              </a>
+            )}
+            {siteConfig.social.youtube && (
+              <a
+                href={siteConfig.social.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+                class="flex items-center gap-2 rounded-button border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                </svg>
+                YouTube
+              </a>
+            )}
+          </div>
+        </section>
+      )
+    }
   </section>
 </BaseLayout>

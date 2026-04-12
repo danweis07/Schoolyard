@@ -43,6 +43,7 @@ const ROUTES: Record<string, RouteDefinition> = {
   // ── Admin (authenticated CRUD) ─────────────────────────────────
   'admin/profile': { methods: ['GET'], auth: 'member' },
   'admin/counts': { methods: ['GET'], auth: 'editor' },
+  'admin/school': { methods: ['GET', 'PUT'], auth: 'admin' },
 
   // ── User actions ────────────────────────────────────────────────
   'user/rsvp': { methods: ['POST', 'DELETE'], auth: 'member' },
