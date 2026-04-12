@@ -51,7 +51,9 @@
     "classroom": false,
     "district": false,
     "resources": false,
-    "transparency": false
+    "transparency": false,
+    "spirit-store": false,
+    "directory": false
   },
   "fundraising": {
     "provider": "paypal",
@@ -60,6 +62,13 @@
     "currentRaised": 0,
     "goalLabel": "Annual Fund",
     "stripePublishableKey": ""
+  },
+  "spiritStore": {
+    "provider": "collect",
+    "externalUrl": "",
+    "opensAt": "",
+    "closesAt": "",
+    "storeLabel": "Spirit Store"
   },
   "app": {
     "enabled": false,

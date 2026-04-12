@@ -13,6 +13,7 @@ export {
   fundraisingSchema,
   resourcesConfigSchema,
   resourceSourceSchema,
+  spiritStoreSchema,
   appSchema,
   deploymentSchema,
   localeSchema,

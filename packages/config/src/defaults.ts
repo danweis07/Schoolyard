@@ -44,6 +44,8 @@ export const defaultConfig: SchoolConfig = {
     district: false,
     resources: false,
     transparency: false,
+    'spirit-store': false,
+    directory: false,
   },
   fundraising: {
     provider: 'paypal',
@@ -52,6 +54,17 @@ export const defaultConfig: SchoolConfig = {
     currentRaised: 0,
     goalLabel: 'Annual Fund',
     stripePublishableKey: '',
+  },
+  resourcesConfig: {
+    sources: ['211'],
+    radiusMiles: 10,
+  },
+  spiritStore: {
+    provider: 'collect',
+    externalUrl: '',
+    opensAt: '',
+    closesAt: '',
+    storeLabel: 'Spirit Store',
   },
   app: { enabled: false, pushNotifications: false, offlineMode: true },
   deployment: { siteUrl: '', analyticsId: '' },

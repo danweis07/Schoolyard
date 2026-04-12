@@ -21,6 +21,8 @@ import type {
   Program,
   PtaNewsletter,
   SchoolInfo,
+  SpiritStoreProduct,
+  DirectoryEntry,
 } from '../types.js'
 import type {
   ManifestEvent,
@@ -71,6 +73,12 @@ export interface ContentAdapter {
   fetchCommittees(scope?: Scope, options?: FetchOptions): Promise<Committee[]>
   fetchPrograms(scope?: Scope, options?: FetchOptions): Promise<Program[]>
   fetchPtaNewsletters(scope?: Scope, options?: FetchOptions): Promise<PtaNewsletter[]>
+
+  // Spirit Store
+  fetchSpiritStoreProducts(scope?: Scope, options?: FetchOptions): Promise<SpiritStoreProduct[]>
+
+  // School Directory (requires auth — returns empty for anon)
+  fetchDirectory(scope?: Scope, options?: FetchOptions): Promise<DirectoryEntry[]>
 }
 
 /** Local aliases re-exported for convenience. */
@@ -89,4 +97,6 @@ export type {
   Program,
   PtaNewsletter,
   SchoolInfo,
+  SpiritStoreProduct,
+  DirectoryEntry,
 }

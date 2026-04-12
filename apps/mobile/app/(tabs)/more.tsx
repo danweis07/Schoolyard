@@ -137,6 +137,33 @@ export default function MoreScreen() {
         </Pressable>
       </View>
 
+      {/* Module shortcuts */}
+      {(isModuleEnabled(config, 'spirit-store') || isModuleEnabled(config, 'directory')) && (
+        <View className="mt-4 rounded-xl border border-border bg-surface">
+          <View className="border-b border-border px-4 py-3">
+            <Text className="text-xs font-semibold uppercase text-muted">Modules</Text>
+          </View>
+          {isModuleEnabled(config, 'spirit-store') && (
+            <Pressable
+              onPress={() => router.push('/store')}
+              className="border-b border-border px-4 py-3 active:bg-muted/10"
+            >
+              <Text className="text-sm font-medium">{t('nav.store')}</Text>
+              <Text className="text-xs text-muted">{t('spiritStore.description')}</Text>
+            </Pressable>
+          )}
+          {isModuleEnabled(config, 'directory') && (
+            <Pressable
+              onPress={() => router.push('/directory')}
+              className="px-4 py-3 active:bg-muted/10"
+            >
+              <Text className="text-sm font-medium">{t('nav.directory')}</Text>
+              <Text className="text-xs text-muted">{t('directory.description')}</Text>
+            </Pressable>
+          )}
+        </View>
+      )}
+
       {/* Links */}
       <View className="mt-4 rounded-xl border border-border bg-surface">
         <View className="border-b border-border px-4 py-3">

@@ -26,6 +26,8 @@ import type {
   Program,
   PtaNewsletter,
   SchoolInfo,
+  SpiritStoreProduct,
+  DirectoryEntry,
 } from '../types.js'
 
 export interface GatewayAdapterOptions {
@@ -117,6 +119,14 @@ export function createGatewayAdapter(options: GatewayAdapterOptions): ContentAda
     },
     fetchPtaNewsletters(scope, options) {
       return get<PtaNewsletter[]>('newsletters', scope, options)
+    },
+    fetchSpiritStoreProducts(scope, options) {
+      return get<SpiritStoreProduct[]>('spirit-store-products', scope, options)
+    },
+    async fetchDirectory() {
+      // Directory requires auth — gateway doesn't forward auth headers yet.
+      // Return empty until gateway supports authed routes.
+      return [] as DirectoryEntry[]
     },
   }
 }

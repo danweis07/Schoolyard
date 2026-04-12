@@ -85,7 +85,7 @@ export const languagesSchema = z.object({
 })
 
 /**
- * The 12 module names. Adding a module means adding it here AND creating
+ * The 14 module names. Adding a module means adding it here AND creating
  * a folder under apps/web/src/modules/<name>/.
  */
 export const MODULE_NAMES = [
@@ -101,6 +101,8 @@ export const MODULE_NAMES = [
   'district',
   'resources',
   'transparency',
+  'spirit-store',
+  'directory',
 ] as const
 
 export type ModuleName = (typeof MODULE_NAMES)[number]
@@ -118,6 +120,8 @@ export const modulesSchema = z.object({
   district: z.boolean().default(false),
   resources: z.boolean().default(false),
   transparency: z.boolean().default(false),
+  'spirit-store': z.boolean().default(false),
+  directory: z.boolean().default(false),
 })
 
 export const fundraisingSchema = z.object({
@@ -147,6 +151,19 @@ export const resourcesConfigSchema = z.object({
   sources: z.array(resourceSourceSchema).default(['211']),
   /** Search radius in miles from the zip code centroid. */
   radiusMiles: z.number().positive().default(10),
+})
+
+export const spiritStoreSchema = z.object({
+  /** Payment provider. 'collect' = order-only, 'stripe' = reuse fundraising stripe keys */
+  provider: z.enum(['collect', 'stripe', 'square', 'paypal']).default('collect'),
+  /** External store URL — fallback link-out for providers we don't integrate yet */
+  externalUrl: z.string().url().or(z.literal('')).default(''),
+  /** Store-level open window (ISO datetime or empty = always open) */
+  opensAt: z.string().default(''),
+  /** Store-level close window (ISO datetime or empty = no close) */
+  closesAt: z.string().default(''),
+  /** Label shown on the store page */
+  storeLabel: z.string().default('Spirit Store'),
 })
 
 export const appSchema = z.object({
@@ -248,6 +265,7 @@ export const schoolConfigSchema = z.object({
    * Only consulted when `modules.resources` is enabled.
    */
   resourcesConfig: resourcesConfigSchema.default({}),
+  spiritStore: spiritStoreSchema.default({}),
   app: appSchema.default({}),
   deployment: deploymentSchema.default({}),
   announcements: z.array(announcementSchema).default([]),

@@ -1,0 +1,203 @@
+---
+/**
+ * Spirit store checkout form. Posts to the place-spirit-order edge function.
+ * Cart state is managed client-side via localStorage.
+ */
+import { useTranslate } from '@/i18n/index'
+import { resolveRequestSchool } from '@/lib/site'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = useTranslate(locale)
+const school = resolveRequestSchool(Astro.locals)
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const orderEndpoint = supabaseUrl
+  ? `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/place-spirit-order`
+  : ''
+---
+
+<form
+  class="rounded-card border border-border bg-surface p-card"
+  data-sy-spirit-order
+  data-endpoint={orderEndpoint}
+  data-school-slug={school.slug}
+>
+  <h3 class="text-xl font-bold">{t('spiritStore.checkout')}</h3>
+
+  <div data-sy-cart-items class="mt-4 space-y-2">
+    <p class="text-sm text-muted">Your cart is empty.</p>
+  </div>
+
+  <p class="mt-4 text-lg font-bold">
+    {t('spiritStore.total')}: <span data-sy-cart-total>$0.00</span>
+  </p>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('contact.form.name')}</span>
+    <input
+      type="text"
+      name="customer_name"
+      required
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
+    />
+  </label>
+
+  <label class="mt-4 block">
+    <span class="text-sm font-semibold">{t('contact.form.email')}</span>
+    <input
+      type="email"
+      name="customer_email"
+      required
+      class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2"
+    />
+  </label>
+
+  <button
+    type="submit"
+    class="mt-6 rounded-button bg-primary px-6 py-2.5 font-semibold text-inverse hover:opacity-90 disabled:opacity-60"
+  >
+    {t('spiritStore.placeOrder')}
+  </button>
+
+  <p role="status" aria-live="polite" class="mt-4 hidden text-sm" data-sy-order-status></p>
+</form>
+
+<script>
+  // Client-side cart management + order submission
+  const form = document.querySelector<HTMLFormElement>('[data-sy-spirit-order]')
+  if (form && form.dataset.endpoint) {
+    const endpoint = form.dataset.endpoint
+    const schoolSlug = form.dataset.schoolSlug ?? ''
+    const status = form.querySelector<HTMLElement>('[data-sy-order-status]')
+    const cartItemsEl = form.querySelector<HTMLElement>('[data-sy-cart-items]')
+    const cartTotalEl = form.querySelector<HTMLElement>('[data-sy-cart-total]')
+
+    type CartItem = {
+      product_id: string
+      product_name: string
+      variant_label?: string
+      quantity: number
+      price_cents: number
+    }
+
+    function getCart(): CartItem[] {
+      try {
+        return JSON.parse(localStorage.getItem('sy-spirit-cart') ?? '[]')
+      } catch {
+        return []
+      }
+    }
+
+    function renderCart() {
+      const cart = getCart()
+      if (!cartItemsEl || !cartTotalEl) return
+      if (cart.length === 0) {
+        cartItemsEl.innerHTML = '<p class="text-sm text-muted">Your cart is empty.</p>'
+        cartTotalEl.textContent = '$0.00'
+        return
+      }
+      let total = 0
+      cartItemsEl.innerHTML = cart
+        .map((item) => {
+          const lineTotal = item.price_cents * item.quantity
+          total += lineTotal
+          const variant = item.variant_label ? ` (${item.variant_label})` : ''
+          return `<div class="flex justify-between text-sm"><span>${item.product_name}${variant} × ${item.quantity}</span><span>$${(lineTotal / 100).toFixed(2)}</span></div>`
+        })
+        .join('')
+      cartTotalEl.textContent = `$${(total / 100).toFixed(2)}`
+    }
+
+    renderCart()
+
+    // Listen for add-to-cart clicks across the page
+    document.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-sy-add-to-cart]')
+      if (!btn) return
+      const slug = btn.dataset.syAddToCart!
+      const priceCents = Number(btn.dataset.priceCents ?? '0')
+      const productName = btn.dataset.productName ?? slug
+      const qtyInput = document.querySelector<HTMLInputElement>(`[data-sy-product-qty="${slug}"]`)
+      const variantSelect = document.querySelector<HTMLSelectElement>(
+        `[data-sy-product-variant="${slug}"]`,
+      )
+      const quantity = Math.max(1, Number(qtyInput?.value ?? 1))
+      const variantLabel = variantSelect?.value
+
+      const cart = getCart()
+      const existing = cart.find(
+        (item) => item.product_id === slug && item.variant_label === variantLabel,
+      )
+      if (existing) {
+        existing.quantity += quantity
+      } else {
+        cart.push({
+          product_id: slug,
+          product_name: productName,
+          variant_label: variantLabel,
+          quantity,
+          price_cents: priceCents,
+        })
+      }
+      localStorage.setItem('sy-spirit-cart', JSON.stringify(cart))
+      renderCart()
+    })
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      if (!status) return
+      const cart = getCart()
+      if (cart.length === 0) {
+        status.classList.remove('hidden', 'text-success')
+        status.classList.add('text-error')
+        status.textContent = 'Your cart is empty.'
+        return
+      }
+
+      const fd = new FormData(form)
+      const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')
+      if (submit) submit.disabled = true
+      status.classList.remove('hidden', 'text-error', 'text-success')
+      status.textContent = '…'
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            school_slug: schoolSlug,
+            items: cart.map((item) => ({
+              product_id: item.product_id,
+              variant_label: item.variant_label,
+              quantity: item.quantity,
+            })),
+            customer_name: String(fd.get('customer_name') ?? ''),
+            customer_email: String(fd.get('customer_email') ?? ''),
+          }),
+        })
+
+        if (!res.ok) {
+          const text = await res.text()
+          status.classList.add('text-error')
+          status.textContent = `Order failed: ${text}`
+          return
+        }
+
+        // Success — clear cart
+        localStorage.removeItem('sy-spirit-cart')
+        status.classList.add('text-success')
+        status.textContent = 'Order placed! You will receive a confirmation email.'
+        renderCart()
+      } catch {
+        status.classList.add('text-error')
+        status.textContent = 'Network error. Please try again.'
+      } finally {
+        if (submit) submit.disabled = false
+      }
+    })
+  }
+</script>

@@ -55,6 +55,8 @@ export const MODULE_TIERS: Record<ModuleName, PresetName> = {
   pta: 'active-pta',
   volunteer: 'active-pta',
   fundraising: 'active-pta',
+  'spirit-store': 'active-pta',
+  directory: 'active-pta',
   // full-community-hub
   community: 'full-community-hub',
   lunch: 'full-community-hub',

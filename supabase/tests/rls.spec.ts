@@ -825,6 +825,231 @@ describe('fundraising_donations', () => {
   })
 })
 
+// ─── Spirit Store ────────────────────────────────────────────────────
+
+describe('spirit_store_products', () => {
+  it('anon can read active products', async () => {
+    await expectRows(ctx.anon, 'spirit_store_products', {
+      column: 'id',
+      value: ctx.rows.spiritProductA,
+    })
+  })
+
+  it('anon cannot read inactive products', async () => {
+    await expectNoRows(ctx.anon, 'spirit_store_products', {
+      column: 'id',
+      value: ctx.rows.spiritProductInactive,
+    })
+  })
+
+  it('anon cannot insert products', async () => {
+    await expectInsertDenied(ctx.anon, 'spirit_store_products', {
+      school_id: ctx.schoolAId,
+      slug: 'anon-hack-product',
+      name: 'Hack',
+      price_cents: 1000,
+    })
+  })
+
+  it('editor-a can insert product for school A', async () => {
+    const { data, error } = await ctx.editorA
+      .from('spirit_store_products')
+      .insert({
+        school_id: ctx.schoolAId,
+        slug: 'rls-editor-product',
+        name: 'Editor Product',
+        price_cents: 1500,
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    await ctx.service.from('spirit_store_products').delete().eq('id', data!.id)
+  })
+
+  it('editor-b cannot insert product for school A', async () => {
+    await expectInsertDenied(ctx.editorB, 'spirit_store_products', {
+      school_id: ctx.schoolAId,
+      slug: 'rls-cross-product',
+      name: 'Cross Tenant Product',
+      price_cents: 1000,
+    })
+  })
+
+  it('editor-b cannot update school A products', async () => {
+    await expectUpdateDenied(ctx.editorB, 'spirit_store_products', ctx.rows.spiritProductA, {
+      name: 'Hacked',
+    })
+  })
+
+  it('editor-b cannot delete school A products', async () => {
+    await expectDeleteDenied(ctx.editorB, 'spirit_store_products', ctx.rows.spiritProductA)
+  })
+})
+
+describe('spirit_store_orders', () => {
+  it('anon cannot read orders', async () => {
+    await expectNoRows(ctx.anon, 'spirit_store_orders')
+  })
+
+  it('member-a can read own orders', async () => {
+    await expectRows(ctx.memberA, 'spirit_store_orders', {
+      column: 'id',
+      value: ctx.rows.spiritOrderMemberA,
+    })
+  })
+
+  it('editor-b cannot read member-a orders', async () => {
+    await expectNoRows(ctx.editorB, 'spirit_store_orders', {
+      column: 'id',
+      value: ctx.rows.spiritOrderMemberA,
+    })
+  })
+
+  it('admin-a can read school A orders', async () => {
+    await expectRows(ctx.adminA, 'spirit_store_orders', {
+      column: 'school_id',
+      value: ctx.schoolAId,
+    })
+  })
+
+  it('admin-a cannot read school B orders', async () => {
+    await expectNoRows(ctx.adminA, 'spirit_store_orders', {
+      column: 'school_id',
+      value: ctx.schoolBId,
+    })
+  })
+
+  it('anon cannot insert orders (service-role only)', async () => {
+    await expectInsertDenied(ctx.anon, 'spirit_store_orders', {
+      school_id: ctx.schoolAId,
+      customer_name: 'Anon',
+      customer_email: 'anon@example.com',
+      total_cents: 1500,
+    })
+  })
+
+  it('member cannot insert orders directly (service-role only)', async () => {
+    await expectInsertDenied(ctx.memberA, 'spirit_store_orders', {
+      school_id: ctx.schoolAId,
+      user_id: ctx.memberAId,
+      customer_name: 'Member',
+      customer_email: 'member@example.com',
+      total_cents: 1500,
+    })
+  })
+
+  it('admin-a can update order status', async () => {
+    const { data, error } = await ctx.adminA
+      .from('spirit_store_orders')
+      .update({ status: 'fulfilled' })
+      .eq('id', ctx.rows.spiritOrderMemberA)
+      .select('id')
+    expect(error).toBeNull()
+    expect(data!.length).toBe(1)
+
+    // Revert
+    await ctx.service
+      .from('spirit_store_orders')
+      .update({ status: 'pending' })
+      .eq('id', ctx.rows.spiritOrderMemberA)
+  })
+})
+
+describe('spirit_store_order_lines', () => {
+  it('member-a can read own order lines', async () => {
+    await expectRows(ctx.memberA, 'spirit_store_order_lines', {
+      column: 'id',
+      value: ctx.rows.spiritOrderLineMemberA,
+    })
+  })
+
+  it('editor-b cannot read member-a order lines', async () => {
+    await expectNoRows(ctx.editorB, 'spirit_store_order_lines', {
+      column: 'id',
+      value: ctx.rows.spiritOrderLineMemberA,
+    })
+  })
+
+  it('admin-a can read school A order lines', async () => {
+    await expectRows(ctx.adminA, 'spirit_store_order_lines', {
+      column: 'id',
+      value: ctx.rows.spiritOrderLineMemberA,
+    })
+  })
+
+  it('anon cannot read order lines', async () => {
+    await expectNoRows(ctx.anon, 'spirit_store_order_lines')
+  })
+})
+
+// ─── School Directory ────────────────────────────────────────────────
+
+describe('directory_entries', () => {
+  it('anon cannot read directory entries', async () => {
+    await expectNoRows(ctx.anon, 'directory_entries')
+  })
+
+  it('member-a can read visible entries from same school', async () => {
+    await expectRows(ctx.memberA, 'directory_entries', {
+      column: 'id',
+      value: ctx.rows.directoryEntryVisible,
+    })
+  })
+
+  it('member-a cannot read hidden entries', async () => {
+    await expectNoRows(ctx.memberA, 'directory_entries', {
+      column: 'id',
+      value: ctx.rows.directoryEntryHidden,
+    })
+  })
+
+  it('editor-b (different school) cannot read school A directory', async () => {
+    await expectNoRows(ctx.editorB, 'directory_entries', {
+      column: 'id',
+      value: ctx.rows.directoryEntryVisible,
+    })
+  })
+
+  it('member-a can insert own entry', async () => {
+    const { data, error } = await ctx.memberA
+      .from('directory_entries')
+      .insert({
+        school_id: ctx.schoolAId,
+        user_id: ctx.memberAId,
+        family_name: 'RLS Test Family',
+        email: 'rls@test.com',
+      })
+      .select('id')
+      .single()
+    expect(error).toBeNull()
+    await ctx.service.from('directory_entries').delete().eq('id', data!.id)
+  })
+
+  it('member-a cannot insert entry as another user', async () => {
+    await expectInsertDenied(ctx.memberA, 'directory_entries', {
+      school_id: ctx.schoolAId,
+      user_id: ctx.editorAId, // not memberA
+      family_name: 'Impersonation',
+    })
+  })
+
+  it('admin-a can read all entries (including hidden) for school A', async () => {
+    const { data, error } = await ctx.adminA
+      .from('directory_entries')
+      .select('id')
+      .eq('school_id', ctx.schoolAId)
+    expect(error).toBeNull()
+    expect(data!.length).toBeGreaterThanOrEqual(2) // visible + hidden
+  })
+
+  it('admin-a cannot read school B directory entries', async () => {
+    await expectNoRows(ctx.adminA, 'directory_entries', {
+      column: 'school_id',
+      value: ctx.schoolBId,
+    })
+  })
+})
+
 // ─── Cross-tenant isolation summary ───────────────────────────────────
 
 describe('cross-tenant isolation', () => {

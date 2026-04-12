@@ -48,6 +48,8 @@
     "district": "District",
     "resources": "Resources",
     "transparency": "Transparency",
+    "store": "Store",
+    "directory": "Directory",
     "more": "More"
   },
   "footer": {
@@ -309,6 +311,51 @@
     "summary": "Summary",
     "noBudgets": "Budget information will be published soon.",
     "yearOverYear": "YoY"
+  },
+  "spiritStore": {
+    "title": "Spirit Store",
+    "description": "Shop school spirit wear and support our community.",
+    "products": "Products",
+    "addToCart": "Add to Cart",
+    "cart": "Cart",
+    "checkout": "Checkout",
+    "orderPlaced": "Order placed! You'll receive a confirmation email.",
+    "storeClosed": "The store is currently closed.",
+    "storeOpens": "The store opens {date}.",
+    "variant": "Option",
+    "quantity": "Quantity",
+    "total": "Total",
+    "placeOrder": "Place Order",
+    "exportOrders": "Export Orders (CSV)",
+    "noProducts": "No products available. Check back soon!",
+    "orderStatus": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "fulfilled": "Fulfilled"
+    }
+  },
+  "directory": {
+    "title": "Family Directory",
+    "description": "Connect with families in our school community.",
+    "searchPlaceholder": "Search by family name…",
+    "filterByGrade": "Filter by grade",
+    "allGrades": "All grades",
+    "noEntries": "No directory entries yet. Be the first to add your family!",
+    "addYourFamily": "Add Your Family",
+    "editEntry": "Edit Your Entry",
+    "familyName": "Family Name",
+    "parentNames": "Parent / Guardian Names",
+    "studentGrades": "Student Grades",
+    "email": "Email",
+    "phone": "Phone",
+    "neighborhood": "Neighborhood",
+    "notes": "Notes",
+    "visible": "Visible in directory",
+    "visibleDescription": "When enabled, other families at this school can see your listing.",
+    "save": "Save",
+    "saved": "Saved!",
+    "signInRequired": "Sign in to view and join the family directory.",
+    "privacyNote": "Your information is only visible to authenticated members of this school. You can hide or delete your entry at any time."
   },
   "errors": {
     "notFound": "Page not found",
