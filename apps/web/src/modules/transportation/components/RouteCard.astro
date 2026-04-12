@@ -1,5 +1,5 @@
 ---
-import { useTranslate } from '@/i18n/index'
+import { useTranslate, localizedPath } from '@/i18n/index'
 import type { Locale } from '@schoolyard/i18n'
 import type { CollectionEntry } from 'astro:content'
 import StopList from './StopList.astro'
@@ -13,48 +13,52 @@ const { route, locale } = Astro.props
 const t = useTranslate(locale)
 ---
 
-<article class="rounded-card border border-border bg-surface p-card shadow-sm">
-  <div class="flex items-baseline justify-between gap-4">
-    <h3 class="text-xl font-bold">
-      {t('transportation.route')}
-      {route.data.routeNumber}: {route.data.routeName}
-    </h3>
-  </div>
-  <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+<article
+  class="rounded-card border border-border bg-surface p-card shadow-sm transition-colors hover:bg-muted/5"
+>
+  <a href={localizedPath(`/transportation/${route.slug}`, locale)} class="block no-underline">
+    <div class="flex items-baseline justify-between gap-4">
+      <h3 class="text-xl font-bold">
+        {t('transportation.route')}
+        {route.data.routeNumber}: {route.data.routeName}
+      </h3>
+    </div>
+    <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+      {
+        route.data.driver && (
+          <div>
+            <dt class="font-semibold text-muted">{t('transportation.driver')}</dt>
+            <dd>{route.data.driver}</dd>
+          </div>
+        )
+      }
+      {
+        route.data.morningArrival && (
+          <div>
+            <dt class="font-semibold text-muted">{t('transportation.morningArrival')}</dt>
+            <dd>{route.data.morningArrival}</dd>
+          </div>
+        )
+      }
+      {
+        route.data.afternoonDeparture && (
+          <div>
+            <dt class="font-semibold text-muted">{t('transportation.afternoonDeparture')}</dt>
+            <dd>{route.data.afternoonDeparture}</dd>
+          </div>
+        )
+      }
+    </dl>
     {
-      route.data.driver && (
-        <div>
-          <dt class="font-semibold text-muted">{t('transportation.driver')}</dt>
-          <dd>{route.data.driver}</dd>
+      route.data.stops.length > 0 && (
+        <div class="mt-4">
+          <h4 class="text-sm font-semibold uppercase tracking-wide text-muted">
+            {t('transportation.stops')}
+          </h4>
+          <StopList stops={route.data.stops} />
         </div>
       )
     }
-    {
-      route.data.morningArrival && (
-        <div>
-          <dt class="font-semibold text-muted">{t('transportation.morningArrival')}</dt>
-          <dd>{route.data.morningArrival}</dd>
-        </div>
-      )
-    }
-    {
-      route.data.afternoonDeparture && (
-        <div>
-          <dt class="font-semibold text-muted">{t('transportation.afternoonDeparture')}</dt>
-          <dd>{route.data.afternoonDeparture}</dd>
-        </div>
-      )
-    }
-  </dl>
-  {
-    route.data.stops.length > 0 && (
-      <div class="mt-4">
-        <h4 class="text-sm font-semibold uppercase tracking-wide text-muted">
-          {t('transportation.stops')}
-        </h4>
-        <StopList stops={route.data.stops} />
-      </div>
-    )
-  }
-  {route.data.notes && <p class="mt-4 text-sm text-muted">{route.data.notes}</p>}
+    {route.data.notes && <p class="mt-4 text-sm text-muted">{route.data.notes}</p>}
+  </a>
 </article>

@@ -1,10 +1,12 @@
-import { ScrollView, View, Text, ActivityIndicator } from 'react-native'
+import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native'
+import { useRouter } from 'expo-router'
 import { useVolunteers } from '../../hooks/useVolunteers'
 import { useLocale, useTranslate } from '../../hooks/useLocale'
 
 export default function VolunteerScreen() {
   const locale = useLocale()
   const t = useTranslate(locale)
+  const router = useRouter()
   const { data: roles, isLoading, error } = useVolunteers()
 
   if (isLoading) {
@@ -40,13 +42,17 @@ export default function VolunteerScreen() {
     <ScrollView className="flex-1 bg-surface" contentContainerClassName="p-4">
       <Text className="mb-4 text-2xl font-bold">{t('volunteer.openRoles')}</Text>
       {openRoles.map((role) => (
-        <View key={role.slug} className="mb-3 rounded-xl border border-border bg-surface p-4">
+        <Pressable
+          key={role.slug}
+          onPress={() => router.push(`/volunteer/${role.slug}`)}
+          className="mb-3 rounded-xl border border-border bg-surface p-4 active:opacity-80"
+        >
           <Text className="text-lg font-bold">{role.title}</Text>
           <Text className="mt-1 text-xs uppercase text-muted">
             {t('volunteer.commitment')}: {role.commitment}
           </Text>
           <Text className="mt-2 text-sm">{role.description}</Text>
-        </View>
+        </Pressable>
       ))}
     </ScrollView>
   )

@@ -1,0 +1,211 @@
+---
+/**
+ * Admin resources list — table of all community resources for the current
+ * school with create, edit, and delete actions. All CRUD happens client-side
+ * via the browser Supabase client; RLS enforces editor/admin access.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+---
+
+<BaseLayout title="Admin - Resources" description="Manage community resources">
+  <div
+    class="mx-auto max-w-5xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">
+        You need to be signed in as an editor or admin to manage resources.
+      </p>
+      <a
+        href="/sign-in?redirect=/admin/resources/"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Main content -->
+    <div id="admin-content" class="hidden">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <nav class="text-sm text-muted" aria-label="Breadcrumb">
+            <a href="/admin/" class="hover:underline">Admin</a>
+            <span class="mx-1" aria-hidden="true">/</span>
+            <span>Resources</span>
+          </nav>
+          <h1 class="mt-1 text-2xl font-bold">Resources</h1>
+        </div>
+        <a
+          href="/admin/resources/edit"
+          class="rounded-button bg-primary px-4 py-2 text-sm font-bold text-inverse hover:opacity-90"
+        >
+          New Resource
+        </a>
+      </div>
+
+      <div class="mt-6 overflow-x-auto rounded-card border border-border">
+        <table class="w-full text-left text-sm" id="resources-table">
+          <thead>
+            <tr class="border-b border-border bg-muted/5">
+              <th class="px-4 py-3 font-semibold" scope="col">Name</th>
+              <th class="hidden px-4 py-3 font-semibold sm:table-cell" scope="col">Category</th>
+              <th class="hidden px-4 py-3 font-semibold md:table-cell" scope="col">Languages</th>
+              <th class="px-4 py-3 text-right font-semibold" scope="col">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="resources-tbody">
+            <tr>
+              <td class="px-4 py-8 text-center text-muted" colspan="4">Loading resources...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const tbody = document.getElementById('resources-tbody')!
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const supabase = createBrowserClient({ url, anonKey: anon })
+
+    let schoolId = ''
+
+    async function checkAuth(): Promise<boolean> {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        showView('auth')
+        return false
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('school_id, role')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (!profile?.school_id || !allowed.includes(profile.role)) {
+        showView('auth')
+        return false
+      }
+
+      schoolId = profile.school_id
+      return true
+    }
+
+    function escapeHtml(str: string): string {
+      const d = document.createElement('div')
+      d.textContent = str
+      return d.innerHTML
+    }
+
+    async function loadResources() {
+      const { data: resources, error } = await supabase
+        .from('resources')
+        .select('id, name, category, languages')
+        .eq('school_id', schoolId)
+        .order('name', { ascending: true })
+
+      if (error || !resources) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-error" colspan="4">Failed to load resources: ${escapeHtml(error?.message ?? 'Unknown error')}</td></tr>`
+        return
+      }
+
+      if (resources.length === 0) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-muted" colspan="4">No resources yet. <a href="/admin/resources/edit" class="font-semibold underline">Create your first resource</a></td></tr>`
+        return
+      }
+
+      tbody.innerHTML = resources
+        .map((res) => {
+          const langs = Array.isArray(res.languages)
+            ? res.languages.join(', ')
+            : (res.languages ?? '--')
+
+          return `<tr class="border-b border-border last:border-0 hover:bg-muted/5">
+          <td class="px-4 py-3">
+            <span class="font-medium">${escapeHtml(res.name)}</span>
+          </td>
+          <td class="hidden px-4 py-3 text-muted sm:table-cell">${escapeHtml(res.category ?? '--')}</td>
+          <td class="hidden px-4 py-3 text-muted md:table-cell">${escapeHtml(langs)}</td>
+          <td class="px-4 py-3 text-right">
+            <a href="/admin/resources/edit?id=${res.id}" class="text-sm font-semibold hover:underline">Edit</a>
+            <button type="button" data-delete="${res.id}" data-title="${escapeHtml(res.name)}" class="ml-3 text-sm font-semibold text-error hover:underline">Delete</button>
+          </td>
+        </tr>`
+        })
+        .join('')
+
+      // Attach delete handlers
+      tbody.querySelectorAll<HTMLButtonElement>('[data-delete]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.delete!
+          const title = btn.dataset.title ?? 'this resource'
+          if (!confirm(`Delete "${title}"? This cannot be undone.`)) return
+
+          btn.disabled = true
+          btn.textContent = 'Deleting...'
+
+          const { error: delErr } = await supabase
+            .from('resources')
+            .delete()
+            .eq('id', id)
+            .eq('school_id', schoolId)
+          if (delErr) {
+            alert(`Failed to delete: ${delErr.message}`)
+            btn.disabled = false
+            btn.textContent = 'Delete'
+          } else {
+            loadResources()
+          }
+        })
+      })
+    }
+
+    async function init() {
+      if (await checkAuth()) {
+        showView('content')
+        loadResources()
+      }
+    }
+
+    init()
+  }
+</script>

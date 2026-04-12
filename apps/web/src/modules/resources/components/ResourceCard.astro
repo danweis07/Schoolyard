@@ -1,5 +1,5 @@
 ---
-import { useTranslate } from '@/i18n/index'
+import { useTranslate, localizedPath } from '@/i18n/index'
 import type { Locale } from '@schoolyard/i18n'
 import type { CollectionEntry } from 'astro:content'
 import LanguageBadges from './LanguageBadges.astro'
@@ -13,29 +13,33 @@ const { resource, locale } = Astro.props
 const t = useTranslate(locale)
 ---
 
-<article class="rounded-card border border-border bg-surface p-card shadow-sm">
-  <h3 class="text-lg font-bold">{resource.data.name}</h3>
-  <p class="mt-2 text-sm">{resource.data.description}</p>
-  <dl class="mt-3 space-y-1 text-xs text-muted">
-    {
-      resource.data.address && (
-        <div>
-          <dt class="inline font-semibold">{t('footer.address')}:</dt>{' '}
-          <dd class="inline">{resource.data.address}</dd>
-        </div>
-      )
-    }
-    {
-      resource.data.phone && (
-        <div>
-          <dt class="inline font-semibold">{t('footer.phone')}:</dt>{' '}
-          <dd class="inline">
-            <a href={`tel:${resource.data.phone}`}>{resource.data.phone}</a>
-          </dd>
-        </div>
-      )
-    }
-  </dl>
+<article
+  class="rounded-card border border-border bg-surface p-card shadow-sm transition-colors hover:bg-muted/5"
+>
+  <a href={localizedPath(`/resources/${resource.slug}`, locale)} class="block no-underline">
+    <h3 class="text-lg font-bold">{resource.data.name}</h3>
+    <p class="mt-2 text-sm">{resource.data.description}</p>
+    <dl class="mt-3 space-y-1 text-xs text-muted">
+      {
+        resource.data.address && (
+          <div>
+            <dt class="inline font-semibold">{t('footer.address')}:</dt>{' '}
+            <dd class="inline">{resource.data.address}</dd>
+          </div>
+        )
+      }
+      {
+        resource.data.phone && (
+          <div>
+            <dt class="inline font-semibold">{t('footer.phone')}:</dt>{' '}
+            <dd class="inline">
+              <a href={`tel:${resource.data.phone}`}>{resource.data.phone}</a>
+            </dd>
+          </div>
+        )
+      }
+    </dl>
+  </a>
   {resource.data.languages.length > 0 && <LanguageBadges languages={resource.data.languages} />}
   {
     resource.data.url && (
