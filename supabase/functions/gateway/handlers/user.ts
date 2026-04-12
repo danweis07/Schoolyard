@@ -25,6 +25,18 @@ export async function handleUser(ctx: GatewayContext): Promise<Response> {
       return handleFlagListing(ctx)
     case 'community-listing':
       return handleCommunityListing(ctx)
+    case 'form-response':
+      return handleFormResponse(ctx)
+    case 'form-responses':
+      return handleFormResponseList(ctx)
+    case 'book-conference':
+      return handleBookConference(ctx)
+    case 'cancel-conference':
+      return handleCancelConference(ctx)
+    case 'my-conferences':
+      return handleMyConferences(ctx)
+    case 'my-rsvp-events':
+      return handleMyRsvpEvents(ctx)
     default:
       return jsonError(404, `unknown user resource: ${route.resource}`, origin)
   }
@@ -192,4 +204,134 @@ async function handleCommunityListing(ctx: GatewayContext): Promise<Response> {
     .single()
   if (error) return jsonError(500, error.message, origin)
   return jsonCreated(data, origin)
+}
+
+// ── Form response submit ────────────────────────────────────────
+
+async function handleFormResponse(ctx: GatewayContext): Promise<Response> {
+  const { req, supabase, auth, schoolId, origin } = ctx
+  const body = (await req.json()) as {
+    form_slug: string
+    student_name?: string
+    responses: Record<string, unknown>
+    signature?: { typed_name: string; timestamp: string }
+  }
+
+  if (!body.form_slug || !body.responses) {
+    return jsonError(400, 'form_slug and responses required', origin)
+  }
+
+  // Look up form
+  const { data: form } = await supabase
+    .from('forms')
+    .select('id, published, due_date')
+    .eq('school_id', schoolId)
+    .eq('slug', body.form_slug)
+    .maybeSingle()
+
+  if (!form) return jsonError(404, 'form not found', origin)
+  if (!form.published) return jsonError(400, 'form is not published', origin)
+  if (form.due_date && new Date(form.due_date) < new Date()) {
+    return jsonError(400, 'form is past due date', origin)
+  }
+
+  const { data, error } = await supabase
+    .from('form_responses')
+    .upsert(
+      {
+        form_id: form.id,
+        school_id: schoolId,
+        user_id: auth!.userId,
+        student_name: body.student_name ?? null,
+        responses: body.responses,
+        signature: body.signature ?? null,
+      },
+      { onConflict: 'form_id,user_id,student_name' },
+    )
+    .select('id')
+    .single()
+  if (error) return jsonError(500, error.message, origin)
+  return jsonCreated(data, origin)
+}
+
+async function handleFormResponseList(ctx: GatewayContext): Promise<Response> {
+  const { supabase, auth, schoolId, origin } = ctx
+  const { data, error } = await supabase
+    .from('form_responses')
+    .select('id, form_id, student_name, responses, signature, submitted_at')
+    .eq('user_id', auth!.userId)
+    .eq('school_id', schoolId)
+    .order('submitted_at', { ascending: false })
+  if (error) return jsonError(500, error.message, origin)
+  return jsonOk(data ?? [], origin)
+}
+
+// ── Conference booking ──────────────────────────────────────────
+
+async function handleBookConference(ctx: GatewayContext): Promise<Response> {
+  const { req, supabase, origin } = ctx
+  const body = (await req.json()) as {
+    slot_id: string
+    student_name?: string
+  }
+
+  if (!body.slot_id) return jsonError(400, 'slot_id required', origin)
+
+  const { data, error } = await supabase.rpc('book_conference_slot', {
+    p_slot_id: body.slot_id,
+    p_student_name: body.student_name ?? null,
+  })
+
+  if (error) return jsonError(500, error.message, origin)
+  if (data === false) return jsonError(409, 'slot unavailable or already booked', origin)
+  return jsonCreated({ booked: true }, origin)
+}
+
+async function handleCancelConference(ctx: GatewayContext): Promise<Response> {
+  const { supabase, auth, route, origin } = ctx
+  const slotId = route.id
+  if (!slotId) return jsonError(400, 'slot id required', origin)
+
+  // Only the booking user can cancel
+  const { data: slot } = await supabase
+    .from('conference_slots')
+    .select('id, booked_by')
+    .eq('id', slotId)
+    .maybeSingle()
+
+  if (!slot) return jsonError(404, 'slot not found', origin)
+  if (slot.booked_by !== auth!.userId) {
+    return jsonError(403, 'you can only cancel your own booking', origin)
+  }
+
+  const { error } = await supabase
+    .from('conference_slots')
+    .update({ booked_by: null, booked_at: null, student_name: null })
+    .eq('id', slotId)
+  if (error) return jsonError(500, error.message, origin)
+  return noContent(origin)
+}
+
+async function handleMyConferences(ctx: GatewayContext): Promise<Response> {
+  const { supabase, auth, schoolId, origin } = ctx
+  const { data, error } = await supabase
+    .from('conference_slots')
+    .select('id, window_id, teacher_name, date, start_time, end_time, duration_minutes, location, student_name, booked_at')
+    .eq('school_id', schoolId)
+    .eq('booked_by', auth!.userId)
+    .order('date', { ascending: true })
+    .order('start_time', { ascending: true })
+  if (error) return jsonError(500, error.message, origin)
+  return jsonOk(data ?? [], origin)
+}
+
+// ── Personal calendar (RSVP'd events) ───────────────────────────
+
+async function handleMyRsvpEvents(ctx: GatewayContext): Promise<Response> {
+  const { supabase, auth, origin } = ctx
+  const { data, error } = await supabase
+    .from('my_rsvp_events')
+    .select('*')
+  if (error) return jsonError(500, error.message, origin)
+  return jsonOk(data ?? [], origin)
 }

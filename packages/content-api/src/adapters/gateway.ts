@@ -28,6 +28,9 @@ import type {
   SchoolInfo,
   SpiritStoreProduct,
   DirectoryEntry,
+  SchoolForm,
+  ConferenceWindow,
+  ConferenceSlot,
 } from '../types.js'
 
 export interface GatewayAdapterOptions {
@@ -127,6 +130,25 @@ export function createGatewayAdapter(options: GatewayAdapterOptions): ContentAda
       // Directory requires auth — gateway doesn't forward auth headers yet.
       // Return empty until gateway supports authed routes.
       return [] as DirectoryEntry[]
+    },
+    fetchForms(scope, options) {
+      return get<SchoolForm[]>('forms', scope, options)
+    },
+    fetchConferenceWindows(scope, options) {
+      return get<ConferenceWindow[]>('conferences', scope, options)
+    },
+    async fetchConferenceSlots(windowSlug, scope, options) {
+      const slug = resolveSlug(scope)
+      const url = `${gatewayUrl}/functions/v1/gateway/content/conference-slots/${encodeURIComponent(windowSlug)}?school=${encodeURIComponent(slug)}`
+      const res = await fetch(url, {
+        signal: options?.signal,
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(`[gateway-adapter] conference-slots failed (${res.status}): ${text}`)
+      }
+      return (await res.json()) as ConferenceSlot[]
     },
   }
 }

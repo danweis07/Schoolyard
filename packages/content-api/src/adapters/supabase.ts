@@ -40,6 +40,10 @@ import type {
   BudgetLineItem,
   SpiritStoreProduct,
   DirectoryEntry,
+  SchoolForm,
+  ConferenceWindow,
+  ConferenceSlot,
+  FormFieldDefinition,
 } from '../types.js'
 import type {
   ManifestEvent,
@@ -514,6 +518,89 @@ export function createSupabaseAdapter(options: SupabaseAdapterOptions): ContentA
         phone: (row.phone as string) ?? undefined,
         neighborhood: (row.neighborhood as string) ?? undefined,
         notes: (row.notes as string) ?? undefined,
+      }))
+    },
+
+    async fetchForms(scope, fetchOptions): Promise<SchoolForm[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('forms')
+        .select('slug, title, description, fields, target_grades, target_classrooms, published, due_date')
+        .eq('school_id', school.id)
+        .eq('published', true)
+        .order('due_date', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return (data ?? []).map((row: Record<string, unknown>) => ({
+        slug: row.slug as string,
+        title: row.title as string,
+        description: (row.description as string) ?? undefined,
+        fields: (row.fields as FormFieldDefinition[]) ?? [],
+        targetGrades: (row.target_grades as string[]) ?? [],
+        targetClassrooms: (row.target_classrooms as string[]) ?? [],
+        dueDate: (row.due_date as string) ?? undefined,
+        published: row.published as boolean,
+      }))
+    },
+
+    async fetchConferenceWindows(scope, fetchOptions): Promise<ConferenceWindow[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('conference_windows')
+        .select('slug, title, description, starts_on, ends_on')
+        .eq('school_id', school.id)
+        .eq('published', true)
+        .order('starts_on', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return (data ?? []).map((row: Record<string, unknown>) => ({
+        slug: row.slug as string,
+        title: row.title as string,
+        description: (row.description as string) ?? undefined,
+        startsOn: row.starts_on as string,
+        endsOn: row.ends_on as string,
+      }))
+    },
+
+    async fetchConferenceSlots(windowSlug, scope, fetchOptions): Promise<ConferenceSlot[]> {
+      const school = await resolveSchool(scope)
+
+      // Resolve window slug → id
+      const { data: window } = await client
+        .from('conference_windows')
+        .select('id')
+        .eq('school_id', school.id)
+        .eq('slug', windowSlug)
+        .eq('published', true)
+        .maybeSingle()
+
+      if (!window) return []
+
+      const query = client
+        .from('conference_slots')
+        .select('id, window_id, teacher_name, date, start_time, end_time, duration_minutes, location, booked_by')
+        .eq('window_id', window.id)
+        .eq('school_id', school.id)
+        .order('date', { ascending: true })
+        .order('start_time', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return (data ?? []).map((row: Record<string, unknown>) => ({
+        id: row.id as string,
+        windowId: row.window_id as string,
+        teacherName: row.teacher_name as string,
+        date: row.date as string,
+        startTime: row.start_time as string,
+        endTime: row.end_time as string,
+        durationMinutes: row.duration_minutes as number,
+        location: (row.location as string) ?? undefined,
+        isBooked: row.booked_by != null,
       }))
     },
   }

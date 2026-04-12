@@ -84,5 +84,25 @@ export function createAdminClient(options: AdminClientOptions) {
     remove(resource: string, id: string) {
       return request<null>('DELETE', `/admin/${resource}/${id}${schoolParam}`)
     },
+
+    // ── Form responses (read-only, scoped by form) ────────────
+    getFormResponses(formId: string) {
+      return request<Array<{
+        id: string
+        form_id: string
+        user_id: string
+        student_name: string | null
+        responses: Record<string, unknown>
+        signature: Record<string, unknown> | null
+        submitted_at: string
+      }>>('GET', `/admin/form-responses/${formId}${schoolParam}`)
+    },
+
+    // ── Form reminder (send push to non-submitters) ───────────
+    sendFormReminder(formId: string) {
+      return request<{ sent: number }>('POST', `/admin/form-reminder${schoolParam}`, {
+        form_id: formId,
+      })
+    },
   }
 }

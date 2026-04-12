@@ -21,6 +21,12 @@ export type {
   SpiritStoreVariant,
   SpiritStoreProduct,
   DirectoryEntry,
+  FormFieldType,
+  FormFieldDefinition,
+  SchoolForm,
+  FormResponse,
+  ConferenceWindow,
+  ConferenceSlot,
 } from './types.js'
 
 export {

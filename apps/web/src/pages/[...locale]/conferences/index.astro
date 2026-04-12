@@ -1,0 +1,42 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import WindowCard from '@/modules/conferences/components/WindowCard.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import { useTranslate, getLocaleFromUrl, localeStaticPaths } from '@/i18n/index'
+
+export const getStaticPaths = localeStaticPaths
+
+if (!isModuleEnabled(siteConfig, 'conferences')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+
+const contentClient = Astro.locals.contentClient
+const windows = contentClient ? await contentClient.fetchConferenceWindows() : []
+
+const now = new Date()
+const active = windows.filter((w) => new Date(w.endsOn) >= now)
+  .sort((a, b) => new Date(a.startsOn).getTime() - new Date(b.startsOn).getTime())
+---
+
+<BaseLayout title={t('conferences.title')} description={t('conferences.description')}>
+  <section class="mx-auto max-w-6xl px-4 py-12">
+    <h1 class="text-4xl font-bold">{t('conferences.title')}</h1>
+    <p class="mt-2 text-lg text-muted">{t('conferences.description')}</p>
+
+    {
+      active.length === 0 ? (
+        <p class="mt-8 text-muted">{t('conferences.noWindows')}</p>
+      ) : (
+        <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {active.map((window) => (
+            <WindowCard window={window} locale={locale} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

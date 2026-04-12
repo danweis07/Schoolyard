@@ -20,6 +20,8 @@ export interface SchoolEvent {
   registrationUrl?: string
   featured: boolean
   cancelled: boolean
+  targetGrades?: string[]
+  targetClassrooms?: string[]
 }
 
 export interface NewsPost {
@@ -234,4 +236,60 @@ export interface DirectoryEntry {
   phone?: string
   neighborhood?: string
   notes?: string
+}
+
+// ── Forms ────────────────────────────────────────────────────────
+
+export type FormFieldType = 'text' | 'textarea' | 'select' | 'checkbox' | 'date' | 'signature'
+
+export interface FormFieldDefinition {
+  name: string
+  label: string
+  type: FormFieldType
+  required: boolean
+  options?: string[]
+  placeholder?: string
+}
+
+export interface SchoolForm {
+  slug: string
+  title: string
+  description?: string
+  fields: FormFieldDefinition[]
+  targetGrades: string[]
+  targetClassrooms: string[]
+  dueDate?: string
+  published: boolean
+}
+
+export interface FormResponse {
+  id: string
+  formId: string
+  userId: string
+  studentName?: string
+  responses: Record<string, unknown>
+  signature?: { typedName: string; timestamp: string }
+  submittedAt: string
+}
+
+// ── Conferences ──────────────────────────────────────────────────
+
+export interface ConferenceWindow {
+  slug: string
+  title: string
+  description?: string
+  startsOn: string
+  endsOn: string
+}
+
+export interface ConferenceSlot {
+  id: string
+  windowId: string
+  teacherName: string
+  date: string
+  startTime: string
+  endTime: string
+  durationMinutes: number
+  location?: string
+  isBooked: boolean
 }

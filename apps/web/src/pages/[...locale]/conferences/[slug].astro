@@ -1,0 +1,90 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import SlotGrid from '@/modules/conferences/components/SlotGrid.astro'
+import { siteConfig } from '@/lib/site'
+import { isModuleEnabled } from '@schoolyard/config'
+import {
+  useTranslate,
+  getLocaleFromUrl,
+  localizedPath,
+  supportedLocales,
+  defaultLocale,
+} from '@/i18n/index'
+
+/**
+ * Conference detail pages are rendered on-demand (SSR) because slots
+ * change frequently as parents book them. If the project runs in
+ * fully static mode, Astro falls back to prerendering at build time
+ * with the paths returned here.
+ */
+export function getStaticPaths() {
+  // In hybrid mode these pages are server-rendered on request.
+  // Return an empty array — Astro's fallback generates them dynamically.
+  return []
+}
+
+if (!isModuleEnabled(siteConfig, 'conferences')) {
+  return Astro.redirect('/404')
+}
+
+const locale = getLocaleFromUrl(Astro.url)
+const t = useTranslate(locale)
+const { slug } = Astro.params
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnonKey =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+
+const contentClient = Astro.locals.contentClient
+
+// Fetch the window metadata
+const windows = contentClient ? await contentClient.fetchConferenceWindows() : []
+const window = windows.find((w) => w.slug === slug)
+
+if (!window) {
+  return Astro.redirect('/404')
+}
+
+// Fetch slots for this window
+const slots = contentClient ? await contentClient.fetchConferenceSlots(slug!) : []
+
+const dateFormatter = new Intl.DateTimeFormat(locale, {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+})
+
+const startsOn = new Date(window.startsOn)
+const endsOn = new Date(window.endsOn)
+---
+
+<BaseLayout title={window.title} description={window.description ?? t('conferences.description')}>
+  <article class="mx-auto max-w-5xl px-4 py-12">
+    <p class="text-sm font-semibold uppercase tracking-wide text-primary">
+      {dateFormatter.format(startsOn)} &ndash; {dateFormatter.format(endsOn)}
+    </p>
+    <h1 class="mt-2 text-4xl font-bold">{window.title}</h1>
+    {window.description && (
+      <p class="mt-4 text-lg text-muted">{window.description}</p>
+    )}
+
+    <div class="mt-10">
+      <h2 class="text-2xl font-bold">{t('conferences.allTeachers')}</h2>
+      <div class="mt-6">
+        <SlotGrid
+          slots={slots}
+          locale={locale}
+          supabaseUrl={supabaseUrl}
+          supabaseAnonKey={supabaseAnonKey}
+        />
+      </div>
+    </div>
+
+    <p class="mt-12">
+      <a href={localizedPath('/conferences', locale)} class="text-primary">
+        &larr; {t('common.back')} {t('conferences.title').toLowerCase()}
+      </a>
+    </p>
+  </article>
+</BaseLayout>

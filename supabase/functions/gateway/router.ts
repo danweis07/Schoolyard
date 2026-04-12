@@ -37,6 +37,8 @@ const ROUTES: Record<string, RouteDefinition> = {
   'content/announcements': { methods: ['GET'], auth: 'none' },
   'content/counts': { methods: ['GET'], auth: 'none' },
   'content/community-resources': { methods: ['GET'], auth: 'none' },
+  'content/forms': { methods: ['GET'], auth: 'none' },
+  'content/conferences': { methods: ['GET'], auth: 'none' },
 
   // ── Admin (authenticated CRUD) ─────────────────────────────────
   'admin/profile': { methods: ['GET'], auth: 'member' },
@@ -50,6 +52,17 @@ const ROUTES: Record<string, RouteDefinition> = {
   'user/flag-listing': { methods: ['POST'], auth: 'member' },
   'user/community-listing': { methods: ['POST'], auth: 'member' },
 
+  // ── Forms (user actions) ────────────────────────────────────────
+  'user/form-response':      { methods: ['POST'], auth: 'member' },
+  'user/form-responses':     { methods: ['GET'], auth: 'member' },
+
+  // ── Conferences (user actions) ──────────────────────────────────
+  'user/book-conference':    { methods: ['POST'], auth: 'member' },
+  'user/my-conferences':     { methods: ['GET'], auth: 'member' },
+
+  // ── Calendar (user actions) ─────────────────────────────────────
+  'user/my-rsvp-events':     { methods: ['GET'], auth: 'member' },
+
   // ── Fundraising ─────────────────────────────────────────────────
   'fundraising/donate': { methods: ['POST'], auth: 'none' },
   'fundraising/webhook': { methods: ['POST'], auth: 'stripe-sig' },
@@ -62,6 +75,9 @@ const ROUTES: Record<string, RouteDefinition> = {
 
   // ── Export ──────────────────────────────────────────────────────
   'export/volunteer-hours': { methods: ['POST'], auth: 'admin' },
+
+  // ── Form admin ──────────────────────────────────────────────────
+  'admin/form-reminder': { methods: ['POST'], auth: 'admin' },
 }
 
 /**
@@ -116,6 +132,24 @@ export function matchRoute(req: Request): RouteMatch | null {
   // Try matching user/rsvp/{id}
   if (segments[0] === 'user' && segments[1] === 'rsvp' && segments[2]) {
     return { handler: 'user', resource: 'rsvp', id: segments[2], auth: 'member' }
+  }
+
+  // content/conference-slots/{windowSlug}
+  if (segments[0] === 'content' && segments[1] === 'conference-slots' && segments[2]) {
+    if (method !== 'OPTIONS' && method !== 'GET') return null
+    return { handler: 'content', resource: 'conference-slots', id: segments[2], auth: 'none' }
+  }
+
+  // user/cancel-conference/{slotId}
+  if (segments[0] === 'user' && segments[1] === 'cancel-conference' && segments[2]) {
+    if (method !== 'OPTIONS' && method !== 'DELETE') return null
+    return { handler: 'user', resource: 'cancel-conference', id: segments[2], auth: 'member' }
+  }
+
+  // admin/form-responses/{formId}
+  if (segments[0] === 'admin' && segments[1] === 'form-responses' && segments[2]) {
+    if (method !== 'OPTIONS' && method !== 'GET') return null
+    return { handler: 'admin', resource: 'form-responses', id: segments[2], auth: 'admin' }
   }
 
   return null

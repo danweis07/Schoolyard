@@ -1,0 +1,35 @@
+---
+import { useTranslate, localizedPath } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+import type { ConferenceWindow } from '@schoolyard/content-api'
+
+interface Props {
+  window: ConferenceWindow
+  locale: Locale
+}
+
+const { window, locale } = Astro.props
+const t = useTranslate(locale)
+const dateFormatter = new Intl.DateTimeFormat(locale, {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+})
+
+const startsOn = new Date(window.startsOn)
+const endsOn = new Date(window.endsOn)
+---
+
+<a
+  href={localizedPath(`/conferences/${window.slug}`, locale)}
+  class="block rounded-card border border-border bg-surface p-card text-base no-underline shadow-sm transition hover:shadow-md"
+>
+  <h3 class="text-xl font-bold">{window.title}</h3>
+  <p class="mt-2 text-sm font-semibold uppercase tracking-wide text-primary">
+    {dateFormatter.format(startsOn)} &ndash; {dateFormatter.format(endsOn)}
+  </p>
+  {window.description && <p class="mt-3 line-clamp-3 text-sm text-muted">{window.description}</p>}
+  <p class="mt-4 text-sm font-semibold text-primary">
+    {t('conferences.viewSchedule')} &rarr;
+  </p>
+</a>

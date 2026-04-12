@@ -1,0 +1,35 @@
+/**
+ * Required i18n keys for the forms module.
+ * If you add a new key here, also add it to packages/i18n/locales/en.json.
+ */
+export const formsI18nKeys = [
+  'forms.title',
+  'forms.description',
+  'forms.noForms',
+  'forms.dueDate',
+  'forms.submit',
+  'forms.submitted',
+  'forms.required',
+  'forms.signature',
+  'forms.signatureHint',
+  'forms.signaturePlaceholder',
+  'forms.thankYou',
+  'forms.viewResponses',
+  'forms.responseCount',
+  'forms.notSubmitted',
+  'forms.targetGrades',
+  'forms.targetClassrooms',
+  'forms.fieldTypes.text',
+  'forms.fieldTypes.textarea',
+  'forms.fieldTypes.select',
+  'forms.fieldTypes.checkbox',
+  'forms.fieldTypes.date',
+  'forms.fieldTypes.signature',
+  'forms.builder.addField',
+  'forms.builder.removeField',
+  'forms.builder.fieldLabel',
+  'forms.builder.fieldType',
+  'forms.builder.fieldRequired',
+  'forms.builder.fieldOptions',
+  'forms.builder.fieldPlaceholder',
+] as const

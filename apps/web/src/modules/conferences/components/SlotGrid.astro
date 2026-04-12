@@ -1,0 +1,193 @@
+---
+/**
+ * Grid of conference time slots grouped by teacher.
+ *
+ * Available slots show a "Book" button that POSTs to the gateway edge
+ * function. Auth-gated: unauthenticated visitors see a sign-in hint.
+ * Progressive enhancement: the grid renders as static HTML; the
+ * inline <script> adds booking interactivity via fetch().
+ */
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+import type { ConferenceSlot } from '@schoolyard/content-api'
+
+interface Props {
+  slots: ConferenceSlot[]
+  locale: Locale
+  supabaseUrl: string
+  supabaseAnonKey: string
+}
+
+const { slots, locale, supabaseUrl, supabaseAnonKey } = Astro.props
+const t = useTranslate(locale)
+
+const timeFormatter = new Intl.DateTimeFormat(locale, {
+  hour: 'numeric',
+  minute: '2-digit',
+})
+
+const dateFormatter = new Intl.DateTimeFormat(locale, {
+  weekday: 'short',
+  month: 'short',
+  day: 'numeric',
+})
+
+// Group slots by teacher name
+const byTeacher = new Map<string, ConferenceSlot[]>()
+for (const slot of slots) {
+  const group = byTeacher.get(slot.teacherName) ?? []
+  group.push(slot)
+  byTeacher.set(slot.teacherName, group)
+}
+---
+
+<div
+  data-sy-slots
+  data-supabase-url={supabaseUrl}
+  data-supabase-anon={supabaseAnonKey}
+>
+  {byTeacher.size === 0 && (
+    <p class="text-muted">{t('conferences.noWindows')}</p>
+  )}
+
+  {[...byTeacher.entries()].map(([teacherName, teacherSlots]) => (
+    <div class="mt-8 first:mt-0">
+      <h3 class="text-lg font-bold">
+        {t('conferences.teacher')}: {teacherName}
+      </h3>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {teacherSlots.map((slot) => {
+          const start = new Date(`${slot.date}T${slot.startTime}`)
+          const end = new Date(`${slot.date}T${slot.endTime}`)
+          return (
+            <div
+              class:list={[
+                'rounded-card border border-border bg-surface p-card',
+                slot.isBooked ? 'opacity-60' : '',
+              ]}
+              data-slot-id={slot.id}
+            >
+              <p class="text-sm font-semibold text-primary">
+                {dateFormatter.format(start)}
+              </p>
+              <p class="mt-1 text-sm">
+                {timeFormatter.format(start)} &ndash; {timeFormatter.format(end)}
+              </p>
+              <p class="mt-1 text-xs text-muted">
+                {t('conferences.duration', { minutes: slot.durationMinutes })}
+              </p>
+              {slot.location && (
+                <p class="mt-1 text-xs text-muted">
+                  {t('conferences.location')}: {slot.location}
+                </p>
+              )}
+              <div class="mt-3">
+                {slot.isBooked ? (
+                  <span class="inline-block rounded-button bg-muted/15 px-3 py-1.5 text-xs font-semibold">
+                    {t('conferences.booked')}
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    data-book={slot.id}
+                    class="rounded-button bg-primary px-4 py-2 text-sm font-semibold text-inverse hover:opacity-90 disabled:opacity-60"
+                  >
+                    {t('conferences.bookSlot')}
+                  </button>
+                )}
+              </div>
+              <p
+                class="mt-2 hidden text-xs text-muted"
+                data-slot-hint={slot.id}
+              ></p>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  ))}
+</div>
+
+<script>
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-slots]')
+  if (root) {
+    const url = root.dataset.supabaseUrl ?? ''
+    const anon = root.dataset.supabaseAnon ?? ''
+
+    if (url && anon) {
+      const supabase = createBrowserClient({ url, anonKey: anon })
+
+      const buttons = Array.from(
+        root.querySelectorAll<HTMLButtonElement>('[data-book]'),
+      )
+
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const slotId = btn.dataset.book
+          if (!slotId) return
+
+          const {
+            data: { session },
+          } = await supabase.auth.getSession()
+
+          if (!session) {
+            const hint = root.querySelector<HTMLElement>(
+              `[data-slot-hint="${slotId}"]`,
+            )
+            if (hint) {
+              hint.textContent = 'Please sign in to book a conference slot.'
+              hint.classList.remove('hidden')
+            }
+            return
+          }
+
+          btn.disabled = true
+          btn.textContent = 'Booking...'
+
+          try {
+            const res = await fetch(
+              `${url}/functions/v1/gateway/user/book-conference`,
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${session.access_token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ slot_id: slotId }),
+              },
+            )
+
+            if (!res.ok) {
+              const json = await res.json().catch(() => ({}))
+              const errMsg =
+                (json as Record<string, string>).error ?? `HTTP ${res.status}`
+              const hint = root.querySelector<HTMLElement>(
+                `[data-slot-hint="${slotId}"]`,
+              )
+              if (hint) {
+                hint.textContent = errMsg
+                hint.classList.remove('hidden')
+              }
+              btn.disabled = false
+              btn.textContent = 'Book this slot'
+              return
+            }
+
+            // Success — replace the button with a booked badge
+            const card = btn.closest<HTMLElement>('[data-slot-id]')
+            if (card) {
+              card.classList.add('opacity-60')
+            }
+            btn.textContent = 'Booked!'
+            btn.disabled = true
+          } catch {
+            btn.disabled = false
+            btn.textContent = 'Book this slot'
+          }
+        })
+      })
+    }
+  }
+</script>

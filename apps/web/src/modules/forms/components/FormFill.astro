@@ -1,0 +1,276 @@
+---
+/**
+ * Dynamic form renderer — builds a form from the field definitions.
+ *
+ * Auth-gated: unauthenticated users see a disabled submit button with a
+ * sign-in hint. Authenticated users can submit via the gateway edge function.
+ *
+ * Progressive enhancement: the HTML form is valid and functional without JS.
+ * The inline script enhances with fetch-based submission and auth checks.
+ */
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+import type { SchoolForm } from '@schoolyard/content-api'
+
+interface Props {
+  form: SchoolForm
+  locale: Locale
+  supabaseUrl: string
+  supabaseAnonKey: string
+}
+
+const { form, locale, supabaseUrl, supabaseAnonKey } = Astro.props
+const t = useTranslate(locale)
+
+const inputClasses =
+  'mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
+---
+
+<div
+  class="rounded-card border border-border bg-surface p-card"
+  data-sy-form-fill
+  data-form-slug={form.slug}
+  data-supabase-url={supabaseUrl}
+  data-supabase-anon={supabaseAnonKey}
+>
+  <form id={`form-${form.slug}`} class="space-y-6" novalidate>
+    {
+      form.fields.map((field) => (
+        <div>
+          <label for={`ff-${field.name}`} class="block text-sm font-medium">
+            {field.label}
+            {field.required && (
+              <span class="text-error" aria-hidden="true">
+                {' '}
+                *
+              </span>
+            )}
+          </label>
+
+          {field.type === 'text' && (
+            <input
+              id={`ff-${field.name}`}
+              name={field.name}
+              type="text"
+              required={field.required}
+              placeholder={field.placeholder ?? ''}
+              class={inputClasses}
+            />
+          )}
+
+          {field.type === 'textarea' && (
+            <textarea
+              id={`ff-${field.name}`}
+              name={field.name}
+              rows="4"
+              required={field.required}
+              placeholder={field.placeholder ?? ''}
+              class={inputClasses}
+            />
+          )}
+
+          {field.type === 'select' && (
+            <select
+              id={`ff-${field.name}`}
+              name={field.name}
+              required={field.required}
+              class={inputClasses}
+            >
+              <option value="">--</option>
+              {(field.options ?? []).map((opt) => (
+                <option value={opt}>{opt}</option>
+              ))}
+            </select>
+          )}
+
+          {field.type === 'checkbox' && (
+            <label class="mt-2 flex items-center gap-3">
+              <input
+                id={`ff-${field.name}`}
+                name={field.name}
+                type="checkbox"
+                class="h-4 w-4 rounded border-border accent-primary"
+              />
+              <span class="text-sm">{field.label}</span>
+            </label>
+          )}
+
+          {field.type === 'date' && (
+            <input
+              id={`ff-${field.name}`}
+              name={field.name}
+              type="date"
+              required={field.required}
+              class={inputClasses}
+            />
+          )}
+
+          {field.type === 'signature' && (
+            <div>
+              <input
+                id={`ff-${field.name}`}
+                name={field.name}
+                type="text"
+                required={field.required}
+                placeholder={t('forms.signaturePlaceholder')}
+                class={inputClasses}
+              />
+              <p class="mt-1 text-xs text-muted">{t('forms.signatureHint')}</p>
+            </div>
+          )}
+        </div>
+      ))
+    }
+
+    <!-- Student name (optional, always present) -->
+    <div>
+      <label for="ff-student-name" class="block text-sm font-medium">
+        Student name
+      </label>
+      <input
+        id="ff-student-name"
+        name="student_name"
+        type="text"
+        class={inputClasses}
+      />
+    </div>
+
+    <!-- Submit + status -->
+    <div class="flex flex-wrap items-center gap-4 border-t border-border pt-6">
+      <button
+        type="submit"
+        id={`btn-submit-${form.slug}`}
+        disabled
+        class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+      >
+        {t('forms.submit')}
+      </button>
+      <p class="text-xs text-muted" data-sy-form-hint>
+        {t('events.rsvpSigninHint')}
+      </p>
+    </div>
+
+    <!-- Result message -->
+    <div
+      id={`form-msg-${form.slug}`}
+      class="hidden rounded-card p-4 text-sm"
+      role="status"
+      aria-live="polite"
+    >
+    </div>
+  </form>
+</div>
+
+<script>
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+
+  document.querySelectorAll<HTMLElement>('[data-sy-form-fill]').forEach((root) => {
+    const formSlug = root.dataset.formSlug ?? ''
+    const url = root.dataset.supabaseUrl ?? ''
+    const anon = root.dataset.supabaseAnon ?? ''
+    const formEl = root.querySelector<HTMLFormElement>('form')
+    const submitBtn = root.querySelector<HTMLButtonElement>('button[type="submit"]')
+    const hint = root.querySelector<HTMLElement>('[data-sy-form-hint]')
+    const msgEl = root.querySelector<HTMLElement>('[role="status"]')
+
+    if (!formEl || !submitBtn || !url || !anon || !formSlug) return
+
+    const supabase = createBrowserClient({ url, anonKey: anon })
+
+    function showMsg(text: string, type: 'success' | 'error') {
+      if (!msgEl) return
+      msgEl.textContent = text
+      msgEl.classList.remove('hidden')
+      msgEl.className =
+        type === 'success'
+          ? 'rounded-card p-4 text-sm bg-success/10 border border-success/30'
+          : 'rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+    }
+
+    async function checkAuth() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (user) {
+        submitBtn!.disabled = false
+        if (hint) hint.textContent = ''
+      } else {
+        submitBtn!.disabled = true
+      }
+    }
+
+    formEl.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (!session) return
+
+      submitBtn!.disabled = true
+      submitBtn!.textContent = 'Submitting…'
+
+      // Collect all field values
+      const formData = new FormData(formEl)
+      const responses: Record<string, unknown> = {}
+      let studentName: string | undefined
+      let signature: { typedName: string; timestamp: string } | undefined
+
+      for (const [key, value] of formData.entries()) {
+        if (key === 'student_name') {
+          studentName = value.toString() || undefined
+          continue
+        }
+        responses[key] = value.toString()
+      }
+
+      // Handle checkboxes (FormData skips unchecked checkboxes)
+      formEl.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach((cb) => {
+        if (cb.name && cb.name !== 'student_name') {
+          responses[cb.name] = cb.checked
+        }
+      })
+
+      // Extract signature field if present
+      const sigInput = formEl.querySelector<HTMLInputElement>('[name$="-signature"], [id*="signature"]')
+      if (sigInput && sigInput.value.trim()) {
+        signature = {
+          typedName: sigInput.value.trim(),
+          timestamp: new Date().toISOString(),
+        }
+      }
+
+      try {
+        const res = await fetch(`${url}/functions/v1/gateway/user/form-response`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            form_slug: formSlug,
+            student_name: studentName,
+            responses,
+            signature,
+          }),
+        })
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+          showMsg(body.error ?? `Submission failed (${res.status})`, 'error')
+        } else {
+          showMsg(msgEl?.dataset.thankYou ?? 'Thank you! Your form has been submitted.', 'success')
+          formEl.reset()
+        }
+      } catch (err) {
+        showMsg(err instanceof Error ? err.message : 'Network error', 'error')
+      } finally {
+        submitBtn!.disabled = false
+        submitBtn!.textContent = 'Submit'
+      }
+    })
+
+    checkAuth()
+    supabase.auth.onAuthStateChange(() => checkAuth())
+  })
+</script>
