@@ -44,6 +44,8 @@ import type {
   ConferenceWindow,
   ConferenceSlot,
   FormFieldDefinition,
+  Notification,
+  NotificationTemplate,
 } from '../types.js'
 import type {
   ManifestEvent,
@@ -601,6 +603,53 @@ export function createSupabaseAdapter(options: SupabaseAdapterOptions): ContentA
         durationMinutes: row.duration_minutes as number,
         location: (row.location as string) ?? undefined,
         isBooked: row.booked_by != null,
+      }))
+    },
+
+    async fetchNotifications(scope, fetchOptions): Promise<Notification[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('notifications')
+        .select('id, title, body_text, body_html, image_url, urgency, topic, sent_at')
+        .eq('school_id', school.id)
+        .not('sent_at', 'is', null)
+        .order('sent_at', { ascending: false })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+        id: row.id as string,
+        title: row.title as string,
+        bodyText: row.body_text as string,
+        bodyHtml: (row.body_html as string) ?? undefined,
+        imageUrl: (row.image_url as string) ?? undefined,
+        urgency: (row.urgency as 'routine' | 'urgent') ?? 'routine',
+        topic: (row.topic as string) ?? undefined,
+        sentAt: (row.sent_at as string) ?? undefined,
+      }))
+    },
+
+    async fetchNotificationTemplates(scope, fetchOptions): Promise<NotificationTemplate[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('notification_templates')
+        .select('id, slug, title, body_text, body_html, urgency, topic, locale_versions')
+        .eq('school_id', school.id)
+        .order('created_at', { ascending: false })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+        id: row.id as string,
+        slug: row.slug as string,
+        title: row.title as string,
+        bodyText: row.body_text as string,
+        bodyHtml: (row.body_html as string) ?? undefined,
+        urgency: (row.urgency as 'routine' | 'urgent') ?? 'routine',
+        topic: (row.topic as string) ?? undefined,
+        localeVersions: (row.locale_versions as Record<string, { title: string; body: string }>) ?? undefined,
       }))
     },
   }

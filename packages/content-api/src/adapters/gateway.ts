@@ -31,6 +31,8 @@ import type {
   SchoolForm,
   ConferenceWindow,
   ConferenceSlot,
+  Notification,
+  NotificationTemplate,
 } from '../types.js'
 
 export interface GatewayAdapterOptions {
@@ -149,6 +151,12 @@ export function createGatewayAdapter(options: GatewayAdapterOptions): ContentAda
         throw new Error(`[gateway-adapter] conference-slots failed (${res.status}): ${text}`)
       }
       return (await res.json()) as ConferenceSlot[]
+    },
+    fetchNotifications(scope, options) {
+      return get<Notification[]>('notifications', scope, options)
+    },
+    fetchNotificationTemplates(scope, options) {
+      return get<NotificationTemplate[]>('notification-templates', scope, options)
     },
   }
 }

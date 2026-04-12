@@ -176,6 +176,99 @@ export interface Database {
         Insert: ContentInsert<ConferenceSlotRow>
         Update: Partial<ConferenceSlotRow>
       }
+      notification_contacts: {
+        Row: NotificationContactRow
+        Insert: Omit<NotificationContactRow, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<NotificationContactRow>
+      }
+      notification_preferences: {
+        Row: NotificationPreferenceRow
+        Insert: Omit<NotificationPreferenceRow, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<NotificationPreferenceRow>
+      }
+      notifications: {
+        Row: NotificationRow
+        Insert: Omit<NotificationRow, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<NotificationRow>
+      }
+      notification_deliveries: {
+        Row: NotificationDeliveryRow
+        Insert: Omit<NotificationDeliveryRow, 'id' | 'created_at'> & {
+          id?: string
+          created_at?: string
+        }
+        Update: Partial<NotificationDeliveryRow>
+      }
+      notification_templates: {
+        Row: NotificationTemplateRow
+        Insert: Omit<NotificationTemplateRow, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<NotificationTemplateRow>
+      }
+      notification_inbox: {
+        Row: NotificationInboxRow
+        Insert: Omit<NotificationInboxRow, 'id' | 'created_at'> & {
+          id?: string
+          created_at?: string
+        }
+        Update: Partial<NotificationInboxRow>
+      }
+      notification_audit_log: {
+        Row: NotificationAuditLogRow
+        Insert: Omit<NotificationAuditLogRow, 'id' | 'created_at'> & {
+          id?: string
+          created_at?: string
+        }
+        Update: Partial<NotificationAuditLogRow>
+      }
+      audience_segments: {
+        Row: AudienceSegmentRow
+        Insert: Omit<AudienceSegmentRow, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<AudienceSegmentRow>
+      }
+      audience_segment_members: {
+        Row: AudienceSegmentMemberRow
+        Insert: Omit<AudienceSegmentMemberRow, 'id' | 'created_at'> & {
+          id?: string
+          created_at?: string
+        }
+        Update: Partial<AudienceSegmentMemberRow>
+      }
+      send_permissions: {
+        Row: SendPermissionRow
+        Insert: Omit<SendPermissionRow, 'id' | 'created_at'> & {
+          id?: string
+          created_at?: string
+        }
+        Update: Partial<SendPermissionRow>
+      }
+      notification_replies: {
+        Row: NotificationReplyRow
+        Insert: Omit<NotificationReplyRow, 'id' | 'created_at'> & {
+          id?: string
+          created_at?: string
+        }
+        Update: Partial<NotificationReplyRow>
+      }
     }
     Views: {
       fundraising_program_totals: {
@@ -208,6 +301,18 @@ export interface Database {
       book_conference_slot: {
         Args: { p_slot_id: string; p_student_name?: string }
         Returns: boolean
+      }
+      is_notification_sender: {
+        Args: { target_school: string }
+        Returns: boolean
+      }
+      notification_delivery_stats: {
+        Args: { p_notification: string }
+        Returns: Record<string, unknown>
+      }
+      notification_reply_count: {
+        Args: { p_notification: string }
+        Returns: number
       }
     }
     Enums: Record<string, never>
@@ -251,6 +356,8 @@ export interface ProfileRow {
   school_id: string | null
   district_id: string | null
   role: 'member' | 'editor' | 'admin' | 'district_admin'
+  grade: string | null
+  phone: string | null
   created_at: string
 }
 
@@ -526,4 +633,149 @@ export interface ConferenceSlotRow extends ContentBase {
   booked_by: string | null
   booked_at: string | null
   student_name: string | null
+}
+
+// ── Notification system row shapes ───────────────────────────────
+
+export interface NotificationContactRow {
+  id: string
+  school_id: string
+  phone: string
+  name: string | null
+  email: string | null
+  locale: string
+  verified: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface NotificationPreferenceRow {
+  id: string
+  school_id: string
+  user_id: string | null
+  contact_id: string | null
+  channel_push: boolean
+  channel_email: boolean
+  channel_sms: boolean
+  topics: unknown[]
+  cascade_order: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface NotificationRow {
+  id: string
+  school_id: string
+  title: string
+  body_text: string
+  body_html: string | null
+  image_url: string | null
+  urgency: 'routine' | 'urgent'
+  topic: string | null
+  segment_type: 'all' | 'grade' | 'volunteer_group' | 'event_rsvp' | 'custom_tag' | null
+  segment_value: string | null
+  template_id: string | null
+  scheduled_for: string | null
+  sent_at: string | null
+  cancelled_at: string | null
+  created_by: string
+  onesignal_notification_id: string | null
+  locale_versions: Record<string, { title: string; body: string }>
+  created_at: string
+  updated_at: string
+}
+
+export interface NotificationDeliveryRow {
+  id: string
+  notification_id: string
+  school_id: string
+  user_id: string | null
+  contact_id: string | null
+  channel: 'push' | 'email' | 'sms'
+  status: 'pending' | 'sent' | 'delivered' | 'failed' | 'bounced'
+  onesignal_id: string | null
+  sent_at: string | null
+  delivered_at: string | null
+  read_at: string | null
+  error_detail: string | null
+  created_at: string
+}
+
+export interface NotificationTemplateRow {
+  id: string
+  school_id: string
+  slug: string
+  title: string
+  body_text: string
+  body_html: string | null
+  urgency: 'routine' | 'urgent'
+  topic: string | null
+  locale_versions: Record<string, { title: string; body: string }>
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface NotificationInboxRow {
+  id: string
+  notification_id: string
+  school_id: string
+  user_id: string
+  read: boolean
+  pinned: boolean
+  archived: boolean
+  created_at: string
+}
+
+export interface NotificationAuditLogRow {
+  id: string
+  school_id: string
+  notification_id: string | null
+  actor_id: string
+  action: string
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+export interface AudienceSegmentRow {
+  id: string
+  school_id: string
+  slug: string
+  name: string
+  description: string | null
+  segment_type: 'grade' | 'volunteer_group' | 'event_rsvp' | 'custom_tag'
+  segment_value: string
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AudienceSegmentMemberRow {
+  id: string
+  segment_id: string
+  school_id: string
+  user_id: string | null
+  contact_id: string | null
+  created_at: string
+}
+
+export interface SendPermissionRow {
+  id: string
+  school_id: string
+  user_id: string
+  scope: 'school' | 'grade' | 'segment'
+  scope_value: string | null
+  created_by: string | null
+  created_at: string
+}
+
+export interface NotificationReplyRow {
+  id: string
+  notification_id: string
+  school_id: string
+  phone: string | null
+  user_id: string | null
+  reply_text: string
+  created_at: string
 }

@@ -1,0 +1,371 @@
+---
+/**
+ * Admin notification dashboard — recent sends, delivery stats, and links
+ * to compose, templates, segments, contacts, audit, and permissions.
+ *
+ * All data fetching goes through the gateway edge function; the Supabase
+ * client is only used for auth.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+---
+
+<BaseLayout title="Admin - Notifications" description="Notification dashboard">
+  <div
+    class="mx-auto max-w-5xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">
+        You need to be signed in as an editor or admin to manage notifications.
+      </p>
+      <a
+        href="/sign-in?redirect=/admin/notifications/"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Main content -->
+    <div id="admin-content" class="hidden">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <nav class="text-sm text-muted" aria-label="Breadcrumb">
+            <a href="/admin/" class="hover:underline">Admin</a>
+            <span class="mx-1" aria-hidden="true">/</span>
+            <span>Notifications</span>
+          </nav>
+          <h1 class="mt-1 text-2xl font-bold">Notifications</h1>
+        </div>
+        <a
+          href="/admin/notifications/compose"
+          class="rounded-button bg-primary px-4 py-2 text-sm font-bold text-inverse hover:opacity-90"
+        >
+          Compose
+        </a>
+      </div>
+
+      <!-- Delivery stats summary -->
+      <div class="mt-6 grid gap-4 sm:grid-cols-4">
+        <div class="rounded-card border border-border bg-surface p-card">
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">Total Sent</p>
+          <p class="mt-1 text-2xl font-bold" id="stat-total-sent">--</p>
+        </div>
+        <div class="rounded-card border border-border bg-surface p-card">
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">Delivered</p>
+          <p class="mt-1 text-2xl font-bold" id="stat-delivered">--</p>
+        </div>
+        <div class="rounded-card border border-border bg-surface p-card">
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">Failed</p>
+          <p class="mt-1 text-2xl font-bold" id="stat-failed">--</p>
+        </div>
+        <div class="rounded-card border border-border bg-surface p-card">
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">Pending</p>
+          <p class="mt-1 text-2xl font-bold" id="stat-pending">--</p>
+        </div>
+      </div>
+
+      <!-- Quick links -->
+      <div class="mt-6 grid gap-4 sm:grid-cols-3">
+        <a
+          href="/admin/notifications/templates"
+          class="group flex items-start gap-4 rounded-card border border-border bg-surface p-card transition-colors hover:bg-muted/5"
+        >
+          <span
+            class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-card bg-primary/10 text-lg"
+            aria-hidden="true"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+            </svg>
+          </span>
+          <div class="min-w-0">
+            <span class="font-semibold group-hover:underline">Templates</span>
+            <p class="mt-0.5 text-xs text-muted">Reusable notification templates</p>
+          </div>
+        </a>
+
+        <a
+          href="/admin/notifications/segments"
+          class="group flex items-start gap-4 rounded-card border border-border bg-surface p-card transition-colors hover:bg-muted/5"
+        >
+          <span
+            class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-card bg-primary/10 text-lg"
+            aria-hidden="true"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+            </svg>
+          </span>
+          <div class="min-w-0">
+            <span class="font-semibold group-hover:underline">Segments</span>
+            <p class="mt-0.5 text-xs text-muted">Audience targeting groups</p>
+          </div>
+        </a>
+
+        <a
+          href="/admin/notifications/contacts"
+          class="group flex items-start gap-4 rounded-card border border-border bg-surface p-card transition-colors hover:bg-muted/5"
+        >
+          <span
+            class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-card bg-primary/10 text-lg"
+            aria-hidden="true"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+            </svg>
+          </span>
+          <div class="min-w-0">
+            <span class="font-semibold group-hover:underline">Contacts</span>
+            <p class="mt-0.5 text-xs text-muted">Phone and contact directory</p>
+          </div>
+        </a>
+
+        <a
+          href="/admin/notifications/audit"
+          class="group flex items-start gap-4 rounded-card border border-border bg-surface p-card transition-colors hover:bg-muted/5"
+        >
+          <span
+            class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-card bg-primary/10 text-lg"
+            aria-hidden="true"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+            </svg>
+          </span>
+          <div class="min-w-0">
+            <span class="font-semibold group-hover:underline">Audit Log</span>
+            <p class="mt-0.5 text-xs text-muted">Notification send history</p>
+          </div>
+        </a>
+
+        <a
+          href="/admin/notifications/permissions"
+          class="group flex items-start gap-4 rounded-card border border-border bg-surface p-card transition-colors hover:bg-muted/5"
+        >
+          <span
+            class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-card bg-primary/10 text-lg"
+            aria-hidden="true"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+            </svg>
+          </span>
+          <div class="min-w-0">
+            <span class="font-semibold group-hover:underline">Permissions</span>
+            <p class="mt-0.5 text-xs text-muted">Who can send notifications</p>
+          </div>
+        </a>
+
+        <a
+          href="/admin/notifications/compose"
+          class="group flex items-start gap-4 rounded-card border border-border bg-surface p-card transition-colors hover:bg-muted/5"
+        >
+          <span
+            class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-card bg-primary/10 text-lg"
+            aria-hidden="true"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+            </svg>
+          </span>
+          <div class="min-w-0">
+            <span class="font-semibold group-hover:underline">Compose</span>
+            <p class="mt-0.5 text-xs text-muted">Write and send a notification</p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Recent sends table -->
+      <h2 class="mt-8 text-lg font-bold">Recent Sends</h2>
+      <div class="mt-4 overflow-x-auto rounded-card border border-border">
+        <table class="w-full text-left text-sm" id="sends-table">
+          <thead>
+            <tr class="border-b border-border bg-muted/5">
+              <th class="px-4 py-3 font-semibold" scope="col">Title</th>
+              <th class="hidden px-4 py-3 font-semibold sm:table-cell" scope="col">Sent At</th>
+              <th class="hidden px-4 py-3 font-semibold md:table-cell" scope="col">Audience</th>
+              <th class="px-4 py-3 font-semibold" scope="col">Status</th>
+              <th class="px-4 py-3 text-right font-semibold" scope="col">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="sends-tbody">
+            <tr>
+              <td class="px-4 py-8 text-center text-muted" colspan="5">Loading notifications...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const tbody = document.getElementById('sends-tbody')!
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const authClient = createBrowserClient({ url, anonKey: anon })
+
+    let admin: ReturnType<typeof createAdminClient>
+
+    async function checkAuth(): Promise<boolean> {
+      const {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
+        showView('auth')
+        return false
+      }
+
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error } = await admin.getProfile()
+      if (error || !profile?.school_id) {
+        showView('auth')
+        return false
+      }
+
+      const allowed = ['editor', 'admin', 'district_admin']
+      if (!allowed.includes(profile.role)) {
+        showView('auth')
+        return false
+      }
+
+      return true
+    }
+
+    function formatDate(iso: string): string {
+      try {
+        return new Date(iso).toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        })
+      } catch {
+        return iso
+      }
+    }
+
+    function escapeHtml(str: string): string {
+      const d = document.createElement('div')
+      d.textContent = str
+      return d.innerHTML
+    }
+
+    async function loadStats() {
+      const { data: stats } = await admin.get<{
+        total_sent: number
+        delivered: number
+        failed: number
+        pending: number
+      }>('notifications', 'stats')
+
+      if (stats) {
+        document.getElementById('stat-total-sent')!.textContent = String(stats.total_sent ?? 0)
+        document.getElementById('stat-delivered')!.textContent = String(stats.delivered ?? 0)
+        document.getElementById('stat-failed')!.textContent = String(stats.failed ?? 0)
+        document.getElementById('stat-pending')!.textContent = String(stats.pending ?? 0)
+      }
+    }
+
+    async function loadSends() {
+      const { data: sends, error } = await admin.list<{
+        id: string
+        title: string
+        sent_at: string
+        audience: string
+        status: string
+        delivered_count: number
+        failed_count: number
+      }>('notifications')
+
+      if (error || !sends) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-error" colspan="5">Failed to load notifications: ${escapeHtml(error ?? 'Unknown error')}</td></tr>`
+        return
+      }
+
+      if (sends.length === 0) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-muted" colspan="5">No notifications sent yet. <a href="/admin/notifications/compose" class="font-semibold underline">Send your first notification</a></td></tr>`
+        return
+      }
+
+      tbody.innerHTML = sends
+        .map((n) => {
+          const statusBadge =
+            n.status === 'delivered'
+              ? '<span class="inline-block rounded-button bg-success/15 px-2 py-0.5 text-xs font-medium">Delivered</span>'
+              : n.status === 'failed'
+                ? '<span class="inline-block rounded-button bg-error/15 px-2 py-0.5 text-xs font-medium">Failed</span>'
+                : n.status === 'scheduled'
+                  ? '<span class="inline-block rounded-button bg-warning/15 px-2 py-0.5 text-xs font-medium">Scheduled</span>'
+                  : '<span class="inline-block rounded-button bg-muted/15 px-2 py-0.5 text-xs font-medium">Pending</span>'
+
+          return `<tr class="border-b border-border last:border-0 hover:bg-muted/5">
+          <td class="px-4 py-3">
+            <span class="font-medium">${escapeHtml(n.title)}</span>
+          </td>
+          <td class="hidden px-4 py-3 text-muted sm:table-cell">${formatDate(n.sent_at)}</td>
+          <td class="hidden px-4 py-3 text-muted md:table-cell">${escapeHtml(n.audience ?? 'all')}</td>
+          <td class="px-4 py-3">${statusBadge}</td>
+          <td class="px-4 py-3 text-right">
+            <a href="/admin/notifications/${n.id}" class="text-sm font-semibold hover:underline">View</a>
+          </td>
+        </tr>`
+        })
+        .join('')
+    }
+
+    async function init() {
+      if (await checkAuth()) {
+        showView('content')
+        loadStats()
+        loadSends()
+      }
+    }
+
+    init()
+  }
+</script>

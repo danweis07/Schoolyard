@@ -16,6 +16,7 @@
  */
 import { getSupabase } from './supabase'
 import { Platform } from 'react-native'
+import { initializeNotifications, isOneSignalActive } from './onesignal'
 
 interface ExpoNotifications {
   setNotificationHandler: (config: unknown) => void
@@ -48,6 +49,17 @@ export interface RegisterResult {
 }
 
 export async function registerForPushNotifications(schoolSlug: string): Promise<RegisterResult> {
+  // Try OneSignal first — if configured, it handles its own token management.
+  const onesignalAppId = process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID
+  const useOneSignal = await initializeNotifications({
+    onesignalAppId: onesignalAppId || undefined,
+  })
+  if (useOneSignal && isOneSignalActive()) {
+    // OneSignal manages push tokens internally; no Expo token needed.
+    return { token: 'onesignal-managed', error: null }
+  }
+
+  // Fall back to Expo push flow
   const supabase = getSupabase()
   if (!supabase) return { token: null, error: 'supabase not configured' }
 

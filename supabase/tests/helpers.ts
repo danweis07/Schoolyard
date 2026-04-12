@@ -83,6 +83,18 @@ export interface TestContext {
     conferenceSlotOpen2: string // same teacher, different time — for "same teacher twice" test
     conferenceSlotBooked: string
     conferenceTeacherId: string
+    notificationContactA: string
+    notificationPreferenceA: string
+    notificationA: string
+    notificationDraft: string
+    notificationDeliveryA: string
+    notificationTemplateA: string
+    notificationInboxA: string
+    notificationAuditLogA: string
+    audienceSegmentA: string
+    audienceSegmentMemberA: string
+    sendPermissionA: string
+    notificationReplyA: string
   }
 }
 
@@ -521,6 +533,14 @@ export async function setupTestContext(): Promise<TestContext> {
       price_cents: 1500,
       active: true,
       variants: [{ label: 'S' }, { label: 'M' }, { label: 'L' }],
+  // ── Notification system rows ─────────────────────────────────────
+  // Notification contacts (phone-only parent)
+  const { data: notifContact } = await service
+    .from('notification_contacts')
+    .insert({
+      school_id: schoolAId,
+      name: 'Parent Phone Only',
+      phone: '+15551234567',
     })
     .select('id')
     .single()
@@ -535,6 +555,17 @@ export async function setupTestContext(): Promise<TestContext> {
       name: 'Inactive Product',
       price_cents: 999,
       active: false,
+  rows.notificationContactA = notifContact!.id
+
+  // Notification templates
+  const { data: notifTemplate } = await service
+    .from('notification_templates')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-template-a',
+      name: 'Template A',
+      subject: 'Test Subject',
+      body: 'Test body content',
     })
     .select('id')
     .single()
@@ -552,6 +583,46 @@ export async function setupTestContext(): Promise<TestContext> {
       total_cents: 1500,
       status: 'pending',
       payment_provider: 'collect',
+  rows.notificationTemplateA = notifTemplate!.id
+
+  // Notifications (sent)
+  const { data: notifSent } = await service
+    .from('notifications')
+    .insert({
+      school_id: schoolAId,
+      title: 'Sent Notification',
+      body: 'Notification body',
+      sent_at: new Date().toISOString(),
+      created_by: userIds.adminA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.notificationA = notifSent!.id
+
+  // Notifications (draft — sent_at is null)
+  const { data: notifDraft } = await service
+    .from('notifications')
+    .insert({
+      school_id: schoolAId,
+      title: 'Draft Notification',
+      body: 'Draft body',
+      sent_at: null,
+      created_by: userIds.adminA,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.notificationDraft = notifDraft!.id
+
+  // Notification preferences for member-a
+  const { data: notifPref } = await service
+    .from('notification_preferences')
+    .insert({
+      user_id: userIds.memberA,
+      school_id: schoolAId,
+      channel: 'email',
+      enabled: true,
     })
     .select('id')
     .single()
@@ -566,6 +637,17 @@ export async function setupTestContext(): Promise<TestContext> {
       variant_label: 'M',
       quantity: 1,
       unit_price_cents: 1500,
+  rows.notificationPreferenceA = notifPref!.id
+
+  // Notification deliveries for the sent notification
+  const { data: notifDelivery } = await service
+    .from('notification_deliveries')
+    .insert({
+      notification_id: rows.notificationA,
+      user_id: userIds.memberA,
+      school_id: schoolAId,
+      channel: 'email',
+      status: 'delivered',
     })
     .select('id')
     .single()
@@ -583,6 +665,31 @@ export async function setupTestContext(): Promise<TestContext> {
       student_grades: ['3rd'],
       email: 'editor@test.com',
       visible: true,
+  rows.notificationDeliveryA = notifDelivery!.id
+
+  // Notification inbox for member-a
+  const { data: notifInbox } = await service
+    .from('notification_inbox')
+    .insert({
+      notification_id: rows.notificationA,
+      user_id: userIds.memberA,
+      school_id: schoolAId,
+      read: false,
+      pinned: false,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.notificationInboxA = notifInbox!.id
+
+  // Notification audit log
+  const { data: notifAudit } = await service
+    .from('notification_audit_log')
+    .insert({
+      school_id: schoolAId,
+      notification_id: rows.notificationA,
+      action: 'sent',
+      actor_id: userIds.adminA,
     })
     .select('id')
     .single()
@@ -599,6 +706,42 @@ export async function setupTestContext(): Promise<TestContext> {
       student_grades: ['K'],
       email: 'admin@test.com',
       visible: false,
+  rows.notificationAuditLogA = notifAudit!.id
+
+  // Audience segments
+  const { data: audSegment } = await service
+    .from('audience_segments')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-segment-grade3',
+      name: 'Grade 3 Parents',
+      type: 'grade',
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.audienceSegmentA = audSegment!.id
+
+  // Audience segment members
+  const { data: audSegMember } = await service
+    .from('audience_segment_members')
+    .insert({
+      segment_id: rows.audienceSegmentA,
+      user_id: userIds.memberA,
+      school_id: schoolAId,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.audienceSegmentMemberA = audSegMember!.id
+
+  // Send permissions
+  const { data: sendPerm } = await service
+    .from('send_permissions')
+    .insert({
+      user_id: userIds.adminA,
+      school_id: schoolAId,
+      permission: 'all',
     })
     .select('id')
     .single()
@@ -662,6 +805,16 @@ export async function setupTestContext(): Promise<TestContext> {
       ends_on: '2026-10-17',
       published: true,
       created_by: userIds.editorA,
+  rows.sendPermissionA = sendPerm!.id
+
+  // Notification replies
+  const { data: notifReply } = await service
+    .from('notification_replies')
+    .insert({
+      notification_id: rows.notificationA,
+      user_id: userIds.memberA,
+      school_id: schoolAId,
+      body: 'Thanks for the update!',
     })
     .select('id')
     .single()
@@ -740,6 +893,7 @@ export async function setupTestContext(): Promise<TestContext> {
     .single()
     .throwOnError()
   rows.conferenceSlotBooked = slotBooked!.id
+  rows.notificationReplyA = notifReply!.id
 
   // ── Sign in as each profile ──────────────────────────────────────
   const [memberA, editorA, editorB, adminA, districtAdmin] = await Promise.all([
@@ -785,6 +939,17 @@ export async function teardownTestContext(ctx: TestContext): Promise<void> {
     'conference_windows',
     'form_responses',
     'forms',
+    'notification_replies',
+    'notification_audit_log',
+    'notification_inbox',
+    'notification_deliveries',
+    'notifications',
+    'audience_segment_members',
+    'audience_segments',
+    'send_permissions',
+    'notification_preferences',
+    'notification_contacts',
+    'notification_templates',
     'push_tokens',
     'community_flags',
     'volunteer_hours',

@@ -100,5 +100,10 @@
       "url": "/events/walk-a-thon",
       "type": "info"
     }
-  ]
+  ],
+  "notifications": {
+    "enabled": true,
+    "smsEnabled": false,
+    "emailEnabled": true
+  }
 }

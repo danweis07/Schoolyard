@@ -27,6 +27,9 @@ export type {
   FormResponse,
   ConferenceWindow,
   ConferenceSlot,
+  Notification,
+  InboxItem,
+  NotificationTemplate,
 } from './types.js'
 
 export {

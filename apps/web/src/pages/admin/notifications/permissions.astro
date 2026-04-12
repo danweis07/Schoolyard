@@ -1,0 +1,338 @@
+---
+/**
+ * Admin notification permission manager — control who can send notifications.
+ *
+ * Lists current permission assignments and allows admins to assign
+ * send permissions to other users by email and role.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { siteConfig } from '@/lib/site'
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? ''
+const supabaseAnon =
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY ?? ''
+const schoolSlug = siteConfig.school.shortName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+---
+
+<BaseLayout title="Admin - Notification Permissions" description="Manage notification send permissions">
+  <div
+    class="mx-auto max-w-5xl px-4 py-8"
+    data-sy-admin
+    data-supabase-url={supabaseUrl}
+    data-supabase-anon={supabaseAnon}
+    data-school-slug={schoolSlug}
+  >
+    <!-- Auth gate -->
+    <div id="admin-auth-gate" class="hidden py-16 text-center">
+      <h1 class="text-3xl font-bold">Sign in required</h1>
+      <p class="mt-2 text-muted">
+        You need to be signed in as an admin to manage notification permissions.
+      </p>
+      <a
+        href="/sign-in?redirect=/admin/notifications/permissions"
+        class="mt-6 inline-block rounded-button bg-primary px-6 py-3 text-sm font-bold text-inverse hover:opacity-90"
+      >
+        Sign in
+      </a>
+    </div>
+
+    <!-- Main content -->
+    <div id="admin-content" class="hidden">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <nav class="text-sm text-muted" aria-label="Breadcrumb">
+            <a href="/admin/" class="hover:underline">Admin</a>
+            <span class="mx-1" aria-hidden="true">/</span>
+            <a href="/admin/notifications/" class="hover:underline">Notifications</a>
+            <span class="mx-1" aria-hidden="true">/</span>
+            <span>Permissions</span>
+          </nav>
+          <h1 class="mt-1 text-2xl font-bold">Send Permissions</h1>
+          <p class="mt-1 text-sm text-muted">
+            Control which users are allowed to compose and send notifications.
+          </p>
+        </div>
+      </div>
+
+      <!-- Assign permission form -->
+      <div class="mt-6 rounded-card border border-border bg-surface p-card">
+        <h2 class="text-lg font-semibold">Assign Permission</h2>
+        <div id="perm-message" class="mt-2 hidden rounded-card p-4 text-sm" role="alert"></div>
+        <form id="perm-form" class="mt-4 space-y-4" novalidate>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="field-email" class="block text-sm font-medium">
+                User Email <span class="text-error" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="field-email"
+                type="email"
+                required
+                class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="teacher@school.edu"
+              />
+            </div>
+            <div>
+              <label for="field-level" class="block text-sm font-medium">Permission Level</label>
+              <select
+                id="field-level"
+                class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="send">Send only</option>
+                <option value="send_urgent">Send + Urgent</option>
+                <option value="manage">Full manage (send, templates, segments)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label for="field-scope" class="block text-sm font-medium">Scope</label>
+            <select
+              id="field-scope"
+              class="mt-1 block w-full rounded-button border border-border bg-surface px-4 py-2.5 text-base focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="school">Entire school</option>
+              <option value="grade">Specific grade only</option>
+              <option value="segment">Specific segment only</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-3">
+            <button
+              type="submit"
+              id="btn-assign"
+              class="rounded-button bg-primary px-6 py-2.5 text-sm font-bold text-inverse hover:opacity-90 disabled:opacity-60"
+            >
+              Assign Permission
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Permissions table -->
+      <h2 class="mt-8 text-lg font-bold">Current Permissions</h2>
+      <div class="mt-4 overflow-x-auto rounded-card border border-border">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-border bg-muted/5">
+              <th class="px-4 py-3 font-semibold" scope="col">User</th>
+              <th class="px-4 py-3 font-semibold" scope="col">Level</th>
+              <th class="hidden px-4 py-3 font-semibold sm:table-cell" scope="col">Scope</th>
+              <th class="hidden px-4 py-3 font-semibold md:table-cell" scope="col">Granted</th>
+              <th class="px-4 py-3 text-right font-semibold" scope="col">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="perms-tbody">
+            <tr>
+              <td class="px-4 py-8 text-center text-muted" colspan="5">Loading permissions...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="py-16 text-center">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // @ts-nocheck
+  import { createBrowserClient } from '@schoolyard/supabase/browser'
+  import { createAdminClient } from '@/lib/admin-client'
+
+  const root = document.querySelector<HTMLElement>('[data-sy-admin]')!
+  const url = root.dataset.supabaseUrl ?? ''
+  const anon = root.dataset.supabaseAnon ?? ''
+
+  const loadingEl = document.getElementById('admin-loading')!
+  const authGate = document.getElementById('admin-auth-gate')!
+  const content = document.getElementById('admin-content')!
+  const tbody = document.getElementById('perms-tbody')!
+  const form = document.getElementById('perm-form') as HTMLFormElement
+  const msgEl = document.getElementById('perm-message')!
+  const btnAssign = document.getElementById('btn-assign') as HTMLButtonElement
+
+  function showView(id: 'loading' | 'auth' | 'content') {
+    loadingEl.classList.toggle('hidden', id !== 'loading')
+    authGate.classList.toggle('hidden', id !== 'auth')
+    content.classList.toggle('hidden', id !== 'content')
+  }
+
+  function showMsg(text: string, type: 'success' | 'error') {
+    msgEl.textContent = text
+    msgEl.className =
+      type === 'success'
+        ? 'mt-2 rounded-card p-4 text-sm bg-success/10 border border-success/30'
+        : 'mt-2 rounded-card p-4 text-sm bg-error/10 border border-error/30 text-error'
+  }
+
+  function escapeHtml(str: string): string {
+    const d = document.createElement('div')
+    d.textContent = str
+    return d.innerHTML
+  }
+
+  function formatDate(iso: string): string {
+    try {
+      return new Date(iso).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    } catch {
+      return iso
+    }
+  }
+
+  if (!url || !anon) {
+    showView('auth')
+  } else {
+    const authClient = createBrowserClient({ url, anonKey: anon })
+
+    let admin: ReturnType<typeof createAdminClient>
+
+    async function checkAuth(): Promise<boolean> {
+      const {
+        data: { session },
+      } = await authClient.auth.getSession()
+      if (!session) {
+        showView('auth')
+        return false
+      }
+
+      admin = createAdminClient({
+        gatewayUrl: url,
+        accessToken: session.access_token,
+        schoolSlug: root.dataset.schoolSlug ?? '',
+      })
+
+      const { data: profile, error } = await admin.getProfile()
+      if (error || !profile?.school_id) {
+        showView('auth')
+        return false
+      }
+
+      // Only admin and district_admin can manage permissions
+      const allowed = ['admin', 'district_admin']
+      if (!allowed.includes(profile.role)) {
+        showView('auth')
+        return false
+      }
+
+      return true
+    }
+
+    async function loadPermissions() {
+      const { data: perms, error } = await admin.list<{
+        id: string
+        user_email: string
+        user_name: string | null
+        level: string
+        scope: string
+        granted_at: string
+      }>('notification_permissions')
+
+      if (error || !perms) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-error" colspan="5">Failed to load permissions: ${escapeHtml(error ?? 'Unknown error')}</td></tr>`
+        return
+      }
+
+      if (perms.length === 0) {
+        tbody.innerHTML = `<tr><td class="px-4 py-8 text-center text-muted" colspan="5">No permissions assigned yet. Assign one above.</td></tr>`
+        return
+      }
+
+      tbody.innerHTML = perms
+        .map((p) => {
+          const levelBadge =
+            p.level === 'manage'
+              ? '<span class="inline-block rounded-button bg-primary/15 px-2 py-0.5 text-xs font-medium">Manage</span>'
+              : p.level === 'send_urgent'
+                ? '<span class="inline-block rounded-button bg-warning/15 px-2 py-0.5 text-xs font-medium">Send + Urgent</span>'
+                : '<span class="inline-block rounded-button bg-muted/15 px-2 py-0.5 text-xs font-medium">Send</span>'
+
+          return `<tr class="border-b border-border last:border-0 hover:bg-muted/5">
+          <td class="px-4 py-3">
+            <span class="font-medium">${escapeHtml(p.user_name ?? p.user_email)}</span>
+            ${p.user_name ? `<p class="mt-0.5 text-xs text-muted">${escapeHtml(p.user_email)}</p>` : ''}
+          </td>
+          <td class="px-4 py-3">${levelBadge}</td>
+          <td class="hidden px-4 py-3 text-muted sm:table-cell">${escapeHtml(p.scope)}</td>
+          <td class="hidden px-4 py-3 text-muted md:table-cell">${formatDate(p.granted_at)}</td>
+          <td class="px-4 py-3 text-right">
+            <button type="button" data-revoke="${p.id}" data-title="${escapeHtml(p.user_email)}" class="text-sm font-semibold text-error hover:underline">Revoke</button>
+          </td>
+        </tr>`
+        })
+        .join('')
+
+      // Attach revoke handlers
+      tbody.querySelectorAll<HTMLButtonElement>('[data-revoke]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.revoke!
+          const title = btn.dataset.title ?? 'this user'
+          if (!confirm(`Revoke notification permissions for "${title}"?`)) return
+
+          btn.disabled = true
+          btn.textContent = 'Revoking...'
+
+          const { error: delErr } = await admin.remove('notification_permissions', id)
+          if (delErr) {
+            alert(`Failed to revoke: ${delErr}`)
+            btn.disabled = false
+            btn.textContent = 'Revoke'
+          } else {
+            loadPermissions()
+          }
+        })
+      })
+    }
+
+    // Assign handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      const email = (document.getElementById('field-email') as HTMLInputElement).value.trim()
+      const level = (document.getElementById('field-level') as HTMLSelectElement).value
+      const scope = (document.getElementById('field-scope') as HTMLSelectElement).value
+
+      if (!email) {
+        showMsg('User email is required.', 'error')
+        return
+      }
+
+      btnAssign.disabled = true
+      btnAssign.textContent = 'Assigning...'
+
+      const { error } = await admin.create('notification_permissions', {
+        user_email: email,
+        level,
+        scope,
+      })
+
+      btnAssign.disabled = false
+      btnAssign.textContent = 'Assign Permission'
+
+      if (error) {
+        showMsg(`Failed to assign: ${error}`, 'error')
+        return
+      }
+
+      showMsg('Permission assigned.', 'success')
+      form.reset()
+      loadPermissions()
+    })
+
+    async function init() {
+      if (await checkAuth()) {
+        showView('content')
+        loadPermissions()
+      }
+    }
+
+    init()
+  }
+</script>

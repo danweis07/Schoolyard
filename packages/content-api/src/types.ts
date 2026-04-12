@@ -293,3 +293,42 @@ export interface ConferenceSlot {
   location?: string
   isBooked: boolean
 }
+
+// ── Notification system types ────────────────────────────────────
+
+export interface Notification {
+  id: string
+  title: string
+  bodyText: string
+  bodyHtml?: string
+  imageUrl?: string
+  urgency: 'routine' | 'urgent'
+  topic?: string
+  sentAt?: string
+}
+
+export interface InboxItem {
+  id: string
+  notificationId: string
+  title: string
+  bodyText: string
+  bodyHtml?: string
+  imageUrl?: string
+  urgency: 'routine' | 'urgent'
+  topic?: string
+  read: boolean
+  pinned: boolean
+  archived: boolean
+  sentAt: string
+}
+
+export interface NotificationTemplate {
+  id: string
+  slug: string
+  title: string
+  bodyText: string
+  bodyHtml?: string
+  urgency: 'routine' | 'urgent'
+  topic?: string
+  localeVersions?: Record<string, { title: string; body: string }>
+}

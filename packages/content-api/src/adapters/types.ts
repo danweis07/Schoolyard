@@ -26,6 +26,8 @@ import type {
   SchoolForm,
   ConferenceWindow,
   ConferenceSlot,
+  Notification,
+  NotificationTemplate,
 } from '../types.js'
 import type {
   ManifestEvent,
@@ -89,6 +91,10 @@ export interface ContentAdapter {
   // Conferences
   fetchConferenceWindows(scope?: Scope, options?: FetchOptions): Promise<ConferenceWindow[]>
   fetchConferenceSlots(windowSlug: string, scope?: Scope, options?: FetchOptions): Promise<ConferenceSlot[]>
+
+  // Notification system
+  fetchNotifications(scope?: Scope, options?: FetchOptions): Promise<Notification[]>
+  fetchNotificationTemplates(scope?: Scope, options?: FetchOptions): Promise<NotificationTemplate[]>
 }
 
 /** Local aliases re-exported for convenience. */
@@ -112,4 +118,6 @@ export type {
   SchoolForm,
   ConferenceWindow,
   ConferenceSlot,
+  Notification,
+  NotificationTemplate,
 }
