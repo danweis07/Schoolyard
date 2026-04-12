@@ -1,0 +1,33 @@
+---
+/**
+ * Displays whether the spirit store is currently open or closed,
+ * based on the school config's opensAt / closesAt window.
+ */
+import { useTranslate } from '@/i18n/index'
+import { siteConfig } from '@/lib/site'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  locale: Locale
+}
+
+const { locale } = Astro.props
+const t = useTranslate(locale)
+const { opensAt, closesAt } = siteConfig.spiritStore
+
+const now = new Date()
+const isOpen = (!opensAt || new Date(opensAt) <= now) && (!closesAt || new Date(closesAt) > now)
+const opensDate = opensAt ? new Date(opensAt).toLocaleDateString() : ''
+---
+
+{
+  !isOpen && (
+    <div class="rounded-card border border-warning bg-warning/10 p-card text-center">
+      <p class="font-semibold text-warning">
+        {opensAt && new Date(opensAt) > now
+          ? t('spiritStore.storeOpens', { date: opensDate })
+          : t('spiritStore.storeClosed')}
+      </p>
+    </div>
+  )
+}

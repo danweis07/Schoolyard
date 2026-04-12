@@ -18,6 +18,9 @@ export type {
   Program,
   PtaNewsletter,
   SchoolInfo,
+  SpiritStoreVariant,
+  SpiritStoreProduct,
+  DirectoryEntry,
 } from './types.js'
 
 export {

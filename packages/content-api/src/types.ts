@@ -205,3 +205,33 @@ export interface SchoolInfo {
   languages: Record<string, unknown>
   districtId: string | null
 }
+
+// ── Spirit Store ────────────────────────────────────────────────────
+
+export interface SpiritStoreVariant {
+  label: string
+}
+
+export interface SpiritStoreProduct {
+  slug: string
+  name: string
+  description?: string
+  priceCents: number
+  imageUrl?: string
+  category?: string
+  variants: SpiritStoreVariant[]
+  maxQuantity?: number
+  order: number
+}
+
+// ── School Directory ────────────────────────────────────────────────
+
+export interface DirectoryEntry {
+  familyName: string
+  parentNames: string[]
+  studentGrades: string[]
+  email?: string
+  phone?: string
+  neighborhood?: string
+  notes?: string
+}

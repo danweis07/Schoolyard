@@ -51,7 +51,9 @@
     "classroom": true,
     "district": false,
     "resources": true,
-    "transparency": true
+    "transparency": true,
+    "spirit-store": true,
+    "directory": true
   },
   "resourcesConfig": {
     "zipCode": "94112",
@@ -65,6 +67,21 @@
     "currentRaised": 28750,
     "goalLabel": "Annual Fund 2025-2026",
     "stripePublishableKey": ""
+  },
+  "spiritStore": {
+    "provider": "collect",
+    "externalUrl": "",
+    "opensAt": "",
+    "closesAt": "",
+    "storeLabel": "Eagle Spirit Store",
+    "stripePublishableKey": "",
+    "squareApplicationId": "",
+    "squareLocationId": "",
+    "paypalClientId": "",
+    "shopifyDomain": "",
+    "shopifyStorefrontToken": "",
+    "printfulStoreId": "",
+    "externalLabel": "Visit Store"
   },
   "app": {
     "enabled": true,

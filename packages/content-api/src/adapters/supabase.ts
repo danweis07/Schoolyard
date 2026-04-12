@@ -38,6 +38,8 @@ import type {
   Program,
   PtaNewsletter,
   BudgetLineItem,
+  SpiritStoreProduct,
+  DirectoryEntry,
 } from '../types.js'
 import type {
   ManifestEvent,
@@ -464,6 +466,54 @@ export function createSupabaseAdapter(options: SupabaseAdapterOptions): ContentA
         title: row.title,
         pdfUrl: row.pdf_url ?? undefined,
         publishedAt: row.published_at,
+      }))
+    },
+
+    async fetchSpiritStoreProducts(scope, fetchOptions): Promise<SpiritStoreProduct[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('spirit_store_products')
+        .select('*')
+        .eq('school_id', school.id)
+        .eq('active', true)
+        .order('sort_order', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+        slug: row.slug as string,
+        name: row.name as string,
+        description: (row.description as string) ?? undefined,
+        priceCents: row.price_cents as number,
+        imageUrl: (row.image_url as string) ?? undefined,
+        category: (row.category as string) ?? undefined,
+        variants: (row.variants as Array<{ label: string }>) ?? [],
+        maxQuantity: (row.max_quantity as number) ?? undefined,
+        order: row.sort_order as number,
+      }))
+    },
+
+    async fetchDirectory(scope, fetchOptions): Promise<DirectoryEntry[]> {
+      const school = await resolveSchool(scope)
+      const query = client
+        .from('directory_entries')
+        .select('family_name, parent_names, student_grades, email, phone, neighborhood, notes')
+        .eq('school_id', school.id)
+        .eq('visible', true)
+        .order('family_name', { ascending: true })
+      const { data, error } = await (fetchOptions?.signal
+        ? query.abortSignal(fetchOptions.signal)
+        : query)
+      if (error) throw error
+      return ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+        familyName: row.family_name as string,
+        parentNames: (row.parent_names as string[]) ?? [],
+        studentGrades: (row.student_grades as string[]) ?? [],
+        email: (row.email as string) ?? undefined,
+        phone: (row.phone as string) ?? undefined,
+        neighborhood: (row.neighborhood as string) ?? undefined,
+        notes: (row.notes as string) ?? undefined,
       }))
     },
   }

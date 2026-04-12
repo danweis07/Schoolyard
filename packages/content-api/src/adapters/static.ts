@@ -161,5 +161,11 @@ export function createStaticAdapter(options: StaticAdapterOptions): ContentAdapt
     async fetchPtaNewsletters() {
       return []
     },
+    async fetchSpiritStoreProducts() {
+      return []
+    },
+    async fetchDirectory() {
+      return []
+    },
   }
 }

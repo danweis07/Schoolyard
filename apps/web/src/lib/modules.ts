@@ -20,6 +20,8 @@ import classroom from '@/modules/classroom/index.js'
 import district from '@/modules/district/index.js'
 import resources from '@/modules/resources/index.js'
 import transparency from '@/modules/transparency/index.js'
+import spiritStore from '@/modules/spirit-store/index.js'
+import directory from '@/modules/directory/index.js'
 
 export interface ModuleManifest {
   name: ModuleName
@@ -51,6 +53,8 @@ const REGISTRY: Record<ModuleName, ModuleManifest> = {
   district,
   resources,
   transparency,
+  'spirit-store': spiritStore,
+  directory,
 }
 
 /**

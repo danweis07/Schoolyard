@@ -1,0 +1,71 @@
+---
+/**
+ * Renders a single spirit store product with variant selector and quantity.
+ */
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+import type { SpiritStoreProduct } from '@schoolyard/content-api'
+
+interface Props {
+  product: SpiritStoreProduct
+  locale: Locale
+}
+
+const { product, locale } = Astro.props
+const t = useTranslate(locale)
+const priceFormatted = `$${(product.priceCents / 100).toFixed(2)}`
+---
+
+<article class="rounded-card border border-border bg-surface p-card flex flex-col">
+  {
+    product.imageUrl && (
+      <img
+        src={product.imageUrl}
+        alt={product.name}
+        class="mb-4 aspect-square w-full rounded-lg object-cover"
+        loading="lazy"
+      />
+    )
+  }
+  <h3 class="text-lg font-bold">{product.name}</h3>
+  {product.description && <p class="mt-1 text-sm text-muted">{product.description}</p>}
+  <p class="mt-2 text-xl font-bold text-primary">{priceFormatted}</p>
+
+  {
+    product.variants.length > 0 && (
+      <label class="mt-3 block text-sm font-semibold">
+        {t('spiritStore.variant')}
+        <select
+          class="mt-1 block w-full rounded-button border border-border bg-surface px-3 py-2 text-sm"
+          data-sy-product-variant={product.slug}
+        >
+          {product.variants.map((v) => (
+            <option value={v.label}>{v.label}</option>
+          ))}
+        </select>
+      </label>
+    )
+  }
+
+  <label class="mt-3 block text-sm font-semibold">
+    {t('spiritStore.quantity')}
+    <input
+      type="number"
+      min="1"
+      max={product.maxQuantity ?? 99}
+      value="1"
+      class="mt-1 block w-20 rounded-button border border-border bg-surface px-3 py-2 text-sm"
+      data-sy-product-qty={product.slug}
+    />
+  </label>
+
+  <button
+    type="button"
+    class="mt-4 rounded-button bg-primary px-4 py-2 text-sm font-semibold text-inverse hover:opacity-90"
+    data-sy-add-to-cart={product.slug}
+    data-price-cents={product.priceCents}
+    data-product-name={product.name}
+  >
+    {t('spiritStore.addToCart')}
+  </button>
+</article>

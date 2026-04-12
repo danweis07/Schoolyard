@@ -66,6 +66,12 @@ export interface TestContext {
     contactSubmissionA: string
     donationA: string
     pushTokenMemberA: string
+    spiritProductA: string
+    spiritProductInactive: string
+    spiritOrderMemberA: string
+    spiritOrderLineMemberA: string
+    directoryEntryVisible: string
+    directoryEntryHidden: string
   }
 }
 
@@ -494,6 +500,100 @@ export async function setupTestContext(): Promise<TestContext> {
     .throwOnError()
   rows.pushTokenMemberA = pushToken!.id
 
+  // ── Spirit Store seed data ─────────────────────────────────────
+  const { data: spiritProduct } = await service
+    .from('spirit_store_products')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-eagle-tee',
+      name: 'Eagle T-Shirt',
+      price_cents: 1500,
+      active: true,
+      variants: [{ label: 'S' }, { label: 'M' }, { label: 'L' }],
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.spiritProductA = spiritProduct!.id
+
+  const { data: spiritProductInactive } = await service
+    .from('spirit_store_products')
+    .insert({
+      school_id: schoolAId,
+      slug: 'rls-inactive-product',
+      name: 'Inactive Product',
+      price_cents: 999,
+      active: false,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.spiritProductInactive = spiritProductInactive!.id
+
+  // Order placed via service role (simulating edge function)
+  const { data: spiritOrder } = await service
+    .from('spirit_store_orders')
+    .insert({
+      school_id: schoolAId,
+      user_id: userIds.memberA,
+      customer_name: 'Member A',
+      customer_email: 'member-a@test.com',
+      total_cents: 1500,
+      status: 'pending',
+      payment_provider: 'collect',
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.spiritOrderMemberA = spiritOrder!.id
+
+  const { data: spiritOrderLine } = await service
+    .from('spirit_store_order_lines')
+    .insert({
+      order_id: spiritOrder!.id,
+      product_id: spiritProduct!.id,
+      variant_label: 'M',
+      quantity: 1,
+      unit_price_cents: 1500,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.spiritOrderLineMemberA = spiritOrderLine!.id
+
+  // ── Directory seed data ────────────────────────────────────────
+  const { data: dirVisible } = await service
+    .from('directory_entries')
+    .insert({
+      school_id: schoolAId,
+      user_id: userIds.editorA,
+      family_name: 'Editor Family',
+      parent_names: ['Editor A'],
+      student_grades: ['3rd'],
+      email: 'editor@test.com',
+      visible: true,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.directoryEntryVisible = dirVisible!.id
+
+  const { data: dirHidden } = await service
+    .from('directory_entries')
+    .insert({
+      school_id: schoolAId,
+      user_id: userIds.adminA,
+      family_name: 'Hidden Family',
+      parent_names: ['Admin A'],
+      student_grades: ['K'],
+      email: 'admin@test.com',
+      visible: false,
+    })
+    .select('id')
+    .single()
+    .throwOnError()
+  rows.directoryEntryHidden = dirHidden!.id
+
   // ── Sign in as each profile ──────────────────────────────────────
   const [memberA, editorA, editorB, adminA, districtAdmin] = await Promise.all([
     makeAuthedClient(TEST_USERS[0].email, TEST_PASSWORD),
@@ -531,6 +631,9 @@ export async function teardownTestContext(ctx: TestContext): Promise<void> {
   // Delete in reverse-dependency order to avoid FK violations.
   // Dynamic tables first, then content, then tenant.
   const dynamicTables = [
+    'spirit_store_order_lines',
+    'spirit_store_orders',
+    'directory_entries',
     'push_tokens',
     'community_flags',
     'volunteer_hours',
@@ -540,6 +643,7 @@ export async function teardownTestContext(ctx: TestContext): Promise<void> {
     'announcements',
   ]
   const contentTables = [
+    'spirit_store_products',
     'community_listings',
     'pta_newsletters',
     'programs',

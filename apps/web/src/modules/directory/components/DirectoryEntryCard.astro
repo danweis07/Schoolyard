@@ -1,0 +1,67 @@
+---
+/**
+ * Renders a single family directory entry card.
+ */
+import type { DirectoryEntry } from '@schoolyard/content-api'
+import { useTranslate } from '@/i18n/index'
+import type { Locale } from '@schoolyard/i18n'
+
+interface Props {
+  entry: DirectoryEntry
+  locale: Locale
+}
+
+const { entry, locale } = Astro.props
+const t = useTranslate(locale)
+---
+
+<article class="rounded-card border border-border bg-surface p-card">
+  <h3 class="text-lg font-bold">{entry.familyName}</h3>
+
+  {
+    entry.parentNames.length > 0 && (
+      <p class="mt-1 text-sm text-muted">{entry.parentNames.join(', ')}</p>
+    )
+  }
+
+  {
+    entry.studentGrades.length > 0 && (
+      <p class="mt-1 text-sm">
+        <span class="font-semibold">{t('directory.studentGrades')}:</span>{' '}
+        {entry.studentGrades.join(', ')}
+      </p>
+    )
+  }
+
+  <div class="mt-3 space-y-1 text-sm">
+    {
+      entry.email && (
+        <p>
+          <span class="font-semibold">{t('directory.email')}:</span>{' '}
+          <a href={`mailto:${entry.email}`} class="text-primary hover:underline">
+            {entry.email}
+          </a>
+        </p>
+      )
+    }
+    {
+      entry.phone && (
+        <p>
+          <span class="font-semibold">{t('directory.phone')}:</span>{' '}
+          <a href={`tel:${entry.phone}`} class="text-primary hover:underline">
+            {entry.phone}
+          </a>
+        </p>
+      )
+    }
+    {
+      entry.neighborhood && (
+        <p>
+          <span class="font-semibold">{t('directory.neighborhood')}:</span> {entry.neighborhood}
+        </p>
+      )
+    }
+  </div>
+
+  {entry.notes && <p class="mt-3 text-sm italic text-muted">{entry.notes}</p>}
+</article>

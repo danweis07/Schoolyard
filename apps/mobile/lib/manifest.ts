@@ -22,6 +22,8 @@ import type {
   ManifestVolunteerRole,
   ManifestResource,
   CommunityListing,
+  SpiritStoreProduct,
+  DirectoryEntry,
 } from '@schoolyard/content-api'
 
 export function getBaseUrl(): string {
@@ -121,4 +123,12 @@ export function fetchCommunityListings(
   schoolSlug?: string,
 ): Promise<CommunityListing[]> {
   return getClient(schoolSlug).fetchCommunityListings(undefined, { signal })
+}
+
+export function fetchSpiritStoreProducts(signal?: AbortSignal): Promise<SpiritStoreProduct[]> {
+  return getClient().fetchSpiritStoreProducts(undefined, { signal })
+}
+
+export function fetchDirectory(signal?: AbortSignal): Promise<DirectoryEntry[]> {
+  return getClient().fetchDirectory(undefined, { signal })
 }
