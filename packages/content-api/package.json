@@ -17,7 +17,7 @@
     "@schoolyard/supabase": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.5.4",
-    "vitest": "^2.1.4"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.4"
   }
 }
