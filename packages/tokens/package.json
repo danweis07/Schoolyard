@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "style-dictionary": "^4.1.4"
+    "style-dictionary": "^5.4.0"
   },
   "devDependencies": {
     "typescript": "^5.5.4"
