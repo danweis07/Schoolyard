@@ -45,24 +45,24 @@
     ]
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.6.0",
-    "@changesets/cli": "^2.30.0",
-    "@eslint/js": "^9.13.0",
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.0",
+    "@eslint/js": "^10.0.1",
     "@supabase/supabase-js": "^2.45.0",
-    "@types/node": "^20.16.13",
-    "eslint": "^9.13.0",
-    "eslint-config-prettier": "^9.1.0",
+    "@types/node": "^25.6.2",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
     "gray-matter": "^4.0.3",
     "husky": "^9.1.6",
-    "lint-staged": "^15.2.10",
-    "marked": "^18.0.0",
-    "prettier": "^3.3.3",
+    "lint-staged": "^17.0.4",
+    "marked": "^18.0.3",
+    "prettier": "^3.8.3",
     "prettier-plugin-astro": "^0.14.1",
     "rimraf": "^6.0.1",
     "tsx": "^4.19.2",
-    "turbo": "^2.2.0",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^8.10.0",
-    "vitest": "^2.1.4"
+    "turbo": "^2.9.12",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.2",
+    "vitest": "^4.1.5"
   }
 }
